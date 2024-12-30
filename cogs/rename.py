@@ -10,11 +10,29 @@ class ZipSorterCog(commands.Cog):
         self.bot = bot
 
     @commands.command(name='rename')
-    async def sort_zip(self, ctx):
+    async def sort_zip(self, ctx, command: str = None, start_number: int = 1):
         """
         Command to sort and rename files in a zip archive by creation date.
-        Usage: !sortzip (with attached zip file)
+        Usage: !rename [startfrom number]
+        Parameters:
+            startfrom: Optional keyword to specify start number
+            number: Starting number for file renaming (default: 1)
+        Example:
+            !rename startfrom 5 - starts numbering from 5
+            !rename - starts numbering from 1
         """
+        # Handle the startfrom argument
+        if command and command.lower() == 'startfrom':
+            if not isinstance(start_number, int):
+                await ctx.send("Please provide a valid number after 'startfrom'!")
+                return
+        elif command:  # If there's a command but it's not 'startfrom'
+            await ctx.send("Invalid command! Use '!rename startfrom <number>' or just '!rename'")
+            return
+
+        # Use default start_number (1) if no command is provided
+        start_number = start_number if command else 1
+
         if not ctx.message.attachments:
             await ctx.send("Please attach a zip file!")
             return
@@ -22,6 +40,11 @@ class ZipSorterCog(commands.Cog):
         attachment = ctx.message.attachments[0]
         if not attachment.filename.endswith('.zip'):
             await ctx.send("Please attach a ZIP file!")
+            return
+
+        # Validate start_number
+        if start_number < 1:
+            await ctx.send("Starting number must be greater than 0!")
             return
 
         # Create temporary directories for processing
@@ -49,8 +72,8 @@ class ZipSorterCog(commands.Cog):
                 # Create new zip with renamed files
                 with zipfile.ZipFile(output_zip_path, 'w', zipfile.ZIP_DEFLATED) as output_zip:
                     with zipfile.ZipFile(input_zip_path, 'r') as input_zip:
-                        # Add files in sorted order with new names
-                        for index, (_, original_filename) in enumerate(files, 1):
+                        # Add files in sorted order with new names, starting from start_number
+                        for index, (_, original_filename) in enumerate(files, start_number):
                             # Read original file data
                             file_data = input_zip.read(original_filename)
                             
@@ -61,7 +84,7 @@ class ZipSorterCog(commands.Cog):
                             output_zip.writestr(new_filename, file_data)
 
                 # Send the processed zip file back
-                await ctx.send("Here's your sorted and renamed zip file:",
+                await ctx.send(f"Here's your sorted and renamed zip file (numbered from {start_number}):",
                              file=discord.File(output_zip_path, 'sorted.zip'))
 
             except zipfile.BadZipFile:
