@@ -68,3 +68,12 @@ python main.py
 - `main.py`: Entry point for the bot.
 - `config.py`: Configuration file for API keys and settings.
 - `cogs/`: Contains modular functionality of the bot.
+
+## Lab Report Maker 
+
+Version|Feature 
+-------|--------
+labv1|no theory generation
+labv2|add theory generation
+labv3|add language and compiler labels for the theory section
+labv4|add header date and footer image
