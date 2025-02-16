@@ -77,3 +77,6 @@ labv1|no theory generation
 labv2|add theory generation
 labv3|add language and compiler labels for the theory section
 labv4|add header date and footer image
+
+## Join here
+[![Discord](https://discord.com/api/guilds/1306600182208659486/widget.png?style=banner2)](https://discord.gg/As2vjM8jV9)
