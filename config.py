@@ -3,8 +3,7 @@
 BOT_NAME = 'Cutu'
 PREFIX = ('cutu ', 'Cutu ')
 SPECIAL_DATES = {
-    (11, 24): "Statistics I Exam",  # Example date: November 24
-    (11, 29): "Semester Exams Begin",    # Example: Add more dates here
+    (3,1):"test",
     (12, 25): "Siri ko Birthday",
     (4, 29): "Hmmmmmmmmm"
 }

@@ -1,4 +1,5 @@
 import discord
+import re
 import calendar
 from datetime import datetime
 from discord.ext import commands
@@ -43,12 +44,13 @@ class Calendar(commands.Cog):
             # Replace today's date with 🔹 and special dates with 🔸
             for (special_month, special_day), description in SPECIAL_DATES.items():
                 if month == special_month:
-                    line = line.replace(f"{special_day:2}", "🔸")
+                    pattern = r'(\s)' + f"{special_day:2}".strip() + r'(\s|$)'
+                    line = re.sub(pattern, r'\1🔸\2', line)
 
             # Check if today's date is in the current line, and replace it with 🔹
-            for day in range(1, 32):  # Check for each possible day in the calendar
-                if f"{day:2}" in line and month == today.month and day == today.day:
-                    line = line.replace(f"{day:2}", "🔹")
+            if month == today.month and year == today.year:
+                pattern = r'(\s)' + f"{today.day:2}".strip() + r'(\s|$)'
+                line = re.sub(pattern, r'\1🔹\2', line)
 
             marked_dates_grid.append(line)
 

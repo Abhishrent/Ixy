@@ -7,7 +7,7 @@ import aiohttp
 class ASCIIArt(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.ASCII = ["@", "#", "8", "&", "%", "o", ":", "*", "+", ";", ",", ".", " "]
+        self.ASCII = ["=", "+", "-", "*", "#", "%", "@", ":", "."]
     
     def resize_img(self, img, new_width=100, correction=2):
         width, height = img.size
@@ -21,7 +21,8 @@ class ASCIIArt(commands.Cog):
         return pixels
     
     def map_pixels(self, pixels):
-        ascii_pixels = [self.ASCII[min(x // 18, len(self.ASCII) - 1)] for x in pixels]
+        scale_factor = 256 / len(self.ASCII)
+        ascii_pixels = [self.ASCII[min(int(x / scale_factor), len(self.ASCII) - 1)] for x in pixels]
         return ascii_pixels
     
     def format_art(self, ascii_pixels, width=100):
