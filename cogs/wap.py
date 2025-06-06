@@ -10,14 +10,9 @@ class WapCog(commands.Cog):
 
         # List of API keys to manage
         self.api_keys = [
-            "***REDACTED_GITHUB_TOKEN***",
-            "***REDACTED_GITHUB_TOKEN***",
+            "***REDACTED_GITHUB_TOKEN***"
         ]
         self.current_key_index = 0
-
-        # Ensure at least one API key is available
-        if not self.api_keys:
-            raise ValueError("No API keys provided.")
 
         # Set the first API key
         self.set_api_key(self.api_keys[self.current_key_index])
