@@ -123,7 +123,7 @@ class LabReportGenerator(commands.Cog):
                         },
                         {
                             "role": "user",
-                            "content": f"Add elaborative two-paragraphed theory for these questions in the following structure:\n```1. (first question)\nTheory:\n(theory for the first question)```and so on for other questions. Make sure that:\n    a. It jumps to a new line after the \"Theory:\" label\n    b. Everything is plain text without any formatting like in markdown files\nQuestions:\n{question_batch_text}",
+                            "content": f"Add short two-paragraphed theory for these questions in the following structure:\n```1. (first question)\nTheory:\n(theory for the first question)```and so on for other questions. Make sure that:\n    a. It jumps to a new line after the \"Theory:\" label\n    b. Everything is plain text without any formatting like in markdown files and no mathematical syntax too. \nQuestions:\n{question_batch_text}",
                         }
                     ],
                     model="gpt-4o",
@@ -338,8 +338,8 @@ class LabReportGenerator(commands.Cog):
                     theory_para.paragraph_format.line_spacing = 1.5
                     theory_para.paragraph_format.alignment = WD_PARAGRAPH_ALIGNMENT.JUSTIFY
                     
-                    if not language and not compiler:
-                        doc.add_paragraph().add_run().add_break(WD_BREAK.PAGE)
+                    # if not language and not compiler:                                 #page break after theory
+                    #     doc.add_paragraph().add_run().add_break(WD_BREAK.PAGE)
 
                 # Add compiler and language info if provided
                 if language and compiler:
@@ -349,7 +349,7 @@ class LabReportGenerator(commands.Cog):
                     compiler_run.font.name = 'Times New Roman'
                     compiler_run.font.size = Pt(12)
                     compiler_para.paragraph_format.line_spacing = 1.5
-                    doc.add_paragraph().add_run().add_break(WD_BREAK.PAGE) # Add page break
+                    #doc.add_paragraph().add_run().add_break(WD_BREAK.PAGE) # Add page break
 
 
                 # Add Code Section
@@ -371,7 +371,7 @@ class LabReportGenerator(commands.Cog):
 
                     code_para.paragraph_format.line_spacing = 1
                     code_para.paragraph_format.space_after = Pt(0)
-                    doc.add_paragraph().add_run().add_break(WD_BREAK.PAGE)
+                    #doc.add_paragraph().add_run().add_break(WD_BREAK.PAGE)     #adds page break after the code section
                 else:
                     missing_files.append(f"Code file for Question {q_num}")
 

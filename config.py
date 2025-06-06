@@ -3,9 +3,12 @@
 BOT_NAME = 'Cutu'
 PREFIX = ('cutu ', 'Cutu ')
 SPECIAL_DATES = {
-    (3,1):"test",
-    (12, 25): "Siri ko Birthday",
-    (4, 29): "Hmmmmmmmmm"
+    (5, 14): "DAA",
+    (5, 18): "SAD",
+    (5, 21): "Cryptography",
+    (5, 25): "Simulation",
+    (5, 28): "Web",
+    (6, 1): "Multimedia",
 }
 
 #Channel ID Settings

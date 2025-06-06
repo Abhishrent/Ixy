@@ -41,18 +41,39 @@ class Calendar(commands.Cog):
         # Process each line in the dates grid to mark special dates
         marked_dates_grid = []
         for line in dates_grid:
-            # Replace today's date with 🔹 and special dates with 🔸
-            for (special_month, special_day), description in SPECIAL_DATES.items():
-                if month == special_month:
-                    pattern = r'(\s)' + f"{special_day:2}".strip() + r'(\s|$)'
-                    line = re.sub(pattern, r'\1🔸\2', line)
-
-            # Check if today's date is in the current line, and replace it with 🔹
-            if month == today.month and year == today.year:
-                pattern = r'(\s)' + f"{today.day:2}".strip() + r'(\s|$)'
-                line = re.sub(pattern, r'\1🔹\2', line)
-
-            marked_dates_grid.append(line)
+            # Create a copy of the line we can modify
+            marked_line = line
+            
+            # First find all numbers in the current line (potential dates)
+            date_matches = re.finditer(r'(\s|\b)(\d{1,2})(\s|\b)', marked_line)
+            
+            # Process each number found in the line
+            for match in date_matches:
+                full_match = match.group(0)  # The complete match including spaces
+                day_str = match.group(2)     # Just the number/date
+                day = int(day_str)
+                
+                # Check if this day is a special date
+                is_special = False
+                for (special_month, special_day), _ in SPECIAL_DATES.items():
+                    if month == special_month and day == special_day:
+                        is_special = True
+                        break
+                
+                # Check if this is today's date
+                is_today = (month == today.month and year == today.year and day == today.day)
+                
+                # Replace with appropriate marker
+                if is_today:
+                    # Calculate position and create replacement with the 🔹 marker
+                    replacement = full_match.replace(day_str, '🔹')
+                    marked_line = marked_line.replace(full_match, replacement, 1)
+                elif is_special:
+                    # Calculate position and create replacement with the 🔸 marker
+                    replacement = full_match.replace(day_str, '🔸')
+                    marked_line = marked_line.replace(full_match, replacement, 1)
+            
+            marked_dates_grid.append(marked_line)
 
         # Reconstruct the full calendar with header and marked dates grid
         marked_calendar_text = f"{header}\n" + "\n".join(marked_dates_grid)
