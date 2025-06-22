@@ -22,9 +22,9 @@ SCOPES = ['https://www.googleapis.com/auth/drive.readonly']
 FOLDER_ID = '1TZTkvxRlQWaBe1SDgbLxbIz4mW5mXjxS'
 
 #Logos and Banners
-IDEAX_LOGO = 'https://cdn.discordapp.com/attachments/1303620918454779914/1303621095571591218/ideax_logo_white.png?ex=672c6b41&is=672b19c1&hm=e5bd4447cf9d51d30d06710962d1cc50ac64ff82e0ab851e6be2672504033e64&'
-IDEAX_LOGO_X ='https://imgs.search.brave.com/YcCbxifteKyjMmobJVixxW_RiNUYr0DAFiGmdsGqKb0/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly93d3cu/aWRlYXgubWJtYy5l/ZHUubnAvaW1hZ2Vz/L2lkZWF4X3hfb25s/eS5zdmc' 
-IDEAX_BANNER = 'https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExbGk1c243M2x2b2k2djZpdnZtOWMzemk2djAxdHYyZHlpdDZkMXBxOSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3Otqo8qv0LkmdUDe7w/giphy.gif'
+EMBED_LOGO = 'https://cdn.discordapp.com/attachments/1303620918454779914/1303621095571591218/ideax_logo_white.png?ex=672c6b41&is=672b19c1&hm=e5bd4447cf9d51d30d06710962d1cc50ac64ff82e0ab851e6be2672504033e64&'
+EMBED_LOGO_X ='https://imgs.search.brave.com/YcCbxifteKyjMmobJVixxW_RiNUYr0DAFiGmdsGqKb0/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly93d3cu/aWRlYXgubWJtYy5l/ZHUubnAvaW1hZ2Vz/L2lkZWF4X3hfb25z/eS5zdmc' 
+EMBED_BANNER = 'https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExbGk1c243M2x2b2k2djZpdnZtOWMzemk2djAxdHYyZHlpdDZkMXBxOSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3Otqo8qv0LkmdUDe7w/giphy.gif'
 WELCOME_BANNER = 'https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExaG9tNjk1ZnBscGhhcTNmMGFoZTZpM3JtNzFuenk3NXl5NjdweTVycyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/xUPGGDNsLvqsBOhuU0/giphy.gif'
 
 

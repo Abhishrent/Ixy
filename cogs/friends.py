@@ -2,7 +2,7 @@ import random
 import asyncio
 from discord.ext import commands
 import discord
-from friends_trivia_questions import questions
+from game_files.friends_trivia_questions import questions
 
 class PlayerSession:
     def __init__(self, initiator_id):

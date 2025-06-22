@@ -11,7 +11,7 @@ class WordleGame(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.games = {}
-        self.word_list = self.load_words('words.txt')
+        self.word_list = self.load_words('game_files/words.txt')
         self.game_timeout = TIMEOUT_DURATION
         self.check_game_timeouts.start()
 
