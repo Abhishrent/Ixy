@@ -3,6 +3,7 @@ from discord.ext import commands
 from PIL import Image
 import io
 import aiohttp
+from config import *
 
 class ASCIIArt(commands.Cog):
     def __init__(self, bot):
@@ -86,11 +87,21 @@ class ASCIIArt(commands.Cog):
                 filename=f"{original_name}_ascii.txt"
             )
             
-            # Send the file
-            await ctx.send(
-                content="Here's your ASCII art:", 
-                file=discord_file
+            # Create embed with EMBED_THUMBNAIL as thumbnail
+            embed = discord.Embed(
+                description=(
+                    f"Your image has been converted to ASCII art.\n"
+                    f"Download the attached `.txt` file to view or share it.\n"
+                    f"To convert another image, just attach it and use `{PREFIX[1]}ascii` again."
+                ),
+                color=discord.Color.blue()
             )
+            embed.set_thumbnail(url=EMBED_THUMBNAIL)
+
+            # Send the embed first
+            await ctx.send(embed=embed)
+            # Then send the file
+            await ctx.send(file=discord_file)
             
             # Close the file-like object
             file_io.close()
