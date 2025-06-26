@@ -3,9 +3,10 @@ from discord.ext import commands, tasks
 import random
 import asyncio
 import time
+from config import EMBED_THUMBNAIL
 
 #---------------------------------Game Settings-----------------------------------------
-TIMEOUT_DURATION = 2*60                                                                #
+TIMEOUT_DURATION = 2*1                                                                #
 CHECK_FREQUENCY = 10                                                                   #
 HIGHLIGHT_TIME = 0.5                                                                   #
 ERROR_HIGHLIGHT_TIME = 1.0  # Time to show red button before showing correct           #
@@ -100,7 +101,9 @@ class SequenceMemoryGame(commands.Cog):
 
     def create_embed(self, title, description, color=discord.Color.blue()):
         """Helper method to create consistently styled embeds."""
-        return discord.Embed(title=title, description=description, color=color)
+        embed = discord.Embed(title=title, description=description, color=color)
+        embed.set_thumbnail(url=EMBED_THUMBNAIL)
+        return embed
 
     async def show_error_and_end(self, game, interaction, button_index):
         """Show red button briefly, then show correct button, before ending the game."""
@@ -128,7 +131,11 @@ class SequenceMemoryGame(commands.Cog):
     async def start_game(self, ctx):
         """Start a new sequence memory game."""
         if ctx.channel.id in self.games:
-            await ctx.send("A game is already active in this channel!")
+            await ctx.send(embed=self.create_embed(
+                "Game Already Active",
+                "A game is already active in this channel! Please finish the current game before starting a new one.",
+                discord.Color.red()
+            ))
             return
 
         game_state = {

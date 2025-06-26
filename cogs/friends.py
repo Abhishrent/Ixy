@@ -3,6 +3,7 @@ import asyncio
 from discord.ext import commands
 import discord
 from game_files.friends_trivia_questions import questions
+from config import EMBED_THUMBNAIL
 
 class PlayerSession:
     def __init__(self, initiator_id):
@@ -83,7 +84,7 @@ class FriendsTrivia(commands.Cog):
                 description=question,
                 color=discord.Color.purple()
             )
-            #embed.add_field(name="Answer Options", value="🔓 Click a button to answer!", inline=False)
+            embed.set_thumbnail(url=EMBED_THUMBNAIL)
 
             # Send the trivia question with the embed and buttons
             await ctx.send(embed=embed, view=view)
@@ -167,6 +168,7 @@ class FriendsTrivia(commands.Cog):
             description="Here are the final scores and rankings for all players:",
             color=discord.Color.green()
         )
+        embed.set_thumbnail(url=EMBED_THUMBNAIL)
         embed.add_field(name="Scores", value=leaderboard_text or "No scores yet!", inline=False)
         await ctx.send(embed=embed)
 

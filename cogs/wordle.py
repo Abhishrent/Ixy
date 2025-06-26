@@ -2,6 +2,7 @@ import discord
 from discord.ext import commands, tasks
 import random
 import time
+from config import EMBED_THUMBNAIL
 
 # Set time and frequency constants
 CHECK_FREQUENCY = 10  # checks for timeout every n seconds
@@ -29,21 +30,25 @@ class WordleGame(commands.Cog):
     @commands.hybrid_command(name="wordle", with_app_command=True)
     async def start_game(self, ctx, word: str = None, hint: str = None):
         if ctx.channel.id in self.games:
-            await ctx.send(embed=discord.Embed(
+            embed = discord.Embed(
                 title="Game Already Active",
                 description="A Wordle game is already active in this channel! Please finish the current game before starting a new one.",
                 color=discord.Color.red()
-            ))
+            )
+            embed.set_thumbnail(url=EMBED_THUMBNAIL)
+            await ctx.send(embed=embed)
             return
         
         if word:
             target_word = word.upper()
             if len(target_word) != 5 or not target_word.isalpha():
-                await ctx.send(embed=discord.Embed(
+                embed = discord.Embed(
                     title="Invalid Word",
                     description="The word must be exactly 5 letters long and contain only letters.",
                     color=discord.Color.red()
-                ))
+                )
+                embed.set_thumbnail(url=EMBED_THUMBNAIL)
+                await ctx.send(embed=embed)
                 return
         else:
             target_word = random.choice(self.word_list)
@@ -59,9 +64,9 @@ class WordleGame(commands.Cog):
             color=discord.Color.green()
         )
         embed.add_field(name="How to Play", value="Type a 5-letter word to guess the target word.", inline=False)
-        
         if hint:
             embed.add_field(name="Hint", value=hint, inline=False)
+        embed.set_thumbnail(url=EMBED_THUMBNAIL)
 
         message = await ctx.send(embed=embed, view=view)
         self.games[ctx.channel.id] = {
@@ -88,6 +93,7 @@ class WordleGame(commands.Cog):
                         description=f"Hey {self.bot.get_user(game['owner']).mention}! The game has timed out due to inactivity.\nThe word was **{game['target_word']}**.\nStart a new game with `/wordle`!",
                         color=discord.Color.red()
                     )
+                    timeout_embed.set_thumbnail(url=EMBED_THUMBNAIL)
                     await message.edit(embed=timeout_embed, view=None)
                 except Exception as e:
                     print(f"Error in timeout handling for channel {channel_id}: {e}")
@@ -101,31 +107,37 @@ class WordleGame(commands.Cog):
     async def before_check_game_timeouts(self):
         await self.bot.wait_until_ready()
 
-    @commands.hybrid_command(name="quit", with_app_command=True)
+    @commands.hybrid_command(name="quit_wordle", with_app_command=True)
     async def quit_game(self, ctx):
         if ctx.channel.id not in self.games:
-            await ctx.send(embed=discord.Embed(
+            embed = discord.Embed(
                 title="No Active Game",
                 description="There is no active Wordle game in this channel to quit.",
                 color=discord.Color.red()
-            ))
+            )
+            embed.set_thumbnail(url=EMBED_THUMBNAIL)
+            await ctx.send(embed=embed)
             return
         
         game = self.games[ctx.channel.id]
         if game["owner"] != ctx.author.id:
-            await ctx.send(embed=discord.Embed(
+            embed = discord.Embed(
                 title="Permission Denied",
                 description="Only the game owner can quit the game.",
                 color=discord.Color.red()
-            ))
+            )
+            embed.set_thumbnail(url=EMBED_THUMBNAIL)
+            await ctx.send(embed=embed)
             return
 
         del self.games[ctx.channel.id]
-        await ctx.send(embed=discord.Embed(
+        embed = discord.Embed(
             title="Game Quit",
             description="The Wordle game has been quit. Feel free to start a new game with `/wordle`.",
             color=discord.Color.blue()
-        ))
+        )
+        embed.set_thumbnail(url=EMBED_THUMBNAIL)
+        await ctx.send(embed=embed)
 
     @commands.Cog.listener()
     async def on_message(self, message):
@@ -137,11 +149,13 @@ class WordleGame(commands.Cog):
 
         guess = message.content.upper()
         if len(guess) != 5 or not guess.isalpha():
-            await message.channel.send(embed=discord.Embed(
+            embed = discord.Embed(
                 title="Invalid Guess",
-                description="Your guess must be a 5-letter word!\nType `/quit` to quit the game",
+                description="Your guess must be a 5-letter word!\nType `/quit_wordle` to quit the game",
                 color=discord.Color.orange()
-            ), delete_after=5)
+            )
+            embed.set_thumbnail(url=EMBED_THUMBNAIL)
+            await message.channel.send(embed=embed, delete_after=5)
             return
 
         try:
@@ -153,11 +167,13 @@ class WordleGame(commands.Cog):
 
             if current_row >= 5:
                 del self.games[message.channel.id]
-                await message.channel.send(embed=discord.Embed(
+                embed = discord.Embed(
                     title="Game Over",
                     description="The game is over! Start a new game with `/wordle`.",
                     color=discord.Color.red()
-                ), delete_after=5)
+                )
+                embed.set_thumbnail(url=EMBED_THUMBNAIL)
+                await message.channel.send(embed=embed, delete_after=5)
                 return
 
             target_word = game["target_word"]
@@ -180,29 +196,32 @@ class WordleGame(commands.Cog):
                 description="",
                 color=discord.Color.yellow()
             )
-
             if game.get("hint"):
                 embed.add_field(name="Hint", value=game["hint"], inline=False)
-
+            embed.set_thumbnail(url=EMBED_THUMBNAIL)
             await original_message.edit(embed=embed, view=view)
             await message.delete()
             
             if guess == target_word:
                 del self.games[message.channel.id]
-                await message.channel.send(embed=discord.Embed(
+                embed = discord.Embed(
                     title="Congratulations!",
                     description=f"🎉 {message.author.mention} guessed the word **{target_word}** correctly!",
                     color=discord.Color.green()
-                ))
+                )
+                embed.set_thumbnail(url=EMBED_THUMBNAIL)
+                await message.channel.send(embed=embed)
             else:
                 game["current_row"] += 1
                 if game["current_row"] >= 5:
                     del self.games[message.channel.id]
-                    await message.channel.send(embed=discord.Embed(
+                    embed = discord.Embed(
                         title="Game Over",
                         description=f"Game over! The word was **{target_word}**. Better luck next time!",
                         color=discord.Color.red()
-                    ))
+                    )
+                    embed.set_thumbnail(url=EMBED_THUMBNAIL)
+                    await message.channel.send(embed=embed)
 
         except discord.NotFound:
             del self.games[message.channel.id]

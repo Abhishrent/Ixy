@@ -3,6 +3,7 @@ from discord.ext import commands, tasks
 import random
 import asyncio
 import time
+from config import EMBED_THUMBNAIL  # Add this import
 
 #set time and frequency
 CHECK_FREQUENCY = 1
@@ -101,6 +102,7 @@ class MemoryMatchingGame(commands.Cog):
             value="Click on two blocks to reveal the emojis. \nIf they match, they stay revealed.\nFind all the matches in the least time possible (shown at the end upon completion)",
             inline=False
         )
+        embed.set_thumbnail(url=EMBED_THUMBNAIL)  # Set thumbnail
 
         message = await ctx.send(embed=embed, view=self.create_game_view(game_state))
         game_state["message_id"] = message.id
@@ -120,7 +122,7 @@ class MemoryMatchingGame(commands.Cog):
                 title="Not Your Game!",
                 description="Only the person who started the game can play it! Start your own game using the `/memory` command.",
                 color=discord.Color.red()
-            ), ephemeral=True)
+            ).set_thumbnail(url=EMBED_THUMBNAIL), ephemeral=True)
             return
 
         game['last_interaction_time'] = time.time()
@@ -144,7 +146,7 @@ class MemoryMatchingGame(commands.Cog):
                         title="Game Quit",
                         description="The memory game has been quit.",
                         color=discord.Color.red()
-                    ), 
+                    ).set_thumbnail(url=EMBED_THUMBNAIL), 
                     view=None
                 )
                 del self.games[interaction.channel.id]
@@ -202,7 +204,7 @@ class MemoryMatchingGame(commands.Cog):
                         title="Game Over",
                         description=f"🎉 {interaction.user.mention} found all pairs! The game is over.\n\nTotal Time: {time_display}",
                         color=discord.Color.green()
-                    ), view=None)
+                    ).set_thumbnail(url=EMBED_THUMBNAIL), view=None)
                     del self.games[interaction.channel.id]
 
         except Exception as e:
@@ -222,9 +224,9 @@ class MemoryMatchingGame(commands.Cog):
                     message = await channel.fetch_message(game["message_id"])
                     await message.edit(embed=discord.Embed(
                         title="Game Timed Out",
-                        description=f"Hey {self.bot.get_user(game['owner']).mention}! A good programmer never forgets to deallocate system resources after use and this timeout ensures that ;)\n Creating a game uses memory, quitting one frees the memory.\n So don't forget to hit the `quit` button if you're leaving!",
+                        description="💡 Tip: Remember to quit your game if you need to leave! Freeing up memory helps keep the server running smoothly. See you next time, memory master!",
                         color=discord.Color.red()
-                    ), view=None)
+                    ).set_thumbnail(url=EMBED_THUMBNAIL), view=None)
                 except Exception as e:
                     print(f"Error in timeout handling for channel {channel_id}: {e}")
                 finally:

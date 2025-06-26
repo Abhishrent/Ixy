@@ -3,7 +3,8 @@ from discord.ext import commands
 from discord.ui import Button, View
 import requests
 from config import COUNTRY_CODES
-from typing import Optional, List, Tuple
+from typing import List
+from config import EMBED_THUMBNAIL
 
 # Country Codes View with "View Country Codes" button
 class CountryCodesView(View):
@@ -44,10 +45,10 @@ class CountryCodesView(View):
                 description=country_list,
                 color=discord.Color.green(),
             )
+            embed.set_thumbnail(url=EMBED_THUMBNAIL)
 
             # Send the embed as an ephemeral message
             await interaction.response.send_message(embed=embed, ephemeral=True)
-
         return letter_button_callback
 
 # Currency Converter Cog
@@ -131,6 +132,7 @@ class CurrencyConverterCog(commands.Cog):
                 description="",
                 color=discord.Color.blue()
             )
+            embed.set_thumbnail(url=EMBED_THUMBNAIL)
             embed.add_field(name="Given Amount:", value=f"{amount_formatted} {from_currency}", inline=True)
             embed.add_field(name="Amounts to:", value=f"{converted_amount_formatted} {to_currency}", inline=True)
             embed.set_footer(text=f"Conversion Rate: 1 {from_currency} = {conversion_rate:.4f} {to_currency}")

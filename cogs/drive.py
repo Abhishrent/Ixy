@@ -65,9 +65,16 @@ class Drive(commands.Cog):
             embed = discord.Embed(title="Here's a Random Photo!", color=discord.Color.blue())
             embed.set_image(url=image_url)
             embed.set_thumbnail(url=EMBED_THUMBNAIL)
-            embed.add_field(name="", value=f"[Click here to add your own photos](https://drive.google.com/drive/u/1/folders/{FOLDER_ID})")
+            # Create an "Upload" button
+            upload_button = discord.ui.Button(
+                label="Upload",
+                style=discord.ButtonStyle.link,
+                url=f"https://drive.google.com/drive/u/1/folders/{FOLDER_ID}"
+            )
+            view = discord.ui.View()
+            view.add_item(upload_button)
             embed.set_footer(text=f'Uploaded by: {uploader}', icon_url=EMBED_FOOTER)
-            await ctx.send(embed=embed)
+            await ctx.send(embed=embed, view=view)
         else:
             await ctx.send("No images found in the folder.")
 

@@ -3,11 +3,13 @@ from discord.ext import commands
 
 # Define a dictionary mapping trigger words to specific reactions (emojis)
 TRIGGER_REACTIONS = {
-    'hello': '👋',   # Reacts with a wave emoji for 'hello'
-    'bye': '👋',     # Reacts with a wave emoji for 'bye'
-    'thanks': '🙏',  # Reacts with a thank you emoji for 'thanks'
+    'hello': '👋', 
+    'bye': '👋',
+    'thanks': '🙏', 
     'goodnight': '😴',
-    'good morning': '🌄'
+    'good morning': '🌄',
+    'firoj': '💣',
+    'sachi': '🎀'
 }
 
 class AutoReactionCog(commands.Cog):

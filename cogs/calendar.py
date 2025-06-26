@@ -84,6 +84,7 @@ class Calendar(commands.Cog):
             description=f"```{marked_calendar_text}```",
             color=discord.Color.blue()
         )
+        embed.set_thumbnail(url=EMBED_THUMBNAIL)
 
         # Add fields for each special date with descriptions and days remaining
         for (special_month, special_day), description in SPECIAL_DATES.items():
@@ -170,6 +171,7 @@ class Calendar(commands.Cog):
             title="Upcoming Events",
             color=discord.Color.blue()
         )
+        embed.set_thumbnail(url=EMBED_THUMBNAIL)
 
         if not upcoming_events:
             embed.description = "No upcoming events found."

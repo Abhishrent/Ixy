@@ -1,6 +1,6 @@
 import discord
 from discord.ext import commands
-from config import EMBED_LOGO
+from config import EMBED_THUMBNAIL, EMBED_FOOTER, EMBED_IMAGE
 
 class TestEmbed(commands.Cog):
     def __init__(self, bot):
@@ -13,10 +13,11 @@ class TestEmbed(commands.Cog):
             description="This is a preview of how embeds will look with the standard logo.",
             color=discord.Color.blue()
         )
-        embed.set_thumbnail(url=EMBED_LOGO)
+        embed.set_thumbnail(url=EMBED_THUMBNAIL)
+        embed.set_image(url=EMBED_IMAGE)
         embed.add_field(name="Field 1", value="Some value here", inline=True)
         embed.add_field(name="Field 2", value="Another value here", inline=True)
-        embed.set_footer(text="Embed Footer Example")
+        embed.set_footer(text="Embed Footer Example", icon_url=EMBED_FOOTER)
         await ctx.send(embed=embed)
 
 async def setup(bot):

@@ -7,7 +7,7 @@ class Support(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.hybrid_command(name='ujuri', description="Open a support ticket")
+    @commands.hybrid_command(name='open', description="Open a support ticket")
     async def open_ticket(self, ctx):
         # Define guild roles
         guild = ctx.guild
@@ -20,10 +20,15 @@ class Support(commands.Cog):
             await ctx.send(f"You already have a ticket open: {existing_channel.mention}")
             return
 
+        # Ensure the "Tickets" category exists or create it
+        tickets_category = discord.utils.get(guild.categories, name="Tickets")
+        if tickets_category is None:
+            tickets_category = await guild.create_category("Tickets")
+
         # Creates a new private channel for the user and mods
         ticket_channel = await guild.create_text_channel(
             name=f"ticket-{ctx.author.name}",
-            category=discord.utils.get(guild.categories, name="Tickets"),
+            category=tickets_category,
             overwrites={
                 everyone_role: discord.PermissionOverwrite(read_messages=False),
                 ctx.author: discord.PermissionOverwrite(read_messages=True, send_messages=True),
@@ -32,9 +37,9 @@ class Support(commands.Cog):
         )
 
         await ctx.send("Ticket created! Check your ticket channel.")
-        await ticket_channel.send(f"Hello {ctx.author.mention}! This channel is dedicated to assisting you. Please provide a brief description of your issue, and our support team will respond shortly. \n\n`(Type '{PREFIX[0]} bhayo' in case you change your mind or would like to close this request.)`")
+        await ticket_channel.send(f"Hello {ctx.author.mention}! This channel is dedicated for your support. Please provide a brief description of your issue, and our support team will respond shortly. \n\n`(Type '{PREFIX[0]}close' or '/close' in case you change your mind or would like to close this request.)`")
 
-    @commands.hybrid_command(name='bhayo', description="Close your open ticket")
+    @commands.hybrid_command(name='close', description="Close your open ticket")
     async def close_ticket(self, ctx):
         if "ticket" in ctx.channel.name:
             closing_message = await ctx.send("This ticket will be closed in [5] second(s).")

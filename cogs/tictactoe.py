@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 import asyncio
-from config import BOT_NAME
+from config import BOT_NAME, EMBED_THUMBNAIL
 
 #---------Game Settings--------------
 TIMEOUT_DURATION = 60 #in seconds   #
@@ -20,11 +20,13 @@ class TicTacToeGame(commands.Cog):
         """
         # Check if a game is already active in the channel
         if ctx.channel.id in self.games:
-            await ctx.send(embed=discord.Embed(
+            embed = discord.Embed(
                 title="Game Already Active",
                 description="A Tic-Tac-Toe game is already active in this channel! Please finish the current game before starting a new one.",
                 color=discord.Color.red()
-            ))
+            )
+            embed.set_thumbnail(url=EMBED_THUMBNAIL)
+            await ctx.send(embed=embed)
             return
 
         # Default player1 to the user who used the command
@@ -66,6 +68,7 @@ class TicTacToeGame(commands.Cog):
             description=f"**{player1.name}** vs **{player2.name if not is_ai_game else BOT_NAME}**\n\nClick 'Start Game' to begin!",
             color=discord.Color.green()
         )
+        embed.set_thumbnail(url=EMBED_THUMBNAIL)
 
         # Send the initial grid and embed
         message = await ctx.send(embed=embed, view=view)
@@ -108,7 +111,7 @@ class TicTacToeGame(commands.Cog):
                 description=f"{game['players']['X'].name}'s turn (X)",
                 color=discord.Color.yellow()
             )
-            
+            embed.set_thumbnail(url=EMBED_THUMBNAIL)
             await interaction.response.edit_message(embed=embed, view=view)
         
         # If game is started, quit it
@@ -118,6 +121,7 @@ class TicTacToeGame(commands.Cog):
                 description="The Tic-Tac-Toe game has been ended.",
                 color=discord.Color.red()
             )
+            embed.set_thumbnail(url=EMBED_THUMBNAIL)
             await interaction.response.edit_message(embed=embed, view=None)
             del self.games[interaction.channel_id]
 
@@ -160,12 +164,14 @@ class TicTacToeGame(commands.Cog):
         """
         # Ensure the game exists and has started
         if interaction.channel_id not in self.games:
+            embed = discord.Embed(
+                title="No Active Game",
+                description="There is no active Tic-Tac-Toe game in this channel.",
+                color=discord.Color.red()
+            )
+            embed.set_thumbnail(url=EMBED_THUMBNAIL)
             await interaction.response.send_message(
-                embed=discord.Embed(
-                    title="No Active Game",
-                    description="There is no active Tic-Tac-Toe game in this channel.",
-                    color=discord.Color.red()
-                ),
+                embed=embed,
                 ephemeral=True
             )
             return
@@ -173,24 +179,28 @@ class TicTacToeGame(commands.Cog):
         game = self.games[interaction.channel_id]
         
         if not game["game_started"]:
+            embed = discord.Embed(
+                title="Game Not Started",
+                description="Please click 'Start Game' to begin playing!",
+                color=discord.Color.orange()
+            )
+            embed.set_thumbnail(url=EMBED_THUMBNAIL)
             await interaction.response.send_message(
-                embed=discord.Embed(
-                    title="Game Not Started",
-                    description="Please click 'Start Game' to begin playing!",
-                    color=discord.Color.orange()
-                ),
+                embed=embed,
                 ephemeral=True
             )
             return
 
         # Check if it's the correct player's turn
         if game["players"][game["current_player"]] != interaction.user and game["players"][game["current_player"]] != "AI":
+            embed = discord.Embed(
+                title="Not Your Turn",
+                description=f"It's {game['players'][game['current_player']].name}'s turn.",
+                color=discord.Color.orange()
+            )
+            embed.set_thumbnail(url=EMBED_THUMBNAIL)
             await interaction.response.send_message(
-                embed=discord.Embed(
-                    title="Not Your Turn",
-                    description=f"It's {game['players'][game['current_player']].name}'s turn.",
-                    color=discord.Color.orange()
-                ),
+                embed=embed,
                 ephemeral=True
             )
             return
@@ -200,12 +210,14 @@ class TicTacToeGame(commands.Cog):
 
         # Check if the cell is already occupied
         if game["board"][row][col] is not None:
+            embed = discord.Embed(
+                title="Invalid Move",
+                description="This cell is already occupied!",
+                color=discord.Color.red()
+            )
+            embed.set_thumbnail(url=EMBED_THUMBNAIL)
             await interaction.response.send_message(
-                embed=discord.Embed(
-                    title="Invalid Move",
-                    description="This cell is already occupied!",
-                    color=discord.Color.red()
-                ),
+                embed=embed,
                 ephemeral=True
             )
             return
@@ -260,6 +272,7 @@ class TicTacToeGame(commands.Cog):
                     description="It's a draw!",
                     color=discord.Color.blue()
                 )
+            embed.set_thumbnail(url=EMBED_THUMBNAIL)
             del self.games[interaction.channel_id]
             await interaction.message.edit(embed=embed, view=None)
         else:
@@ -270,6 +283,7 @@ class TicTacToeGame(commands.Cog):
                 description=f"{current_player_name}'s turn ({game['current_player']})",
                 color=discord.Color.yellow()
             )
+            embed.set_thumbnail(url=EMBED_THUMBNAIL)
             await interaction.message.edit(embed=embed, view=view)
 
             # Start a timeout for the next player's turn
@@ -294,6 +308,7 @@ class TicTacToeGame(commands.Cog):
                         description=f"{current_player.name} took too long! Game over.",
                         color=discord.Color.red()
                     )
+                    embed.set_thumbnail(url=EMBED_THUMBNAIL)
                     await game["message"].edit(embed=embed, view=None)
                     del self.games[channel_id]
 

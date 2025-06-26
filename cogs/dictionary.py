@@ -1,7 +1,8 @@
 import discord
 from discord.ext import commands
 import requests
-import re  # Import the regular expression module
+import re
+from config import EMBED_THUMBNAIL
 
 class CollegiateDictionary(commands.Cog):
     def __init__(self, bot):
@@ -95,7 +96,7 @@ class CollegiateDictionary(commands.Cog):
                     text='Powered by Merriam-Webster Dictionary', 
                     icon_url='https://dictionaryapi.com/images/MWLogo_120x120.png'
                 )
-                embed.set_thumbnail(url='https://dictionaryapi.com/images/MWLogo_120x120.png')
+                embed.set_thumbnail(url=EMBED_THUMBNAIL)
 
                 await ctx.send(embed=embed)
 
