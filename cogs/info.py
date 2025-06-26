@@ -44,21 +44,21 @@ class Info(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command('info')
+    @commands.hybrid_command('info', description="Get information about us")
     async def info_command(self, ctx):
         embed = discord.Embed(
             title=f"{PREFIX[0]} Bot - Interactive Info",
             description="Click the buttons below to get more information!",
             color=discord.Color.blue()
         )
-        embed.set_thumbnail(url=f"{IDEAX_LOGO}")
+        embed.set_thumbnail(url=f"{EMBED_THUMBNAIL}")
         embed.add_field(name="Quick Access", value="Use the buttons to quickly access different bot functionalities.", inline=False)
         
         view = InfoView(self, ctx)
         await ctx.send(embed=embed, view=view)
 
 
-    @commands.command('commands')
+    @commands.hybrid_command('commands', description="List all available bot commands.")
     async def listcommands(self, ctx):
         # Create an embed for listing commands
         embed = discord.Embed(
@@ -68,49 +68,33 @@ class Info(commands.Cog):
         )
         
         # Add each command with description as fields
-        embed.add_field(name="💬 **Admin Commands**", value="", inline=False)
-        embed.add_field(name="1. udau <amount>", value="Deletes a specified number of messages.", inline=True)
-        embed.add_field(name="2. bhana <title>|<content>|<mentions>", value="Sends a custom message with a title and reactions.", inline=True)
+        embed.add_field(name="🎟️ **Support & Tickets** (You might need this!)", value="", inline=False)
+        embed.add_field(name="open", value="Creates a private support ticket.", inline=True)
+        embed.add_field(name="close", value="Closes an existing support ticket.", inline=True)
+        embed.add_field(
+            name="How to use commands",
+            value=(
+                f"• **Prefix commands:** Type commands starting with the prefix, e.g. `{PREFIX[0]}commands`\n"
+                f"• **Slash commands:** Type `/` in the chat and select a command from the menu"
+            ),
+            inline=False
+        )
+        embed.set_footer(text="Explore the rest of the commands using slash commands (type `/` in the chat)")
 
-        embed.add_field(name="🎟️ **Support & Tickets**", value="", inline=False)
-        embed.add_field(name="ujuri", value="Creates a private support ticket.", inline=True)
-        embed.add_field(name="bhayo", value="Closes an existing support ticket.", inline=True)
-
-        embed.add_field(name="🔮 **Astrology & Fun**", value="", inline=False)
-        embed.add_field(name="1. rashifal <sign>", value="Gets your daily horoscope. \n`(Remember that it shows your Nepali horoscope even though you type your star sign name in English)`", inline=True)
-        embed.add_field(name="2. photo", value="Displays a random photo from the event.", inline=True)
-
-        embed.add_field(name="📱 **Information**", value="", inline=False)
-        embed.add_field(name="1. socials", value="Displays the social media accounts of IDEAX.", inline=True)
-        embed.add_field(name="2. roles", value="Lists categorized roles available on the server.", inline=True)
-        embed.add_field(name="3. myroles", value="Displays your current roles.", inline=True)
-        embed.add_field(name="4. about", value="Displays information about me!", inline = True)
-
-        embed.add_field(name="📅 **Calendar & Events**", value="", inline=False)
-        embed.add_field(name="1. calendar", value="Displays a calendar.", inline=True)
-        embed.add_field(name="2. events", value="Displays a list of upcoming events.", inline=True)
-
-        embed.add_field(name="🔨 **Utilities**", value="", inline=False)
-        embed.add_field(name="1. hightlight", value="Syntax Highlights your attached code file", inline=True)
-        
-        embed.add_field(name="📅 **Coming Soon...**", value="", inline=False)
-        embed.add_field(name="1. convert <from> <to>", value="Converts file to different format", inline=True)
-        embed.add_field(name="2. search <language/library> <keyword>", value="Fetches documentation on a particular function or keyword of popular languages and libraries", inline=True)
-        embed.set_footer(text=f"Type {PREFIX[0]} <command> to use a command. Replace <command> with the actual command name.")
         await ctx.send(embed=embed)
 
-    @commands.command('socials')
+    @commands.hybrid_command('socials', description="Check out our social media links.")
     async def social_media(self, ctx):
         # Create buttons for different social media links
         button_linkedin = Button(label="LinkedIn", style=discord.ButtonStyle.link, url="https://www.linkedin.com/company/mbmc-ideax/")
         button_instagram = Button(label="Instagram", style=discord.ButtonStyle.link, url="https://www.instagram.com/mbmc_ideax/")
         button_x = Button(label="X", style=discord.ButtonStyle.link, url="https://x.com/mbmc_ideax")
+        button_facebook = Button(label="Facebook", style=discord.ButtonStyle.link, url="https://www.facebook.com/mbmcideax/")
         button_discord = Button(label="Discord", style=discord.ButtonStyle.link, url="https://discord.gg/FSFsaCVMqf")
 
-        # Create an embed
         embed = discord.Embed(
-            title="Follow Me on Social Media!",
-            description="Check out my profiles on the following platforms:",
+            title="Follow us on Social Media!",
+            description="Check out our profile on the following platforms:",
             color=discord.Color.blue()
         )
 
@@ -119,6 +103,7 @@ class Info(commands.Cog):
         view.add_item(button_linkedin)
         view.add_item(button_instagram)
         view.add_item(button_x)
+        view.add_item(button_facebook)
         view.add_item(button_discord)
 
         # Send the embed with the buttons
@@ -126,7 +111,7 @@ class Info(commands.Cog):
 
 
 
-    @commands.command('roles')
+    @commands.hybrid_command('roles', description="List server roles.")
     async def categorize_roles(self, ctx):
         guild = ctx.guild
         admin_roles = []
@@ -161,14 +146,14 @@ class Info(commands.Cog):
 
         await ctx.send(embed=embed)
 
-    @commands.command('myroles')
+    @commands.hybrid_command('myroles', description="Show your current roles in the server.")
     async def myroles(self, ctx):
         roles = [role.mention for role in ctx.author.roles if role.name != "@everyone"]
         
         if roles:
             roles_list = "\n".join(roles)
         else:
-            roles_list = "Currently лावारिश्"
+            roles_list = "Currently लावारिस"
 
         embed = discord.Embed(
             title=f"Roles for {ctx.author.display_name}",
@@ -177,7 +162,7 @@ class Info(commands.Cog):
         )
         await ctx.send(embed=embed)
 
-    @commands.command('count')
+    @commands.hybrid_command('count', description="Show the total member and bot count for the server.")
     async def member_counter(self, ctx):
         total_members = 0
         total_bots = 0
@@ -203,7 +188,7 @@ class Info(commands.Cog):
         # Send the embed
         await ctx.send(embed=embed)
 
-    @commands.command('about')
+    @commands.hybrid_command('about', description="Know about me!")
     async def about_bot(self, ctx):
         embed = discord.Embed(
             title = 'About', 
@@ -211,7 +196,7 @@ class Info(commands.Cog):
             color = discord.Color.blue()
         )
         embed.set_footer(text = '-Created by Abhishrent for IdeaX')
-        embed.set_thumbnail(url=f'{IDEAX_LOGO}')
+        embed.set_thumbnail(url=f'{EMBED_THUMBNAIL}')
         await ctx.send(embed = embed)
 
 async def setup(bot):

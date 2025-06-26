@@ -1,38 +1,37 @@
 #from dotenv import load_dotenv
+import os
 
-BOT_NAME = 'Cutu'
-PREFIX = ('cutu ', 'Cutu ')
+BOT_NAME = 'Ixy'
+PREFIX = ('ixy ', 'Ixy ')
 SPECIAL_DATES = {
-    (5, 14): "DAA",
-    (5, 18): "SAD",
-    (5, 21): "Cryptography",
-    (5, 25): "Simulation",
-    (5, 28): "Web",
-    (6, 1): "Multimedia",
+    (11, 1): "Main Event"
 }
 
 #Channel ID Settings
-WELCOME_CHANNEL_ID = 1301495713753993226
+WELCOME_CHANNEL_ID = 1387365800964395078
 ROLES_CHANNEL_ID = 1301505201223503892
 GENERAL_CHANNEL_ID = 1295939872581750839
 
 #Google Drive settings for the photo command
-SERVICE_ACCOUNT_JSON = r'C:\Users\User\Desktop\Discord Bot\google_drive.json'
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+SERVICE_ACCOUNT_JSON = os.path.join(BASE_DIR, 'google_drive.json')
 SCOPES = ['https://www.googleapis.com/auth/drive.readonly']
-FOLDER_ID = '1TZTkvxRlQWaBe1SDgbLxbIz4mW5mXjxS'
+FOLDER_ID = '1EuFkB3s6shYxc58_D8yloe2OBNENimh_'
 
 #Logos and Banners
-EMBED_LOGO = 'https://cdn.discordapp.com/attachments/1303620918454779914/1303621095571591218/ideax_logo_white.png?ex=672c6b41&is=672b19c1&hm=e5bd4447cf9d51d30d06710962d1cc50ac64ff82e0ab851e6be2672504033e64&'
-EMBED_LOGO_X ='https://imgs.search.brave.com/YcCbxifteKyjMmobJVixxW_RiNUYr0DAFiGmdsGqKb0/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly93d3cu/aWRlYXgubWJtYy5l/ZHUubnAvaW1hZ2Vz/L2lkZWF4X3hfb25z/eS5zdmc' 
-EMBED_BANNER = 'https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExbGk1c243M2x2b2k2djZpdnZtOWMzemk2djAxdHYyZHlpdDZkMXBxOSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3Otqo8qv0LkmdUDe7w/giphy.gif'
+EMBED_THUMBNAIL = 'https://cdn.discordapp.com/attachments/1303620918454779914/1303621095571591218/ideax_logo_white.png?ex=672c6b41&is=672b19c1&hm=e5bd4447cf9d51d30d06710962d1cc50ac64ff82e0ab851e6be2672504033e64&'
+EMBED_FOOTER ='https://cdn.discordapp.com/attachments/1386229613478281226/1386229635552907304/ideax_x_only.png?ex=6858f274&is=6857a0f4&hm=e6275b406745b86b79890c8905dae07db4804b1d6ebe699bf9dbd63056c520ac&' 
+EMBED_IMAGE = 'https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExbGk1c243M2x2b2k2djZpdnZtOWMzemk2djAxdHYyZHlpdDZkMXBxOSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3Otqo8qv0LkmdUDe7w/giphy.gif'
 WELCOME_BANNER = 'https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExaG9tNjk1ZnBscGhhcTNmMGFoZTZpM3JtNzFuenk3NXl5NjdweTVycyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/xUPGGDNsLvqsBOhuU0/giphy.gif'
 
 
-ABOUT_DESCRIPTION = f"""{BOT_NAME} started as a hobby project in the form of a no-code discord bot back in 2021 when the popularity of Among Us gained traction. With having discord as the main form of communication among friends, it became a fun little project for our server but was soon discarded due to limited flexibility. 
+ABOUT_DESCRIPTION = f"""{BOT_NAME} started as a hobby project in the form of a no-code discord bot back in 2021 when the popularity of Among Us gained traction. With having discord as the main form of communication among friends, it became a fun little project for our server but was soon discarded due to limited coding skills. 
 
 The development process started again in October of 2024 when I felt comfortable enough to work in python after I had learned the basics of the language and developed a decent enough knowledge to write and navigate around the code.
 
-IdeaX 2025 is the first time Petu Bot is being hosted and running on this server for your help and entertainment. 
+The character design for {BOT_NAME} was done by the lead organizer of IdeaX 2024, Banshaj Paudel.
+
+IdeaX 2025 is the first time {BOT_NAME} Bot is being hosted and running on this server for your help and entertainment. 
 
 Thank you.
 """

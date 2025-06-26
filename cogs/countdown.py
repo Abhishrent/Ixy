@@ -3,6 +3,7 @@ from discord.ext import commands
 from discord.ext.commands import hybrid_command
 import asyncio
 from datetime import timedelta
+from config import EMBED_THUMBNAIL
 
 class CountdownCog(commands.Cog):
     def __init__(self, bot):
@@ -28,6 +29,7 @@ class CountdownCog(commands.Cog):
         
         # Send an initial embed with the countdown
         embed = discord.Embed(title="Countdown", description=f"{emojis[0]} **Time left:** {self.format_time(time_left)}", color=discord.Color.green())
+        embed.set_thumbnail(url=EMBED_THUMBNAIL)
         countdown_message = await ctx.send(embed=embed)
 
         # Countdown loop with emoji animation

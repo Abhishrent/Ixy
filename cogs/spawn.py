@@ -3,6 +3,7 @@ from discord.ext import commands
 from discord import app_commands
 import praw
 import random
+from config import EMBED_THUMBNAIL
 
 class RedditImage(commands.Cog):
     def __init__(self, bot):
@@ -14,17 +15,17 @@ class RedditImage(commands.Cog):
         )
         # Predefined list of subreddits
         self.subreddits = {
-            "beautiful_asians": "BeautifulAsianss", #key:value => unique_vale:actual subreddit name
-            "nature_pics": "EarthPorn",
+            "nature_pics": "EarthPorn", #key:value => unique_vale:actual subreddit name
             "cat": "cat",
+            "nepal_pics": "NepalPics"
         }
 
     @commands.hybrid_command(name="spawn", description="Fetch a random image from a subreddit.")
     @app_commands.choices(
         choice=[
-            app_commands.Choice(name="abg", value="beautiful_asians"),
-            app_commands.Choice(name="nature", value="nature_pics"),
-            app_commands.Choice(name="cat", value="cat"),
+            app_commands.Choice(name="Nepal", value="nepal_pics"),
+            app_commands.Choice(name="Nature", value="nature_pics"),
+            app_commands.Choice(name="Cat", value="cat"),
         ]
     )
     async def spawn(self, ctx: commands.Context, choice: app_commands.Choice[str]):
@@ -54,6 +55,7 @@ class RedditImage(commands.Cog):
                 description=f"Posted by **{random_post.author.name}** in **r/{subreddit_name}**",
                 color=discord.Color.blue()
             )
+            embed.set_thumbnail(url=EMBED_THUMBNAIL)
 
             # Set the image for the embed
             embed.set_image(url=random_post.url)

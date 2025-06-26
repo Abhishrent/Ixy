@@ -4,20 +4,21 @@ import requests
 import random
 import asyncio
 import html  # Import the html module to decode HTML entities
+from config import EMBED_THUMBNAIL  # Import the thumbnail URL
 
 class Fun(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.scores = {}  # Dictionary to store user scores
 
-    @commands.command('toss')
+    @commands.hybrid_command('toss')
     async def make_choice(self, ctx):
         """Simulates a coin toss."""
         choices = ['HEADS', 'TAILS']
         choice = random.choice(choices)
         await ctx.send(f'{choice}')
 
-    @commands.command('meme')
+    @commands.hybrid_command('meme')
     async def meme(self, ctx):
         """Fetches a random meme from Reddit."""
         url = 'https://www.reddit.com/r/memes/hot.json?limit=100'
@@ -40,6 +41,7 @@ class Fun(commands.Cog):
                 embed = discord.Embed(title=title, url=post_link, color=discord.Color.blue())
                 embed.set_image(url=image_url)
                 embed.set_footer(text="Source: r/memes")
+                embed.set_thumbnail(url=EMBED_THUMBNAIL)  # Use config thumbnail
 
                 await ctx.send(embed=embed)
             else:
@@ -47,7 +49,7 @@ class Fun(commands.Cog):
         else:
             await ctx.send("Failed to retrieve memes. Please try again later.")
 
-    @commands.command('quiz')
+    @commands.hybrid_command('quiz')
     async def quiz(self, ctx, num_questions: int = 1, difficulty: str = "easy"):
         """Trivia game with difficulty selection and scores displayed in an embed."""
         # Validate the difficulty argument
@@ -111,6 +113,7 @@ class Fun(commands.Cog):
                             color=discord.Color.blue()
                         )
                         embed.add_field(name="Answer Options", value="🔒 Answering is locked. You will be able to answer in a few seconds...", inline=False)
+                        embed.set_thumbnail(url=EMBED_THUMBNAIL)  # Use config thumbnail
 
                         # Send the trivia question with the embed and buttons (locked)
                         message = await ctx.send(embed=embed, view=view)
@@ -157,6 +160,7 @@ class Fun(commands.Cog):
             description=f"{ctx.author.display_name}, you answered {individual_score}/{num_questions} questions correctly.",  # Using display_name instead of name
             color=discord.Color.blue()
         )
+        embed.set_thumbnail(url=EMBED_THUMBNAIL)  # Use config thumbnail
         await ctx.send(embed=embed)
 
         # After all questions are asked, prepare and send the final leaderboard
@@ -178,6 +182,7 @@ class Fun(commands.Cog):
             color=discord.Color.green()
         )
         embed.add_field(name="Scores", value=leaderboard_text, inline=False)
+        embed.set_thumbnail(url=EMBED_THUMBNAIL)  # Use config thumbnail
         await ctx.send(embed=embed)
 
         # Reset scores after the trivia session (optional)

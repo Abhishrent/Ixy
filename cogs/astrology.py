@@ -89,13 +89,6 @@ class Astro(commands.Cog):
                 await interaction.response.send_message(error_msg, ephemeral=True)
             print(f"Request error: {e}")
 
-        except KeyError:
-            error_msg = "Invalid star sign! Please make sure you entered it correctly."
-            if ctx:
-                await ctx.send(error_msg)
-            elif interaction:
-                await interaction.response.send_message(error_msg, ephemeral=True)
-
     @commands.hybrid_command(name='rashi', description='Get your daily horoscope')
     @discord.app_commands.describe(sign='Select your zodiac sign')
     @discord.app_commands.choices(sign=[
@@ -125,6 +118,18 @@ class Astro(commands.Cog):
 
         # Use the centralized send_horoscope method
         await self.send_horoscope(sign, ctx=ctx)
+
+    @commands.Cog.listener()
+    async def on_message(self, message):
+        if message.author.bot:
+            return
+        if message.content.strip().lower() == "cutu rashi":
+            embed = discord.Embed(
+                title="Reminder 🔔",
+                description="You forgot to include your rashi!",
+                color=discord.Color.orange()
+            )
+            await message.channel.send(embed=embed)
 
 # Add the bot instance to the command prefix and load the cog
 async def setup(bot):
