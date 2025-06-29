@@ -19,32 +19,33 @@ class Music(commands.Cog):
 
     def play_next(self, guild_id):
         """Plays the next song in the queue, if available."""
+        voice_client = self.voice_clients[guild_id]
         if self.queues[guild_id]:
             next_song = self.queues[guild_id].pop(0)
-            voice_client = self.voice_clients[guild_id]
-            
             # Store the current song in previous_songs before playing the next one
             if guild_id not in self.previous_songs:
                 self.previous_songs[guild_id] = []
-            if hasattr(voice_client, 'current_song'):
+            if hasattr(voice_client, 'current_song') and voice_client.current_song:
                 self.previous_songs[guild_id].append(voice_client.current_song)
                 # Keep only the last 10 songs in history
                 if len(self.previous_songs[guild_id]) > 10:
                     self.previous_songs[guild_id].pop(0)
-            
             # Store the current song reference
             voice_client.current_song = next_song
-            
             voice_client.play(
                 discord.FFmpegOpusAudio(next_song['url'], **self.ffmpeg_options),
                 after=lambda e: self.play_next(guild_id),
             )
+        else:
+            # No more songs, clear current_song
+            if hasattr(voice_client, 'current_song'):
+                voice_client.current_song = None
 
     def create_song_embed(self, song, status):
         """Creates a beautiful embed for the song."""
         embed = discord.Embed(
             title=f"🎶 {status}: {song['title']}",
-            description=f"[Click here to watch the video]({song['webpage_url']})",
+            description=f"",
             color=discord.Color.green() if status == "Now Playing" else discord.Color.orange()
         )
         embed.add_field(name="Uploader", value=song['uploader'], inline=True)
@@ -103,38 +104,51 @@ class Music(commands.Cog):
         except Exception as e:
             await ctx.send(f"An error occurred: {str(e)}")
 
-    @commands.hybrid_command(name = 'dekhau')
+    @commands.hybrid_command(name='dekhau')
     async def queue(self, ctx):
         """Displays the current song queue."""
-        if ctx.guild.id in self.queues and self.queues[ctx.guild.id]:
-            queue = self.queues[ctx.guild.id]
+        if ctx.guild.id in self.voice_clients and hasattr(self.voice_clients[ctx.guild.id], 'current_song'):
+            current_song = self.voice_clients[ctx.guild.id].current_song
+        else:
+            current_song = None
+
+        queue = self.queues.get(ctx.guild.id, [])
+        description = ""
+        if current_song:
+            description += f"**Now Playing:** [{current_song['title']}]({current_song['webpage_url']})\n\n"
+        if queue:
+            description += "\n".join(
+                [f"**{idx + 1}.** [{song['title']}]({song['webpage_url']})" for idx, song in enumerate(queue)]
+            )
+        if description:
             embed = discord.Embed(
                 title="🎵 Current Music Queue",
-                description="\n".join(
-                    [f"**{idx + 1}.** [{song['title']}]({song['webpage_url']})" for idx, song in enumerate(queue)],
-                ),
+                description=description,
                 color=discord.Color.blue(),
             )
             await ctx.send(embed=embed)
         else:
             await ctx.send("The queue is currently empty!")
 
-    @commands.hybrid_command(name = 'arko')
+    @commands.hybrid_command(name='arko')
     async def skip(self, ctx):
         """Skips the current song."""
         if ctx.guild.id in self.voice_clients and self.voice_clients[ctx.guild.id].is_playing():
             voice_client = self.voice_clients[ctx.guild.id]
-            if self.queues[ctx.guild.id]:
-                next_song = self.queues[ctx.guild.id][0]  # Peek at next song without removing it
-                voice_client.stop()  # This will trigger play_next
-                embed = self.create_song_embed(next_song, "Now Playing")
-                await ctx.send(embed=embed)
-            else:
-                voice_client.stop()
-                await ctx.send("No more songs in the queue.")
+            # Add current_song to previous_songs before skipping
+            if hasattr(voice_client, 'current_song') and voice_client.current_song:
+                if ctx.guild.id not in self.previous_songs:
+                    self.previous_songs[ctx.guild.id] = []
+                self.previous_songs[ctx.guild.id].append(voice_client.current_song)
+                if len(self.previous_songs[ctx.guild.id]) > 10:
+                    self.previous_songs[ctx.guild.id].pop(0)
+            # Clear current_song so play_next will set it properly
+            if hasattr(voice_client, 'current_song'):
+                voice_client.current_song = None
+            voice_client.stop()  # This will trigger play_next
+            await ctx.send("⏭️ Skipped to the next song.")
         else:
             await ctx.send("No song is currently playing.")
-
 
     @commands.hybrid_command(name = 'chup')
     async def stop(self, ctx):
@@ -181,29 +195,18 @@ class Music(commands.Cog):
             await ctx.send("No previous songs in history!")
             return
 
-        # Get the current song before stopping
         voice_client = self.voice_clients[ctx.guild.id]
-        current_song = None
-        if hasattr(voice_client, 'current_song'):
-            current_song = voice_client.current_song
-
-        # Get the previous song
         previous_song = self.previous_songs[ctx.guild.id].pop()
 
-        # Add current song to the front of the queue
-        if current_song:
-            self.queues[ctx.guild.id].insert(0, current_song)
-
-        # Add the previous song to the front of the queue
+        # Insert previous song at the front of the queue
         self.queues[ctx.guild.id].insert(0, previous_song)
 
-        # Stop current playback (this will trigger play_next)
-        voice_client.stop()
+        # Clear current_song so play_next will set it properly
+        if hasattr(voice_client, 'current_song'):
+            voice_client.current_song = None
 
-        # Create and send embed for the previous song
-        embed = self.create_song_embed(previous_song, "Now Playing")
-        await ctx.send(embed=embed)
-
+        voice_client.stop()  # This will trigger play_next
+        await ctx.send("⏮️ Playing the previous song.")
 
 async def setup(bot):
     """Sets up the Music cog."""
