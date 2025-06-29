@@ -11,3 +11,4 @@ python_docx==1.1.2
 Requests==2.32.4
 yt_dlp==2025.6.25
 pynacl
+python-dotenv
