@@ -345,4 +345,4 @@ BOT_TOKEN = os.getenv("BOT_TOKEN")  # This will read from environment variable
 if BOT_TOKEN is None:
     raise ValueError("Bot token not found in environment variables. Please check your .env file.")
 
-BOT_TOKEN = '' #replace lines 10 to 12 with this if you don't want to set environment variables.
+#BOT_TOKEN = '' #replace lines 10 to 12 with this if you don't want to set environment variables.
