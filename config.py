@@ -347,4 +347,4 @@ COUNTRY_CODES = {
 
 #BOT_TOKEN = '' #replace lines 10 to 12 with this if you don't want to set environment variables.
 
-BOT_TOKEN = os.environ.get("BOT_TOKEN")
+BOT_TOKEN = os.environ.get(BOT_TOKEN)
