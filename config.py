@@ -347,7 +347,7 @@ COUNTRY_CODES = {
 # if BOT_TOKEN is None:
 #     raise ValueError("Bot token not found in environment variables. Please check your .env file.")
 
-BOT_TOKEN = '' #replace lines 10 to 12 with this if you don't want to set environment variables.
+#BOT_TOKEN = '' #replace lines 10 to 12 with this if you don't want to set environment variables.
 
 BOT_TOKEN = os.environ.get("BOT_TOKEN")
 if not BOT_TOKEN:
