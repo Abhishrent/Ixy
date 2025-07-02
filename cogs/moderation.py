@@ -136,7 +136,7 @@ class ModerationCog(commands.Cog):
         for reaction in reactions:
             await embed_content.add_reaction(reaction)
 
-    # Timeout command
+# Timeout command
     @app_commands.command(name="timeout", description="Timeout a member for a specified duration (in minutes).")
     @app_commands.describe(member="The member to timeout", duration="Duration in minutes", reason="Reason for timeout")
     @app_commands.default_permissions(manage_messages=True)
@@ -198,7 +198,7 @@ class ModerationCog(commands.Cog):
         except Exception as e:
             await interaction.response.send_message(f"Failed to kick {member.mention}: {e}", ephemeral=True)
 
-    # Ban command
+# Ban command
     @app_commands.command(name="ban", description="Ban a member from the server.")
     @app_commands.describe(member="The member to ban", reason="Reason for ban")
     @app_commands.default_permissions(ban_members=True)

@@ -43,6 +43,7 @@ class WelcomeDetailsSelect(discord.ui.Select):
             )
             embed.set_thumbnail(url=EMBED_THUMBNAIL)
             embed.set_footer(text="MBM IdeaX 2025 • Organized by MBMC IT Club", icon_url=EMBED_FOOTER)
+            embed.set_image(url=WELCOME_BANNER)
             view = WelcomeDetailsView()
         elif value == "Themes":
             embed = discord.Embed(
@@ -92,6 +93,7 @@ class WelcomeDetailsSelect(discord.ui.Select):
             )
             embed.set_thumbnail(url=EMBED_THUMBNAIL)
             embed.set_footer(text="MBM IdeaX 2025 • Themes", icon_url=EMBED_FOOTER)
+            embed.set_image(url=WELCOME_BANNER)
             view = WelcomeDetailsView()
         elif value == "Tracks":
             embed = discord.Embed(
@@ -131,6 +133,7 @@ class WelcomeDetailsSelect(discord.ui.Select):
             )
             embed.set_thumbnail(url=EMBED_THUMBNAIL)
             embed.set_footer(text="MBM IdeaX 2025 • Tracks", icon_url=EMBED_FOOTER)
+            embed.set_image(url=WELCOME_BANNER)
             view = WelcomeDetailsView()
         elif value == "Timeline":
             embed = discord.Embed(
@@ -157,6 +160,7 @@ class WelcomeDetailsSelect(discord.ui.Select):
             )
             embed.set_thumbnail(url=EMBED_THUMBNAIL)
             embed.set_footer(text="MBM IdeaX 2025 • Timeline", icon_url=EMBED_FOOTER)
+            embed.set_image(url=WELCOME_BANNER)
             view = WelcomeDetailsView()
         elif value == "Socials":
             embed = discord.Embed(
@@ -166,6 +170,7 @@ class WelcomeDetailsSelect(discord.ui.Select):
             )
             embed.set_thumbnail(url=EMBED_THUMBNAIL)
             embed.set_footer(text="MBM IdeaX 2025 • Socials", icon_url=EMBED_FOOTER)
+            embed.set_image(url=WELCOME_BANNER)
             view = WelcomeDetailsView()
             view.add_item(discord.ui.Button(label="LinkedIn", style=discord.ButtonStyle.link, url="https://www.linkedin.com/company/mbmc-ideax/"))
             view.add_item(discord.ui.Button(label="Instagram", style=discord.ButtonStyle.link, url="https://www.instagram.com/mbmc_ideax/"))
@@ -178,6 +183,7 @@ class WelcomeDetailsSelect(discord.ui.Select):
                 description="Please select a valid option.",
                 color=discord.Color.red()
             )
+            embed.set_image(url=WELCOME_BANNER)
             view = WelcomeDetailsView()
         await interaction.response.edit_message(embed=embed, view=view)
 
@@ -203,6 +209,7 @@ class Welcome(commands.Cog):
             )
             embed.set_thumbnail(url=EMBED_THUMBNAIL)
             embed.set_footer(text="MBM IdeaX 2025 • Organized by MBMC IT Club", icon_url=EMBED_FOOTER)
+            embed.set_image(url=WELCOME_BANNER)
             view = WelcomeDetailsView()
             await member.send(embed=embed, view=view)
             print(f'Sent DM to {member.display_name}')
@@ -213,12 +220,12 @@ class Welcome(commands.Cog):
         try:
             channel = member.guild.get_channel(WELCOME_CHANNEL_ID)
             embed = discord.Embed(
-                title=f'Welcome to the server, {member.display_name}!',
+                title=f'Hey {member.display_name}!',
                 color=discord.Color.blue()
             )
 
-            embed.set_image(url=f'{WELCOME_BANNER}')
-            embed.set_thumbnail(url=member.avatar.url if member.avatar else member.default_avatar.url)
+            embed.set_image(url=f'{WELCOME_GRAPHICS}')
+            #embed.set_thumbnail(url=member.avatar.url if member.avatar else member.default_avatar.url)
             await channel.send(embed=embed)
             print(f'Sent welcome message in {channel.name}')
         except Exception as e:
