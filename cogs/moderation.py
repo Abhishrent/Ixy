@@ -57,20 +57,43 @@ class ModerationCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-#announce command
+    async def check_permissions(self, interaction: discord.Interaction, permission: str):
+        """Check if user has the required permission"""
+        user = interaction.user
+        
+        # Check if user has the specific permission
+        if not getattr(user.guild_permissions, permission, False):
+            embed = discord.Embed(
+                title="❌ Insufficient Permissions",
+                description=f"That's for the moderator only twin.",
+                color=discord.Color.red()
+            )
+            await interaction.response.send_message(embed=embed, ephemeral=True)
+            return False
+        return True
+
+    #announce command
     @app_commands.command(name="announce", description="Send an announcement with title, description, and optional mentions.")
     @app_commands.default_permissions(manage_messages=True)
     async def send_embed(self, interaction: discord.Interaction):
+        # Check permissions at runtime
+        if not await self.check_permissions(interaction, "manage_messages"):
+            return
+        
         # Show the modal to the user
         await interaction.response.send_modal(AnnouncementModal(interaction))
 
-#udau command
+    #udau command
     @app_commands.command(name="udau", description="Delete a specified number of messages in the channel.")
     @app_commands.describe(
         number="The number of messages to delete"
     )
     @app_commands.default_permissions(manage_messages=True)
     async def delete_messages(self, interaction: discord.Interaction, number: int):
+        # Check permissions at runtime
+        if not await self.check_permissions(interaction, "manage_messages"):
+            return
+        
         # Acknowledge the interaction immediately to prevent timeout
         await interaction.response.send_message(f"Attempting to delete {number} message(s)...", ephemeral=True)
 
@@ -86,8 +109,7 @@ class ModerationCog(commands.Cog):
         except discord.HTTPException as e:
             await interaction.followup.send(f"Failed to delete messages: {e}", ephemeral=True)
 
-
-#bhana command
+    #bhana command
     @commands.command('bhana')
     @commands.has_permissions(manage_messages=True)
     async def bhana(self, ctx, *, args):
@@ -136,11 +158,15 @@ class ModerationCog(commands.Cog):
         for reaction in reactions:
             await embed_content.add_reaction(reaction)
 
-# Timeout command
+    # Timeout command
     @app_commands.command(name="timeout", description="Timeout a member for a specified duration (in minutes).")
     @app_commands.describe(member="The member to timeout", duration="Duration in minutes", reason="Reason for timeout")
-    @app_commands.default_permissions(manage_messages=True)
+    @app_commands.default_permissions(moderate_members=True)
     async def timeout_member(self, interaction: discord.Interaction, member: discord.Member, duration: int, reason: str = "No reason provided"):
+        # Check permissions at runtime
+        if not await self.check_permissions(interaction, "moderate_members"):
+            return
+        
         try:
             # Notify the member via DM
             try:
@@ -172,6 +198,10 @@ class ModerationCog(commands.Cog):
     @app_commands.describe(member="The member to kick", reason="Reason for kick")
     @app_commands.default_permissions(kick_members=True)
     async def kick_member(self, interaction: discord.Interaction, member: discord.Member, reason: str = "No reason provided"):
+        # Check permissions at runtime
+        if not await self.check_permissions(interaction, "kick_members"):
+            return
+        
         try:
             # Notify the member via DM
             try:
@@ -198,11 +228,15 @@ class ModerationCog(commands.Cog):
         except Exception as e:
             await interaction.response.send_message(f"Failed to kick {member.mention}: {e}", ephemeral=True)
 
-# Ban command
+    # Ban command
     @app_commands.command(name="ban", description="Ban a member from the server.")
     @app_commands.describe(member="The member to ban", reason="Reason for ban")
     @app_commands.default_permissions(ban_members=True)
     async def ban_member(self, interaction: discord.Interaction, member: discord.Member, reason: str = "No reason provided"):
+        # Check permissions at runtime
+        if not await self.check_permissions(interaction, "ban_members"):
+            return
+        
         try:
             # Notify the member via DM
             try:
@@ -228,8 +262,6 @@ class ModerationCog(commands.Cog):
             await interaction.response.send_message(embed=ban_embed)
         except Exception as e:
             await interaction.response.send_message(f"Failed to ban {member.mention}: {e}", ephemeral=True)
-        
-
 
 async def setup(bot):
     await bot.add_cog(ModerationCog(bot))

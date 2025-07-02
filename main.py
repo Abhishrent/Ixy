@@ -4,13 +4,14 @@ from discord import app_commands
 import os
 from discord.ui import Button, View
 from config import *
-import aiohttp  # Add this import
+import webserver
+#import aiohttp  # Add this import
 
 # Create the bot instance
 intents = discord.Intents.default()
 intents.message_content = True  # Needed for receiving messages
 intents.members = True
-bot = commands.Bot(command_prefix=PREFIX, intents=intents)
+bot = commands.Bot(command_prefix=PREFIX, intents=intents, help_command=None)
 
 # Sync slash commands on bot startup
 @bot.event
@@ -158,6 +159,6 @@ async def ping(ctx):
 
 
 
-
+webserver.keep_alive()  # Start the web server to keep the bot alive
 # Run the bot with your token
 bot.run(BOT_TOKEN)
