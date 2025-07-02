@@ -11,7 +11,7 @@ class Support(commands.Cog):
     async def open_ticket(self, ctx):
         # Define guild roles
         guild = ctx.guild
-        mod_role = discord.utils.get(guild.roles, name="mods")
+        mod_role = discord.utils.get(guild.roles, name="Organizing Committee")
         everyone_role = guild.default_role
 
         # Checks if the user already has an open ticket channel

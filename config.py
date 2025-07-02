@@ -3,13 +3,16 @@ import os
 BOT_NAME = 'Ixy'
 PREFIX = ('ixy ', 'Ixy ')
 SPECIAL_DATES = {
-    (11, 1): "Main Event"
+    (10, 31): "Main event Day 1", 
+    (11, 1): "Main event Day 2", 
+    (11, 2): "Main event Day 3"
 }
 
 #Channel ID Settings
-WELCOME_CHANNEL_ID = 1387365800964395078
+WELCOME_CHANNEL_ID = 1130051976667865090
 ROLES_CHANNEL_ID = 1301505201223503892
 GENERAL_CHANNEL_ID = 1295939872581750839
+HELP_CHANNEL_ID = 1388896467594510437  # Replace with your channel ID
 
 #Google Drive settings for the photo command
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -344,8 +347,8 @@ COUNTRY_CODES = {
 # if BOT_TOKEN is None:
 #     raise ValueError("Bot token not found in environment variables. Please check your .env file.")
 
-BOT_TOKEN = 'REDACTED_DISCORD_BOT_TOKEN' #replace lines 10 to 12 with this if you don't want to set environment variables.
+BOT_TOKEN = '' #replace lines 10 to 12 with this if you don't want to set environment variables.
 
-# BOT_TOKEN = os.environ.get("BOT_TOKEN")
-# if not BOT_TOKEN:
-#     raise ValueError("BOT_TOKEN environment variable not found")
+BOT_TOKEN = os.environ.get("BOT_TOKEN")
+if not BOT_TOKEN:
+    raise ValueError("BOT_TOKEN environment variable not found")
