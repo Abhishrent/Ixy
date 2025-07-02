@@ -17,19 +17,19 @@ bot = commands.Bot(command_prefix=PREFIX, intents=intents)
 async def on_ready():
     print(f'{bot.user} has connected to Discord!')
 
-    # Set animated avatar from URL
-    avatar_url = "https://cdn.pfps.gg/pfps/9367-i-am-confused.gif"  # Replace with your GIF URL
-    try:
-        async with aiohttp.ClientSession() as session:
-            async with session.get(avatar_url) as resp:
-                if resp.status == 200:
-                    avatar_bytes = await resp.read()
-                    await bot.user.edit(avatar=avatar_bytes)
-                    print("Successfully changed your server avatar.")
-                else:
-                    print(f"Failed to fetch avatar from URL. Status: {resp.status}")
-    except Exception as error:
-        print(f"Oh, something went wrong: {error}")
+    # # Set animated avatar from URL
+    # avatar_url = "https://cdn.pfps.gg/pfps/9367-i-am-confused.gif"  # Replace with your GIF URL
+    # try:
+    #     async with aiohttp.ClientSession() as session:
+    #         async with session.get(avatar_url) as resp:
+    #             if resp.status == 200:
+    #                 avatar_bytes = await resp.read()
+    #                 await bot.user.edit(avatar=avatar_bytes)
+    #                 print("Successfully changed your server avatar.")
+    #             else:
+    #                 print(f"Failed to fetch avatar from URL. Status: {resp.status}")
+    # except Exception as error:
+    #     print(f"Oh, something went wrong: {error}")
 
     # Dynamically load cogs from the cogs directory
     for filename in os.listdir('./cogs'):

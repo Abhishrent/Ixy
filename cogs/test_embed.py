@@ -49,7 +49,7 @@ class TestEmbed(commands.Cog):
             color=discord.Color.blue()
         )
         embed.set_thumbnail(url=EMBED_THUMBNAIL)
-        embed.set_image(url="https://cdn.discordapp.com/attachments/1386734833761390642/1388505211621867551/Untitled_design2.gif?ex=686139bf&is=685fe83f&hm=67aecc5ca2607193c75bf891cb47a7f40e3947eb1216181791aa7df8ea291117&")
+        embed.set_image(url="https://cdn.discordapp.com/attachments/1389639157743354028/1389643291519352943/1FDFD219-97F4-406A-ADFE-35F3D3E637EE_3.gif?ex=68655dab&is=68640c2b&hm=6a45634601be318f32b87e50c3ca8c868149ebc40da0225376f00ee270c59ef5&")
         embed.add_field(name="Field 1", value="Some value here", inline=True)
         embed.add_field(name="Field 2", value="Another value here", inline=True)
         embed.set_footer(text="Embed Footer Example", icon_url=EMBED_FOOTER)
