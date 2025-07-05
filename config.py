@@ -13,6 +13,8 @@ WELCOME_CHANNEL_ID = 1130051976667865090
 ROLES_CHANNEL_ID = 1301505201223503892
 GENERAL_CHANNEL_ID = 1295939872581750839
 HELP_CHANNEL_ID = 1388896467594510437  # Replace with your channel ID
+MODLOG_CHANNEL_ID = 1130051976667865097  # Replace with your channel ID
+INSTA_CHANNEL_ID = 1390707462595805244  # Replace with your channel ID
 
 #Google Drive settings for the photo command
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -347,8 +349,8 @@ COUNTRY_CODES = {
 # if BOT_TOKEN is None:
 #     raise ValueError("Bot token not found in environment variables. Please check your .env file.")
 
-#BOT_TOKEN = '' #replace lines 10 to 12 with this if you don't want to set environment variables.
+BOT_TOKEN = 'REDACTED_DISCORD_BOT_TOKEN' #replace lines 10 to 12 with this if you don't want to set environment variables.
 
-BOT_TOKEN = os.environ.get("BOT_TOKEN")
-if not BOT_TOKEN:
-    raise ValueError("BOT_TOKEN environment variable not found")
+# BOT_TOKEN = os.environ.get("BOT_TOKEN")
+# if not BOT_TOKEN:
+#     raise ValueError("BOT_TOKEN environment variable not found")

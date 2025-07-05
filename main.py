@@ -4,7 +4,6 @@ from discord import app_commands
 import os
 from discord.ui import Button, View
 from config import *
-import webserver
 #import aiohttp  # Add this import
 
 # Create the bot instance
@@ -158,7 +157,5 @@ async def ping(ctx):
     await ctx.send(embed=embed)
 
 
-
-webserver.keep_alive()  # Start the web server to keep the bot alive
 # Run the bot with your token
 bot.run(BOT_TOKEN)
