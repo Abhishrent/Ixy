@@ -77,7 +77,7 @@ class ProgressLogger(commands.Cog):
         tz = pytz.timezone("Asia/Kathmandu")
         now = datetime.now(tz)
         
-        if now.hour == 18 and now.minute == 0:
+        if now.hour == 20 and now.minute == 0:
             channel = self.bot.get_channel(MODLOG_CHANNEL_ID)
             if channel:
                 sheet_link = f"https://docs.google.com/spreadsheets/d/{GOOGLE_SHEET_ID}"

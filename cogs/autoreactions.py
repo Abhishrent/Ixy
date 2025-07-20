@@ -3,14 +3,32 @@ from discord.ext import commands
 
 # Define a dictionary mapping trigger words to specific reactions (emojis)
 TRIGGER_REACTIONS = {
-    'hello': '👋', 
+    'hello': '👋',
     'bye': '👋',
-    'thanks': '🙏', 
+    'thanks': '🙏',
     'goodnight': '😴',
     'good morning': '🌄',
     'firoj': '💣',
-    'sachi': '🎀'
+    'sachi': '🎀',
+    'miraj': '🏳‍🌈,
+    'famous': '🥚',
+    'nili': '💃',
+    'mainali': '🧨',
+    'queen':'💅',
+    'loozah':'🤕',
+    'reeju':'💸',
+    'jeeban':'💰',
+    'aashika':'☕',
+    'banshaj':'🧯',
+    'sudikshya':'💉',
+    'bardan': '🛕',
+    'swastik':'🏙',
+    'krijal':'📷',
+    'vishal':'📹',
+    'roshan':'🖨',
+    'bibek':'🛏'
 }
+
 
 class AutoReactionCog(commands.Cog):
     def __init__(self, bot):
