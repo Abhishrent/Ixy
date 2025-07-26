@@ -109,18 +109,17 @@ class ModerationCog(commands.Cog):
         except discord.HTTPException as e:
             await interaction.followup.send(f"Failed to delete messages: {e}", ephemeral=True)
 
-    #bhana command
-    @commands.command('bhana')
+# Bhana command
+    @commands.command('say')
     @commands.has_permissions(manage_messages=True)
-    async def bhana(self, ctx, *, args):
+    async def bhana(self, ctx, channel: discord.TextChannel, *, args):
         # Splits the message into title, content, mentions, and image_url
-        # Format expected: title | content | @user1 @user2 @user3 | image_url
+        # Format expected: #channel title | content | @user1 @user2 @user3 | image_url
         parts = args.split('|', 3)  # Splits into maximum of 4 parts
-        
         if len(parts) < 2:
-            await ctx.send(f"Please use the format: `{PREFIX[0]}bhana title | content | @mentions | image_url`")
+            await ctx.send(f"Please use the format: `{PREFIX[0]}bhana #channel title | content | @mentions | image_url`")
             return
-            
+        
         title = parts[0].strip()
         content = parts[1].strip()
         
@@ -131,30 +130,33 @@ class ModerationCog(commands.Cog):
             color=discord.Color.blue()
         )
         embed.set_thumbnail(url=EMBED_THUMBNAIL)
+        
         # If image_url is provided (4th part), set it in the embed
         if len(parts) == 4:
             image_url = parts[3].strip()
             if image_url:
                 embed.set_image(url=image_url)
         
-        attachments = ctx.message.attachments
-        embed_content = await ctx.send(embed=embed)
+        # Send embed to the specified channel
+        embed_content = await channel.send(embed=embed)
         
+        # Handle attachments
+        attachments = ctx.message.attachments
         if attachments:
             for attachment in attachments:
-                await ctx.send(file=await attachment.to_file())
+                await channel.send(file=await attachment.to_file())
         
-        # If there are mentions (part 3 exists), sends them in a separate message
+        # If there are mentions (part 3 exists), sends them in a separate message to the target channel
         if len(parts) >= 3:
             mentions = parts[2].strip()
             if mentions:
-                await ctx.send(mentions)
+                await channel.send(mentions)
         
         # Deletes the original command message
         await ctx.message.delete()
         
-        # Add reactions
-        reactions = ['✅', '❌', '😊', '☹️']
+        # Add reactions to the embed in the target channel
+        reactions = ['✅', '❌']
         for reaction in reactions:
             await embed_content.add_reaction(reaction)
 
