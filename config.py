@@ -3,9 +3,23 @@ import os
 BOT_NAME = 'Ixy'
 PREFIX = ('ixy ', 'Ixy ')
 SPECIAL_DATES = {
-    (10, 31): "Main event Day 1", 
-    (11, 1): "Main event Day 2", 
-    (11, 2): "Main event Day 3"
+    (7, 21): "ML Workshop Starts",
+    (8, 1): "ML Workshop Finishes",
+    (8, 10): "Internal Ideathon Registration Starts",
+    (8, 26): "Internal Ideathon Registration Closes",
+    (8, 28): "Internal Ideathon Day 1",
+    (8, 29): "Internal Ideathon Day 2",
+    (8, 30): "Internal Ideathon Day 3",
+    (9, 6): "IdeaX Registration Closes",
+    (9, 11): "IdeaX Online Round Day 1",
+    (9, 12): "IdeaX Online Round Day 2",
+    (9, 13): "IdeaX Online Round Day 3",
+    (9, 14): "IdeaX Online Round Day 4",
+    (9, 15): "IdeaX Online Round Day 5",
+    (9, 16): "IdeaX Online Round Day 6",
+    (10, 31): "IdeaX Final Hackathon Day 1",
+    (11, 1): "IdeaX Final Hackathon Day 2",
+    (11, 2): "IdeaX Final Hackathon Day 3"
 }
 
 #Channel ID Settings
