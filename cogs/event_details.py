@@ -7,7 +7,6 @@ class EventDetailsSelect(discord.ui.Select):
         options = [
             discord.SelectOption(label="Overview", description="General event overview", emoji="📋"),
             discord.SelectOption(label="Themes", description="See all event themes", emoji="🎯"),
-            discord.SelectOption(label="Tracks", description="Explore project tracks", emoji="🛤️"),
             discord.SelectOption(label="Timeline", description="Event schedule & timing", emoji="🗓️"),
         ]
         super().__init__(
@@ -20,6 +19,7 @@ class EventDetailsSelect(discord.ui.Select):
 
     async def callback(self, interaction: discord.Interaction):
         value = self.values[0]
+
         if value == "Overview":
             embed = discord.Embed(
                 title="MBM IdeaX 2025: Overview",
@@ -43,45 +43,41 @@ class EventDetailsSelect(discord.ui.Select):
             )
             embed.set_thumbnail(url=EMBED_THUMBNAIL)
             embed.set_footer(text="MBM IdeaX 2025 • Organized by MBMC IT Club", icon_url=EMBED_FOOTER)
+
         elif value == "Themes":
             embed = discord.Embed(
                 title="Event Themes",
-                description="Seven themes inspire participants to tackle real-world challenges:",
+                description="Explore the official themes for MBM IdeaX 2025:",
                 color=discord.Color.green()
             )
             embed.add_field(
-                name="1. Healthcare & Accessibility",
-                value="Telemedicine, assistive tech, health monitoring.",
+                name="1. Travel and Tourism",
+                value="Innovations for travel planning, sustainable tourism, and virtual experiences.",
                 inline=False
             )
             embed.add_field(
-                name="2. Environment & Climate Action",
-                value="Carbon tracking, renewable energy, waste management.",
+                name="2. Healthcare and Accessibility",
+                value="Solutions for telemedicine, assistive technologies, and health monitoring.",
                 inline=False
             )
             embed.add_field(
-                name="3. Cybersecurity",
-                value="Authentication, encryption, threat detection.",
+                name="3. Fin-tech",
+                value="Projects in mobile payments, financial literacy, and blockchain finance.",
                 inline=False
             )
             embed.add_field(
-                name="4. Fintech",
-                value="Mobile payments, financial literacy, blockchain finance.",
+                name="4. Agro-tech",
+                value="Precision farming, smart irrigation, and agricultural drones.",
                 inline=False
             )
             embed.add_field(
-                name="5. Decentralization",
-                value="dApps, blockchain identity, peer-to-peer networks.",
+                name="5. Cultural Preservation",
+                value="Tech for preserving, promoting, and sharing cultural heritage.",
                 inline=False
             )
             embed.add_field(
-                name="6. Travel & Tourism",
-                value="Virtual tours, sustainable tourism, travel planning.",
-                inline=False
-            )
-            embed.add_field(
-                name="7. Agro-tech",
-                value="Precision farming, smart irrigation, crop drones.",
+                name="6. Open Category",
+                value="Hybrid, experimental, or cross-disciplinary projects.",
                 inline=False
             )
             embed.add_field(
@@ -91,50 +87,20 @@ class EventDetailsSelect(discord.ui.Select):
             )
             embed.set_thumbnail(url=EMBED_THUMBNAIL)
             embed.set_footer(text="MBM IdeaX 2025 • Themes", icon_url=EMBED_FOOTER)
-        elif value == "Tracks":
-            embed = discord.Embed(
-                title="Project Tracks",
-                description="Six tracks for diverse, tech-driven projects:",
-                color=discord.Color.purple()
-            )
-            embed.add_field(
-                name="1. AR/VR",
-                value="Immersive apps: education, tourism, healthcare.",
-                inline=False
-            )
-            embed.add_field(
-                name="2. Game Development",
-                value="Games for social awareness, education, environment.",
-                inline=False
-            )
-            embed.add_field(
-                name="3. IoT",
-                value="Smart homes, agri sensors, connected healthcare.",
-                inline=False
-            )
-            embed.add_field(
-                name="4. AI & Machine Learning",
-                value="Predictive analytics, AI finance, ML for environment.",
-                inline=False
-            )
-            embed.add_field(
-                name="5. Blockchain & Decentralization",
-                value="Voting, supply chain, cryptocurrency platforms.",
-                inline=False
-            )
-            embed.add_field(
-                name="6. Open Technology",
-                value="Hybrid, experimental, or cross-disciplinary projects.",
-                inline=False
-            )
-            embed.set_thumbnail(url=EMBED_THUMBNAIL)
-            embed.set_footer(text="MBM IdeaX 2025 • Tracks", icon_url=EMBED_FOOTER)
+
         elif value == "Timeline":
             embed = discord.Embed(
                 title="Event Timeline",
                 description=(
-                    "MBM IdeaX 2025 is scheduled for Kartik (October/November 2025), "
-                    "immediately after Tihar and Chhath holidays."
+                    "MBM IdeaX 2025 features a multi-stage program with workshops, registrations, and hackathon rounds.\n\n"
+                    "📍 **ML Workshop:** July 21 to August 1\n"
+                    "📍 **IdeaX Registration Opens:** July 21\n"
+                    "📍 **Internal Ideathon Registration:** August 10 to August 26\n"
+                    "📍 **Internal Ideathon:** August 28, 29, 30\n"
+                    "📍 **IdeaX Registration Closes:** September 6\n"
+                    "📍 **IdeaX Online Round:** September 11 to 16\n"
+                    "📍 **IdeaX Final Hackathon:** October 31, November 1, November 2\n\n"
+                    "The event is scheduled for October/November 2025, immediately after Tihar and Chhath holidays."
                 ),
                 color=discord.Color.orange()
             )
@@ -149,17 +115,19 @@ class EventDetailsSelect(discord.ui.Select):
             )
             embed.add_field(
                 name="Final Dates",
-                value="To be announced, coordinated with academic calendars.",
+                value="All dates are coordinated with academic calendars. Stay tuned for updates!",
                 inline=False
             )
             embed.set_thumbnail(url=EMBED_THUMBNAIL)
             embed.set_footer(text="MBM IdeaX 2025 • Timeline", icon_url=EMBED_FOOTER)
+
         else:
             embed = discord.Embed(
                 title="Unknown Selection",
                 description="Please select a valid option.",
                 color=discord.Color.red()
             )
+
         await interaction.response.edit_message(embed=embed, view=self.view)
 
 class EventDetailsView(discord.ui.View):
@@ -176,7 +144,7 @@ class EventDetails(commands.Cog):
         embed = discord.Embed(
             title="MBM IdeaX 2025: Event Details",
             description=(
-                "Welcome to MBM IdeaX 2025! Use the dropdown below to explore event overview, themes, tracks, and timeline."
+                "Welcome to MBM IdeaX 2025! Use the dropdown below to explore event overview, themes, and timeline."
             ),
             color=discord.Color.teal()
         )

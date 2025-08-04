@@ -1,9 +1,11 @@
 {
-  "current_word": "PROPS",
-  "current_date": "2025-07-26",
+  "current_word": "ASYNC",
+  "current_date": "2025-08-04",
   "winner": null,
   "game_active": true,
-  "guesses_today": [],
-  "previous_word": "HTTPS",
+  "guesses_today": [
+    "AUDIO"
+  ],
+  "previous_word": "ARRAY",
   "previous_day_winner": false
 }

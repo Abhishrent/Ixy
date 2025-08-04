@@ -16,7 +16,7 @@ class DailyWordleGame(commands.Cog):
         self.bot = bot
         self.hackathon_words = [
             "CODES", "BYTES", "DEBUG", "LOGIC", "STACK", "QUERY", "BUILD", 
-            "MERGE", "PATCH", "REACT", "LINUX", "MYSQL", "FLASK", "DJANGO",
+            "MERGE", "PATCH", "REACT", "LINUX", "MYSQL", "FLASK", "CODER",
             "NODES", "LOOPS", "ARRAY", "CLASS", "HOOKS", "PROPS", "STATE",
             "ASYNC", "AWAIT", "CACHE", "FRAME", "INDEX", "REGEX", "SWIFT",
             "UNITY", "PIXEL", "GRAPH", "PARSE", "TOKEN", "USERS", "ADMIN",
