@@ -154,19 +154,16 @@ class Calendar(commands.Cog):
         # Iterate through SPECIAL_DATES to collect upcoming events
         for (month, day), description in SPECIAL_DATES.items():
             event_date = datetime(now.year, month, day).date()
-
-            # Check if the event date is in the future or today
             days_remaining = (event_date - now).days
             if days_remaining >= 0:
                 countdown_text = (
                     f"{days_remaining} day(s) remaining" if days_remaining > 0 else "Today!"
                 )
-                upcoming_events.append((event_date, description, countdown_text))
+                upcoming_events.append((description, event_date.strftime('%d %b'), countdown_text))
 
         # Sort events by date
-        upcoming_events.sort()
+        upcoming_events.sort(key=lambda x: datetime.strptime(x[1], '%d %b'))
 
-        # Prepare the embed
         embed = discord.Embed(
             title="Upcoming Events",
             color=discord.Color.blue()
@@ -176,13 +173,34 @@ class Calendar(commands.Cog):
         if not upcoming_events:
             embed.description = "No upcoming events found."
         else:
-            for event_date, description, countdown in upcoming_events:
-                embed.add_field(
-                    name=f"{event_date.strftime('%d %B')}",
-                    value=f"{description} - {countdown}",
-                    inline=False
-                )
-
+            # Prepare three lists for aligned fields
+            event_names = []
+            event_dates = []
+            event_statuses = []
+            for desc, date, status in upcoming_events:
+                event_names.append(desc)
+                event_dates.append(date)
+                # Remove " day(s) remaining" from status, keep only the number or "Today!"
+                if "day(s) remaining" in status:
+                    event_statuses.append(f"{status.split()[0]} days")
+                else:
+                    event_statuses.append(status)
+            embed.add_field(
+                name="Event",
+                value="\n".join(event_names) if event_names else "—",
+                inline=True
+            )
+            embed.add_field(
+                name="Date",
+                value="\n".join(event_dates) if event_dates else "—",
+                inline=True
+            )
+            embed.add_field(
+                name="Days Remaining",
+                value="\n".join(event_statuses) if event_statuses else "—",
+                inline=True
+            )
+        embed.set_footer(text='⚠️: Does not display properly on mobile devices')
         await ctx.send(embed=embed)
 
 
