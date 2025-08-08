@@ -10,7 +10,8 @@ import os
 DRIVE_FOLDER_ID = "1hUa7ScMuhZ1nwZmHwtx8RjfruAFLc2fQ"
 CREDENTIALS_FILE = "google_drive.json"
 NOTIFY_CHANNEL_ID = 1388895797722091530  # Replace with your channel ID
-NOTIFIED_FILES_PATH = "notified_files.json"
+BOT_MEMORY_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../bot_memory")
+NOTIFIED_FILES_PATH = os.path.join(BOT_MEMORY_DIR, "notified_files.json")
 
 def get_drive_service():
     creds = Credentials.from_service_account_file(
@@ -30,6 +31,7 @@ def load_notified_file_ids():
 
 def save_notified_file_ids(file_ids):
     try:
+        os.makedirs(BOT_MEMORY_DIR, exist_ok=True)
         with open(NOTIFIED_FILES_PATH, "w") as f:
             json.dump(list(file_ids), f)
     except Exception as e:

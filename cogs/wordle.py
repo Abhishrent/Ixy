@@ -2,6 +2,7 @@ import discord
 from discord.ext import commands, tasks
 import random
 import time
+import os
 from config import EMBED_THUMBNAIL
 
 # Set time and frequency constants
@@ -12,7 +13,8 @@ class WordleGame(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.games = {}
-        self.word_list = self.load_words('game_files/words.txt')
+        words_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../game_files/words.txt")
+        self.word_list = self.load_words(words_file)
         self.game_timeout = TIMEOUT_DURATION
         self.check_game_timeouts.start()
 

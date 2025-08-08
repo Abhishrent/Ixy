@@ -9,7 +9,8 @@ from config import EMBED_THUMBNAIL
 # Constants
 DAILY_WORDLE_CHANNEL_ID = 1397577365957382316  # Replace with your desired channel ID
 WINNER_ANNOUNCEMENT_CHANNEL_ID = 1397578103571615774
-GAME_DATA_FILE = 'game_files/daily_wordle.json'
+
+GAME_DATA_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../game_files/daily_wordle.json")
 
 class DailyWordleGame(commands.Cog):
     def __init__(self, bot):
