@@ -4,10 +4,11 @@ from config import HELP_CHANNEL_ID
 from config import EMBED_THUMBNAIL
 
 class HelpView(discord.ui.View):
-    def __init__(self):
+    def __init__(self, cog):
         super().__init__(timeout=None)  # Persistent view
+        self.cog = cog
     
-    @discord.ui.button(label="Open Support Ticket", style=discord.ButtonStyle.primary, emoji="🎫")
+    @discord.ui.button(label="Open Support Ticket", style=discord.ButtonStyle.primary, emoji="🎫", custom_id="help_ticket_button")
     async def open_ticket(self, interaction: discord.Interaction, button: discord.ui.Button):
         # Get the Support cog and call the open_ticket method directly
         support_cog = interaction.client.get_cog("Support")
@@ -44,6 +45,11 @@ class HelpEmbedCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.last_help_message_id = None
+        self.bot.loop.create_task(self.setup_view())
+    
+    async def setup_view(self):
+        await self.bot.wait_until_ready()
+        self.bot.add_view(HelpView(self))  # Pass self to the view
     
     @commands.Cog.listener()
     async def on_message(self, message):
@@ -76,7 +82,7 @@ class HelpEmbedCog(commands.Cog):
         embed.set_footer(text="The organizing committee will respond as soon as possible.")
         embed.set_thumbnail(url=f"{EMBED_THUMBNAIL}")
         
-        view = HelpView()
+        view = HelpView(self)  # Pass self to the view
         help_msg = await message.channel.send(embed=embed, view=view)
         self.last_help_message_id = help_msg.id
 

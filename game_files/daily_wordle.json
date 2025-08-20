@@ -1,11 +1,27 @@
 {
-  "current_word": "ASYNC",
-  "current_date": "2025-08-04",
-  "winner": null,
-  "game_active": true,
+  "current_word": "NODES",
+  "current_date": "2025-08-20",
+  "winner": {
+    "user_id": 934820587572953118,
+    "username": "grishrana1",
+    "guess": "NODES",
+    "date": "2025-08-20",
+    "streak": 1
+  },
+  "game_active": false,
   "guesses_today": [
-    "AUDIO"
+    "SNACK",
+    "SNEBD",
+    "SENDS",
+    "DENIS",
+    "NEEDS",
+    "NDCES",
+    "NEDES",
+    "NODES"
   ],
-  "previous_word": "ARRAY",
-  "previous_day_winner": false
+  "previous_word": "BABEL",
+  "previous_day_winner": true,
+  "streaks": {
+    "934820587572953118": 1
+  }
 }

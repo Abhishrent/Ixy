@@ -4,6 +4,7 @@ import json
 import os
 from datetime import datetime, timezone, timedelta
 import random
+import string
 from config import EMBED_THUMBNAIL
 
 # Constants
@@ -11,6 +12,7 @@ DAILY_WORDLE_CHANNEL_ID = 1397577365957382316  # Replace with your desired chann
 WINNER_ANNOUNCEMENT_CHANNEL_ID = 1397578103571615774
 
 GAME_DATA_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../game_files/daily_wordle.json")
+VOUCHER_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../bot_memory/voucher_codes.json")
 
 class DailyWordleGame(commands.Cog):
     def __init__(self, bot):
@@ -293,6 +295,30 @@ class DailyWordleGame(commands.Cog):
             except:
                 pass
 
+    def get_voucher_code(self):
+        """
+        Get an unused voucher code from file, mark as sent, or return None if not available.
+        Returns a tuple: (code, description) or None if not available.
+        """
+        try:
+            if os.path.exists(VOUCHER_FILE):
+                with open(VOUCHER_FILE, "r+", encoding="utf-8") as f:
+                    codes = json.load(f)
+                    for code_entry in codes:
+                        if not code_entry.get("sent", False):
+                            code_entry["sent"] = True
+                            code = code_entry["code"]
+                            description = code_entry.get("description", "Gift Card")
+                            # Save updated codes
+                            f.seek(0)
+                            json.dump(codes, f, indent=2)
+                            f.truncate()
+                            return code, description
+        except Exception as e:
+            print(f"Error reading voucher file: {e}")
+        # No voucher available
+        return None
+
     async def handle_winner(self, message, correct_guess):
         """Handle when someone wins the daily challenge and update streaks"""
         try:
@@ -355,6 +381,27 @@ class DailyWordleGame(commands.Cog):
                         await prev_member.send(embed=embed)
                     except Exception as e:
                         print(f"Failed to DM previous streak holder: {e}")
+
+            # Hattrick reward: DM voucher code every time streak_count is a multiple of 3, only if real voucher is available
+            if streak_count % 3 == 0:
+                voucher = self.get_voucher_code()
+                if voucher:
+                    voucher_code, voucher_desc = voucher
+                    try:
+                        embed = discord.Embed(
+                            title="🎉 Hattrick! You've earned a reward!",
+                            description=(
+                                f"Congratulations on your {streak_count}-day streak!\n\n"
+                                f"**You won a** {voucher_desc}\n"
+                                f"**Code:**\n`{voucher_code}`\n\n"
+                                f"Keep playing for more rewards!"
+                            ),
+                            color=discord.Color.green()
+                        )
+                        embed.set_thumbnail(url=EMBED_THUMBNAIL)
+                        await message.author.send(embed=embed)
+                    except Exception as e:
+                        print(f"Failed to DM voucher code: {e}")
 
             # Create winner view
             view = discord.ui.View()
@@ -472,3 +519,54 @@ class DailyWordleGame(commands.Cog):
 
 async def setup(bot):
     await bot.add_cog(DailyWordleGame(bot))
+
+
+# =========================
+# Daily Wordle Feature Documentation
+# =========================
+
+"""
+Daily Hackathon Wordle Bot - Usage & Setup Guide
+
+1. How to Play:
+   - Every day, a new 5-letter hackathon/coding-related word is chosen.
+   - Users guess by typing a 5-letter word in the designated Wordle channel.
+   - The bot provides feedback using colored buttons:
+     - 🟢 Green: Correct letter, correct position
+     - 🔴 Red: Correct letter, wrong position
+     - ⚫ Gray: Letter not in the word
+   - First correct guess wins for the day. Streaks and rewards are tracked.
+
+2. Where to Add Redeem Codes (Vouchers):
+   - Place your voucher codes in the file: `../bot_memory/voucher_codes.json`
+   - Each entry should be a JSON object with at least a "code" field, e.g.:
+     [
+       {"code": "ABC123", "description": "Amazon Gift Card", "sent": false},
+       {"code": "XYZ789", "description": "Flipkart Voucher", "sent": false}
+     ]
+   - The "sent" field is managed by the bot. Only unused codes (sent: false) will be distributed.
+
+3. Channel Setup:
+   - Set `DAILY_WORDLE_CHANNEL_ID` to the channel where users will play.
+   - Set `WINNER_ANNOUNCEMENT_CHANNEL_ID` to the channel for winner announcements.
+
+4. Admin Commands:
+   - `/reset_daily_wordle` (admin only): Force reset the daily wordle with a new word.
+   - `/daily_wordle_status`: Check today's wordle status, winner, and streaks.
+
+5. Streaks & Rewards:
+   - Winning 3 days in a row (or multiples of 3) earns a voucher code (if available).
+   - If a user with a streak is beaten, their streak resets and the new winner starts at 1.
+
+6. Troubleshooting:
+   - Ensure the bot has permission to read, send, and delete messages in the game channel.
+   - If you add new voucher codes, make sure the JSON is valid and "sent" is set to false.
+
+7. Customization:
+   - To change the word list, edit `self.hackathon_words` in the cog's `__init__`.
+   - To change the embed thumbnail, update `EMBED_THUMBNAIL` in your config.
+
+"""
+
+
+
