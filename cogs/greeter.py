@@ -99,7 +99,7 @@ class WelcomeDetailsSelect(discord.ui.Select):
                     "📍 **ML Workshop:** July 21 to August 1\n"
                     "📍 **IdeaX Registration Opens:** July 21\n"
                     "📍 **Internal Ideathon Registration:** August 10 to August 26\n"
-                    "📍 **Internal Ideathon:** August 28, 29, 30\n"
+                    "📍 **Internal Ideathon:** August 29\n"
                     "📍 **IdeaX Registration Closes:** September 6\n"
                     "📍 **IdeaX Online Round:** September 11 to 16\n"
                     "📍 **IdeaX Final Hackathon:** October 31, November 1, November 2\n\n"
@@ -152,7 +152,7 @@ class WelcomeDetailsSelect(discord.ui.Select):
 
 class WelcomeDetailsView(discord.ui.View):
     def __init__(self):
-        super().__init__(timeout=180)
+        super().__init__(timeout=300)
         self.add_item(WelcomeDetailsSelect())
 
 class Welcome(commands.Cog):
@@ -239,6 +239,8 @@ class Welcome(commands.Cog):
                 color=discord.Color.blue()
             )
             embed.set_image(url=f'{WELCOME_GRAPHICS}')
+            # current member count
+            embed.set_footer(text=f"Member-count: {member.guild.member_count}", icon_url=EMBED_FOOTER)
             #embed.set_thumbnail(url=member.avatar.url if member.avatar else member.default_avatar.url)
             await channel.send(embed=embed)
             print(f'Sent welcome message in {channel.name}')

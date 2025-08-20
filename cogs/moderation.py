@@ -137,20 +137,21 @@ class ModerationCog(commands.Cog):
             if image_url:
                 embed.set_image(url=image_url)
         
-        # Send embed to the specified channel
-        embed_content = await channel.send(embed=embed)
+        # If there are mentions (part 3 exists), include them in the content parameter
+        content_param = None
+        if len(parts) >= 3:
+            mentions = parts[2].strip()
+            if mentions:
+                content_param = mentions
+
+        # Send embed to the specified channel with mentions in content if provided
+        embed_content = await channel.send(content=content_param, embed=embed)
         
         # Handle attachments
         attachments = ctx.message.attachments
         if attachments:
             for attachment in attachments:
                 await channel.send(file=await attachment.to_file())
-        
-        # If there are mentions (part 3 exists), sends them in a separate message to the target channel
-        if len(parts) >= 3:
-            mentions = parts[2].strip()
-            if mentions:
-                await channel.send(mentions)
         
         # Deletes the original command message
         await ctx.message.delete()

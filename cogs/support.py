@@ -37,7 +37,9 @@ class Support(commands.Cog):
         )
 
         await ctx.send("Ticket created! Check your ticket channel.")
-        await ticket_channel.send(f"Hello {ctx.author.mention}! This channel is dedicated for your support. Please provide a brief description of your issue, and our support team will respond shortly. \n\n`(Type '{PREFIX[0]}close' or '/close' in case you change your mind or would like to close this request.)`")
+        await ticket_channel.send(
+            f"Hello {ctx.author.mention}! This channel is dedicated for your support. Please provide a brief description of your issue, and the <@&1130051976189722680> will respond shortly. \n\n`(Type '{PREFIX[0]}close' or '/close' in case you change your mind or would like to close this request.)`"
+        )
 
     @commands.hybrid_command(name='close', description="Close your open ticket")
     async def close_ticket(self, ctx):

@@ -96,7 +96,7 @@ class EventDetailsSelect(discord.ui.Select):
                     "📍 **ML Workshop:** July 21 to August 1\n"
                     "📍 **IdeaX Registration Opens:** July 21\n"
                     "📍 **Internal Ideathon Registration:** August 10 to August 26\n"
-                    "📍 **Internal Ideathon:** August 28, 29, 30\n"
+                    "📍 **Internal Ideathon:** August 29\n"
                     "📍 **IdeaX Registration Closes:** September 6\n"
                     "📍 **IdeaX Online Round:** September 11 to 16\n"
                     "📍 **IdeaX Final Hackathon:** October 31, November 1, November 2\n\n"

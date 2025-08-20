@@ -1,16 +1,69 @@
 import discord
-from discord.ext import commands
+from discord.ext import commands, tasks
 from discord import app_commands
 import os
 from discord.ui import Button, View
 from config import *
-#import aiohttp  # Add this import
+import random
+import datetime
 
 # Create the bot instance
 intents = discord.Intents.default()
 intents.message_content = True  # Needed for receiving messages
 intents.members = True
 bot = commands.Bot(command_prefix=PREFIX, intents=intents, help_command=None)
+
+@bot.check
+async def no_dm_commands(ctx):
+    return ctx.guild is not None  # Only allow commands in servers
+
+# List of fun presence texts
+presence_texts = [
+    "you procrastinate",
+    "your deadlines slip by",
+    "you avoid your tasks",
+    "you scroll endlessly",
+    "your code not writing itself",
+    "the bugs multiply",
+    "you struggle with that error",
+    "your future self judge you",
+    "your to-do list grow",
+    "you chat instead of work",
+    "you lurk instead of learn",
+    "your productivity disappear",
+    "you ignore your responsibilities",
+    "your coffee get cold",
+    "your motivation fade",
+    "your dreams become memes",
+    "you forget your hustle",
+    "you refactor for the 10th time",
+    "your browser tabs multiply",
+    "your unread emails pile up",
+    "your workspace get messier",
+    "your excuses get more creative",
+    "your focus drift away",
+    "your reminders go ignored",
+    "your calendar fill up",
+    "your group chat distract you",
+    "you waste time",
+    "your screen time increase",
+    "your motivation vanish",
+    "your playlist repeat again",
+    "your break last too long",
+    "you doomscrolling tiktok",
+    "you binge-watch instead",
+    "you waiting for her reply",
+    "you use AI to write basic code",
+    "you enter tutorial hell",
+    "you forget your goals",
+    ]
+
+@tasks.loop(minutes=10)
+async def update_presence():
+    presence_text = random.choice(presence_texts)
+    await bot.change_presence(
+        activity=discord.Activity(type=discord.ActivityType.watching, name=presence_text)
+    )
 
 # Sync slash commands on bot startup
 @bot.event
@@ -44,11 +97,8 @@ async def on_ready():
     # Sync slash commands
     await bot.tree.sync()
     print("Slash commands synced successfully!")
-
-    # Set bot presence
-    await bot.change_presence(
-        activity=discord.Activity(type=discord.ActivityType.listening, name=f"prefix: {PREFIX[0]}")
-    )
+    
+    update_presence.start()  # Start hourly presence update
 
 # Sync slash commands after cog actions
 async def sync_commands(ctx):
@@ -141,8 +191,14 @@ async def on_command_error(ctx, error):
             color=discord.Color.red()
         )
         await ctx.send(embed=embed, view=view)
-
-
+    elif isinstance(error, commands.CheckFailure):
+        # Fallback embed for DM usage
+        embed = discord.Embed(
+            title="Error: Commands Not Allowed in DMs",
+            description="This command can only be used in a server.",
+            color=discord.Color.red()
+        )
+        await ctx.send(embed=embed)
 
 # Define a ping command
 @bot.command(name='ping')

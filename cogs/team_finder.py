@@ -44,6 +44,69 @@ class TeamAvailabilityModal(discord.ui.Modal, title='Team Availability Form'):
         if cog:
             await cog.save_availability(interaction, self)
 
+class MembersPaginator(discord.ui.View):
+    def __init__(self, embeds: list[discord.Embed], owner_id: int, timeout: float = 300):
+        super().__init__(timeout=timeout)
+        self.embeds = embeds
+        self.index = 0
+        self.owner_id = owner_id
+        self._update_states()
+
+    def _update_states(self):
+        first_last = self.index == 0
+        last_last = self.index >= len(self.embeds) - 1
+        for child in self.children:
+            if isinstance(child, discord.ui.Button):
+                if child.custom_id == "first":
+                    child.disabled = first_last
+                elif child.custom_id == "prev":
+                    child.disabled = first_last
+                elif child.custom_id == "next":
+                    child.disabled = last_last
+                elif child.custom_id == "last":
+                    child.disabled = last_last
+
+    async def _check_owner(self, interaction: discord.Interaction) -> bool:
+        # Ephemeral message is only visible to the requester, but keep a safety check.
+        if interaction.user.id != self.owner_id:
+            await interaction.response.send_message("Not your paginator.", ephemeral=True, delete_after=3)
+            return False
+        return True
+
+    @discord.ui.button(label="First", style=discord.ButtonStyle.secondary, custom_id="first")
+    async def first(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if not await self._check_owner(interaction):
+            return
+        self.index = 0
+        self._update_states()
+        await interaction.response.edit_message(embed=self.embeds[self.index], view=self)
+
+    @discord.ui.button(label="Previous", style=discord.ButtonStyle.secondary, custom_id="prev")
+    async def prev(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if not await self._check_owner(interaction):
+            return
+        if self.index > 0:
+            self.index -= 1
+        self._update_states()
+        await interaction.response.edit_message(embed=self.embeds[self.index], view=self)
+
+    @discord.ui.button(label="Next", style=discord.ButtonStyle.secondary, custom_id="next")
+    async def next(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if not await self._check_owner(interaction):
+            return
+        if self.index < len(self.embeds) - 1:
+            self.index += 1
+        self._update_states()
+        await interaction.response.edit_message(embed=self.embeds[self.index], view=self)
+
+    @discord.ui.button(label="Last", style=discord.ButtonStyle.secondary, custom_id="last")
+    async def last(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if not await self._check_owner(interaction):
+            return
+        self.index = len(self.embeds) - 1
+        self._update_states()
+        await interaction.response.edit_message(embed=self.embeds[self.index], view=self)
+
 class TeamPairing(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -115,9 +178,10 @@ class TeamPairing(commands.Cog):
     )
     @app_commands.choices(action=[
         app_commands.Choice(name="Set Availability", value="set-availability"),
-        app_commands.Choice(name="Find Teammates", value="find-teammates"),
+        app_commands.Choice(name="DM Your Details", value="find-teammates"),
         app_commands.Choice(name="View Status", value="view-status"),
-        app_commands.Choice(name="Remove Availability", value="remove-availability")
+        app_commands.Choice(name="Remove Availability", value="remove-availability"),
+        app_commands.Choice(name="View Available Members", value="view-all-members")
     ])
     async def find_team(self, interaction: discord.Interaction, action: str):
         if action == "set-availability":
@@ -128,6 +192,8 @@ class TeamPairing(commands.Cog):
             await self.team_status_action(interaction)
         elif action == "remove-availability":
             await self.remove_availability_action(interaction)
+        elif action == "view-all-members":
+            await self.view_all_members_action(interaction)
 
     async def set_availability_action(self, interaction: discord.Interaction):
         modal = TeamAvailabilityModal()
@@ -306,6 +372,61 @@ class TeamPairing(commands.Cog):
         )
         
         await interaction.response.send_message(embed=embed, ephemeral=True)
+
+    async def view_all_members_action(self, interaction: discord.Interaction):
+        data = self.load_data()
+        # Exclude requester to mirror existing behavior in find_teammates_action
+        available_members = [e for e in data if e.get('active') and e.get('user_id') != interaction.user.id]
+
+        if not available_members:
+            embed = discord.Embed(
+                title="👥 Available Team Members",
+                description="❌ No members are currently available for team formation.",
+                color=discord.Color.red()
+            )
+            await interaction.response.send_message(embed=embed, ephemeral=True)
+            return
+
+        # Chunk members into pages to respect embed field limits
+        page_size = 10  # safe below the 25-field limit
+        pages = [available_members[i:i + page_size] for i in range(0, len(available_members), page_size)]
+        embeds = []
+
+        total = len(available_members)
+        for page_index, members in enumerate(pages, start=1):
+            embed = discord.Embed(
+                title="👥 Available Team Members",
+                description=f"Page {page_index}/{len(pages)} • Showing {len(members)} of {total} members",
+                color=discord.Color.blue()
+            )
+
+            base_index = (page_index - 1) * page_size
+            for i, member in enumerate(members, start=1):
+                # Build member info with safe defaults and truncation
+                additional = member.get('additional_info', 'None') or 'None'
+                if additional != "None" and len(additional) > 150:
+                    additional = additional[:147] + "..."
+
+                lines = [
+                    f"**Skills:** {member.get('skills', 'N/A')}",
+                    f"**Experience:** {member.get('experience', 'N/A')}",
+                    f"**Looking for:** {member.get('looking_for', 'Any role')}",
+                ]
+                if additional != "None":
+                    lines.append(f"**Info:** {additional}")
+                lines.append(f"**Contact:** <@{member.get('user_id')}>")
+
+                embed.add_field(
+                    name=f"{base_index + i}. {member.get('username', 'Unknown')}",
+                    value="\n".join(lines),
+                    inline=False
+                )
+
+            embeds.append(embed)
+
+        # Always attach paginator view, even if there's only one page (buttons will be disabled)
+        view = MembersPaginator(embeds, interaction.user.id)
+        await interaction.response.send_message(embed=embeds[0], view=view, ephemeral=True)
 
 async def setup(bot):
     await bot.add_cog(TeamPairing(bot))

@@ -10,7 +10,7 @@ TRIGGER_REACTIONS = {
     'good morning': '🌄',
     'firoj': '💣',
     'sachi': '🎀',
-    'miraj': '🏳‍🌈,
+    'miraj': '🏳‍🌈',
     'famous': '🥚',
     'nili': '💃',
     'mainali': '🧨',
