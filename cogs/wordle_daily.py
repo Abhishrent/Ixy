@@ -72,26 +72,18 @@ class DailyWordleGame(commands.Cog):
         return random.choice(self.hackathon_words)
 
     def reset_daily_game(self):
-        """Reset the game for a new day and update streaks if needed"""
+        """Reset the game for a new day. If no winner yesterday, reset all streaks to 0."""
         today = self.get_today_date()
         yesterday = (datetime.now(timezone.utc) - timedelta(days=1)).strftime('%Y-%m-%d')
         previous_word = self.game_data.get("current_word")
         previous_winner = self.game_data.get("winner")
         streaks = self.game_data.get("streaks", {})
 
-        # If there was a winner yesterday, update their streak
-        if previous_winner:
-            user_id = str(previous_winner["user_id"])
-            last_win_date = previous_winner.get("date")
-            if last_win_date == yesterday:
-                # Continue streak
-                streaks[user_id] = streaks.get(user_id, 0) + 1
-            else:
-                # Reset streak to 1 for this win
-                streaks[user_id] = 1
-        # If there was no winner, do not update streaks
-
+        # If there was no winner yesterday, reset all streaks to 0
         if self.game_data["current_date"] != today:
+            if not previous_winner or previous_winner.get("date") != yesterday:
+                # Reset all streaks to 0
+                streaks = {uid: 0 for uid in streaks}
             self.game_data = {
                 "current_word": self.get_new_daily_word(),
                 "current_date": today,
@@ -99,11 +91,11 @@ class DailyWordleGame(commands.Cog):
                 "game_active": True,
                 "guesses_today": [],
                 "previous_word": previous_word,
-                "previous_day_winner": previous_winner is not None,
+                "previous_day_winner": previous_winner is not None and previous_winner.get("date") == yesterday,
                 "streaks": streaks
             }
             self.save_game_data()
-            return True, previous_word, previous_winner is not None
+            return True, previous_word, previous_winner is not None and previous_winner.get("date") == yesterday
         return False, None, False
 
     @tasks.loop(minutes=1)  # Check every minute for date change
@@ -293,6 +285,37 @@ class DailyWordleGame(commands.Cog):
             except:
                 pass
 
+    def update_top_streaks(self, streak, user_id, username):
+        today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+        new_entry = {
+            "max_streak": streak,
+            "user_id": user_id,
+            "username": username,
+            "date": today
+        }
+        # Store top streaks in the same file as game data
+        # Load the main game data file
+        if os.path.exists(GAME_DATA_FILE):
+            try:
+                with open(GAME_DATA_FILE, "r") as f:
+                    data = json.load(f)
+            except Exception:
+                data = {}
+        else:
+            data = {}
+
+        # Ensure top_streaks exists
+        top_streaks = data.get("top_streaks", [])
+        top_streaks.append(new_entry)
+        # Sort by max_streak DESC, then most recent date
+        top_streaks = sorted(top_streaks, key=lambda x: (-x["max_streak"], x["date"]))[:3]
+        data["top_streaks"] = top_streaks
+
+        # Save back to the same file
+        os.makedirs(os.path.dirname(GAME_DATA_FILE), exist_ok=True)
+        with open(GAME_DATA_FILE, "w") as f:
+            json.dump(data, f, indent=2)
+
     async def handle_winner(self, message, correct_guess):
         """Handle when someone wins the daily challenge and update streaks"""
         try:
@@ -335,7 +358,15 @@ class DailyWordleGame(commands.Cog):
             self.game_data["streaks"] = streaks
             self.save_game_data()
 
-            streak_count = streaks.get(user_id, 1)
+            streak_count = streaks.get(user_id, 0)
+
+            # Update top streaks JSON if this is a new personal best
+            if streak_count > 0:
+                self.update_top_streaks(
+                    streak=streak_count,
+                    user_id=message.author.id,
+                    username=str(message.author)
+                )
 
             # DM previous streak holder if streak was stolen
             if streak_stolen and stolen_from:
@@ -419,6 +450,14 @@ class DailyWordleGame(commands.Cog):
     @commands.hybrid_command(name="daily_wordle_status", with_app_command=True)
     async def daily_status(self, ctx):
         """Check the status of today's daily wordle"""
+        # Reload the latest game data from file
+        if os.path.exists(GAME_DATA_FILE):
+            try:
+                with open(GAME_DATA_FILE, 'r') as f:
+                    self.game_data = json.load(f)
+            except Exception:
+                pass
+
         embed = discord.Embed(
             title="📊 Daily Wordle Status",
             color=discord.Color.blue()
@@ -432,10 +471,12 @@ class DailyWordleGame(commands.Cog):
             # Show streak if available
             streaks = self.game_data.get("streaks", {})
             winner_id = str(self.game_data["winner"]["user_id"])
-            streak_count = streaks.get(winner_id, 1)
+            streak_count = streaks.get(winner_id, 0)
+            member = ctx.guild.get_member(int(winner_id))
+            winner_name = member.display_name if member else f"User {winner_id}"
             embed.add_field(
                 name="Streak",
-                value=f"{ctx.guild.get_member(int(winner_id)).display_name} is on a {streak_count} day streak! 🔥",
+                value=f"{winner_name} is on a {streak_count} day streak! 🔥",
                 inline=False
             )
             embed.color = discord.Color.gold()

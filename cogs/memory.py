@@ -3,6 +3,9 @@ from discord.ext import commands, tasks
 import random
 import asyncio
 import time
+import os
+import json
+from datetime import datetime
 from config import EMBED_THUMBNAIL  # Add this import
 
 #set time and frequency
@@ -67,6 +70,39 @@ class MemoryMatchingGame(commands.Cog):
             view.add_item(button)
 
         return view
+
+    def get_scores_filepath(self):
+        return os.path.join(os.path.dirname(os.path.dirname(__file__)), "game_files", "memory.json")
+
+    def load_top_scores(self):
+        filepath = self.get_scores_filepath()
+        if not os.path.exists(filepath):
+            return []
+        try:
+            with open(filepath, "r") as f:
+                return json.load(f)
+        except Exception:
+            return []
+
+    def save_top_scores(self, scores):
+        filepath = self.get_scores_filepath()
+        os.makedirs(os.path.dirname(filepath), exist_ok=True)
+        with open(filepath, "w") as f:
+            json.dump(scores, f, indent=2)
+
+    def update_top_scores(self, elapsed_time, user_id, username, time_display):
+        today = datetime.utcnow().strftime("%Y-%m-%d")
+        new_entry = {
+            "best_time": elapsed_time,
+            "user_id": user_id,
+            "username": username,
+            "date": today,
+            "time_display": time_display
+        }
+        scores = self.load_top_scores()
+        scores.append(new_entry)
+        scores = sorted(scores, key=lambda x: x["best_time"])[:3]
+        self.save_top_scores(scores)
 
     @commands.hybrid_command(name="memory", with_app_command=True)
     async def start_game(self, ctx):
@@ -197,6 +233,14 @@ class MemoryMatchingGame(commands.Cog):
                     elapsed_time = time.time() - game["start_time"]
                     minutes, seconds = divmod(int(elapsed_time), 60)
                     time_display = f"{minutes:02}:{seconds:02}"
+
+                    # Update top 3 scores
+                    self.update_top_scores(
+                        elapsed_time=elapsed_time,
+                        user_id=interaction.user.id,
+                        username=str(interaction.user),
+                        time_display=time_display
+                    )
 
                     channel = self.bot.get_channel(interaction.channel_id)
                     message = await channel.fetch_message(game["message_id"])
