@@ -3,6 +3,9 @@ from discord.ext import commands, tasks
 import random
 import asyncio
 import time
+import os
+import json
+from datetime import datetime
 from config import EMBED_THUMBNAIL
 
 #---------------------------------Game Settings-----------------------------------------
@@ -205,8 +208,54 @@ class SequenceMemoryGame(commands.Cog):
                 embed=self.create_embed(f"Round {game['round']}", "Now repeat the sequence!")
             )
 
+    def get_scores_filepath(self):
+        return os.path.join(os.path.dirname(os.path.dirname(__file__)), "game_files", "sequence.json")
+
+    def load_top_scores(self):
+        filepath = self.get_scores_filepath()
+        if not os.path.exists(filepath):
+            return []
+        try:
+            with open(filepath, "r") as f:
+                return json.load(f)
+        except Exception:
+            return []
+
+    def save_top_scores(self, scores):
+        filepath = self.get_scores_filepath()
+        os.makedirs(os.path.dirname(filepath), exist_ok=True)
+        with open(filepath, "w") as f:
+            json.dump(scores, f, indent=2)
+
+    def update_top_scores(self, max_round, tiles_memorised, user_id, username):
+        today = datetime.utcnow().strftime("%Y-%m-%d")
+        new_entry = {
+            "max_round": max_round,
+            "tiles_memorised": tiles_memorised,
+            "user_id": user_id,
+            "username": username,
+            "date": today
+        }
+        scores = self.load_top_scores()
+        scores.append(new_entry)
+        # Sort by max_round DESC, then tiles_memorised DESC
+        scores = sorted(scores, key=lambda x: (-x["max_round"], -x["tiles_memorised"]))[:3]
+        self.save_top_scores(scores)
+
     async def handle_game_end(self, game, interaction, reason, color=discord.Color.red()):
         """Helper method to handle game ending scenarios."""
+        # Update top 3 scores before sending embed
+        max_round = game.get("round", 1) - 1
+        tiles_memorised = len(game.get("current_sequence", []))
+        user_id = interaction.user.id if hasattr(interaction, "user") else None
+        username = str(interaction.user) if hasattr(interaction, "user") else "Unknown"
+        if user_id is not None:
+            self.update_top_scores(
+                max_round=max_round,
+                tiles_memorised=tiles_memorised,
+                user_id=user_id,
+                username=username
+            )
         embed = self.create_embed("Game Over", reason, color)
         try:
             await interaction.message.edit(embed=embed, view=None)
