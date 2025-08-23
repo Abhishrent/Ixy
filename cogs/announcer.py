@@ -267,7 +267,16 @@ class AnnouncerCog(commands.Cog):
                     await message.delete()
                     return
                 failed_users = []
-                for user in users:
+                # --- Progress bar code starts here ---
+                total = len(users)
+                progress_bar_length = 10
+                sent_count = 0
+
+                def make_progress_bar(done, total, bar_len=10):
+                    filled = int(bar_len * done / total) if total else 0
+                    return "[" + "█" * filled + "-" * (bar_len - filled) + f"] {done}/{total}"
+
+                for idx, user in enumerate(users, 1):
                     try:
                         await user.send(embed=preview_embed)
                         # Send attachments if any (non-image files)
@@ -276,6 +285,15 @@ class AnnouncerCog(commands.Cog):
                                 await user.send(file=await attachment.to_file())
                     except Exception:
                         failed_users.append(getattr(user, 'mention', str(user)))
+                    sent_count += 1
+                    # Update progress every 5 users or on last user
+                    if sent_count % 5 == 0 or sent_count == total:
+                        progress = make_progress_bar(sent_count, total, progress_bar_length)
+                        await preview_msg.edit(
+                            content=f"DMing users: {progress}",
+                            embed=None,
+                            view=None
+                        )
                 await preview_msg.edit(content="DM sent to selected roles.", embed=None, view=None)
                 if failed_users:
                     failed_embed = discord.Embed(
