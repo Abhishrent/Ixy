@@ -266,6 +266,7 @@ class AnnouncerCog(commands.Cog):
                     await preview_msg.edit(content="No valid users found in selected roles.", embed=None, view=None)
                     await message.delete()
                     return
+                failed_users = []
                 for user in users:
                     try:
                         await user.send(embed=preview_embed)
@@ -274,8 +275,15 @@ class AnnouncerCog(commands.Cog):
                             if not (attachment.content_type and attachment.content_type.startswith("image/")):
                                 await user.send(file=await attachment.to_file())
                     except Exception:
-                        await message.channel.send(f"Could not DM {getattr(user, 'mention', str(user))}.", delete_after=5)
+                        failed_users.append(getattr(user, 'mention', str(user)))
                 await preview_msg.edit(content="DM sent to selected roles.", embed=None, view=None)
+                if failed_users:
+                    failed_embed = discord.Embed(
+                        title="Some users could not be DMed",
+                        description="\n".join(failed_users),
+                        color=discord.Color.red()
+                    )
+                    await message.channel.send(embed=failed_embed)
             else:
                 await preview_msg.edit(content="DM cancelled.", embed=None, view=None)
 
