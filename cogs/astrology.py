@@ -21,12 +21,14 @@ class Astro(commands.Cog):
         }
 
     def create_rashi_view(self):
-        """Create a view with buttons for all rashis"""
+        """Create a view with a dropdown for all rashis"""
         view = discord.ui.View()
-        for rashi_key, rashi_value in self.nepali_signs.items():
-            button = discord.ui.Button(label=rashi_value, style=discord.ButtonStyle.primary, custom_id=rashi_key)
-            button.callback = self.rashi_button_callback
-            view.add_item(button)
+        options = [
+            discord.SelectOption(label=rashi_value, value=rashi_key)
+            for rashi_key, rashi_value in self.nepali_signs.items()
+        ]
+        select = RashiDropdown(options, self)
+        view.add_item(select)
         return view
 
     async def rashi_button_callback(self, interaction: discord.Interaction):
@@ -130,6 +132,16 @@ class Astro(commands.Cog):
                 color=discord.Color.orange()
             )
             await message.channel.send(embed=embed)
+
+# Dropdown (Select) class for rashi selection
+class RashiDropdown(discord.ui.Select):
+    def __init__(self, options, astro_cog):
+        super().__init__(placeholder="राशि छान्नुहोस्...", min_values=1, max_values=1, options=options)
+        self.astro_cog = astro_cog
+
+    async def callback(self, interaction: discord.Interaction):
+        sign = self.values[0]
+        await self.astro_cog.send_horoscope(sign, interaction=interaction)
 
 # Add the bot instance to the command prefix and load the cog
 async def setup(bot):
