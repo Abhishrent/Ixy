@@ -5,7 +5,7 @@ import os
 from config import EMBED_THUMBNAIL
 
 ANNOUNCE_INPUT_CHANNEL_ID = 1406952251695566908
-ANNOUNCE_OUTPUT_CHANNEL_ID = 1406953423382773854 #1130103633141317643
+ANNOUNCE_OUTPUT_CHANNEL_ID = 1130103633141317643
 DM_CHANNEL_ID = 1406952218543788063
 
 SERVER_USER_JSON = os.path.join(os.path.dirname(__file__), '../bot_memory/server_user_id.json')
@@ -281,7 +281,5 @@ class AnnouncerCog(commands.Cog):
 
             await message.delete()
 
-async def setup(bot):
-    await bot.add_cog(AnnouncerCog(bot))
 async def setup(bot):
     await bot.add_cog(AnnouncerCog(bot))
