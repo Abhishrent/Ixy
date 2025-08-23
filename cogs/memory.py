@@ -6,11 +6,13 @@ import time
 import os
 import json
 from datetime import datetime
-from config import EMBED_THUMBNAIL  # Add this import
 
-#set time and frequency
-CHECK_FREQUENCY = 1
-TIMEOUT_DURATION = 5
+#------------------Game Settings------------------#
+CHECK_FREQUENCY = 1                               #
+TIMEOUT_DURATION = 5*60                              #
+#-------------------------------------------------#
+
+MEMORY_FILE = os.path.join(os.path.dirname(os.path.dirname(__file__)), "game_files", "memory.json")
 
 class MemoryMatchingGame(commands.Cog):
     def __init__(self, bot):
@@ -71,23 +73,18 @@ class MemoryMatchingGame(commands.Cog):
 
         return view
 
-    def get_scores_filepath(self):
-        return os.path.join(os.path.dirname(os.path.dirname(__file__)), "game_files", "memory.json")
-
     def load_top_scores(self):
-        filepath = self.get_scores_filepath()
-        if not os.path.exists(filepath):
+        if not os.path.exists(MEMORY_FILE):
             return []
         try:
-            with open(filepath, "r") as f:
+            with open(MEMORY_FILE, "r") as f:
                 return json.load(f)
         except Exception:
             return []
 
     def save_top_scores(self, scores):
-        filepath = self.get_scores_filepath()
-        os.makedirs(os.path.dirname(filepath), exist_ok=True)
-        with open(filepath, "w") as f:
+        os.makedirs(os.path.dirname(MEMORY_FILE), exist_ok=True)
+        with open(MEMORY_FILE, "w") as f:
             json.dump(scores, f, indent=2)
 
     def update_top_scores(self, elapsed_time, user_id, username, time_display):
@@ -100,8 +97,23 @@ class MemoryMatchingGame(commands.Cog):
             "time_display": time_display
         }
         scores = self.load_top_scores()
-        scores.append(new_entry)
-        scores = sorted(scores, key=lambda x: x["best_time"])[:3]
+        updated = False
+        for i, entry in enumerate(scores):
+            if entry["user_id"] == user_id:
+                # Only update if new time is better (lower)
+                if elapsed_time < entry["best_time"]:
+                    scores[i] = new_entry
+                updated = True
+                break
+        if not updated:
+            scores.append(new_entry)
+        # Only keep the best score per user, then sort and keep top 3
+        unique_scores = {}
+        for entry in scores:
+            uid = entry["user_id"]
+            if uid not in unique_scores or entry["best_time"] < unique_scores[uid]["best_time"]:
+                unique_scores[uid] = entry
+        scores = sorted(unique_scores.values(), key=lambda x: x["best_time"])[:3]
         self.save_top_scores(scores)
 
     @commands.hybrid_command(name="memory", with_app_command=True)
@@ -138,7 +150,6 @@ class MemoryMatchingGame(commands.Cog):
             value="Click on two blocks to reveal the emojis. \nIf they match, they stay revealed.\nFind all the matches in the least time possible (shown at the end upon completion)",
             inline=False
         )
-        embed.set_thumbnail(url=EMBED_THUMBNAIL)  # Set thumbnail
 
         message = await ctx.send(embed=embed, view=self.create_game_view(game_state))
         game_state["message_id"] = message.id
@@ -158,7 +169,7 @@ class MemoryMatchingGame(commands.Cog):
                 title="Not Your Game!",
                 description="Only the person who started the game can play it! Start your own game using the `/memory` command.",
                 color=discord.Color.red()
-            ).set_thumbnail(url=EMBED_THUMBNAIL), ephemeral=True)
+            ), ephemeral=True)
             return
 
         game['last_interaction_time'] = time.time()
@@ -182,7 +193,7 @@ class MemoryMatchingGame(commands.Cog):
                         title="Game Quit",
                         description="The memory game has been quit.",
                         color=discord.Color.red()
-                    ).set_thumbnail(url=EMBED_THUMBNAIL), 
+                    ), 
                     view=None
                 )
                 del self.games[interaction.channel.id]
@@ -234,7 +245,7 @@ class MemoryMatchingGame(commands.Cog):
                     minutes, seconds = divmod(int(elapsed_time), 60)
                     time_display = f"{minutes:02}:{seconds:02}"
 
-                    # Update top 3 scores
+                    # Store high score in memory.json
                     self.update_top_scores(
                         elapsed_time=elapsed_time,
                         user_id=interaction.user.id,
@@ -248,7 +259,7 @@ class MemoryMatchingGame(commands.Cog):
                         title="Game Over",
                         description=f"🎉 {interaction.user.mention} found all pairs! The game is over.\n\nTotal Time: {time_display}",
                         color=discord.Color.green()
-                    ).set_thumbnail(url=EMBED_THUMBNAIL), view=None)
+                    ), view=None)
                     del self.games[interaction.channel.id]
 
         except Exception as e:
@@ -268,9 +279,9 @@ class MemoryMatchingGame(commands.Cog):
                     message = await channel.fetch_message(game["message_id"])
                     await message.edit(embed=discord.Embed(
                         title="Game Timed Out",
-                        description="💡 Tip: Remember to quit your game if you need to leave! Freeing up memory helps keep the server running smoothly. See you next time, memory master!",
+                        description=f"Don't forget to hit the `quit` button if you're leaving!",
                         color=discord.Color.red()
-                    ).set_thumbnail(url=EMBED_THUMBNAIL), view=None)
+                    ), view=None)
                 except Exception as e:
                     print(f"Error in timeout handling for channel {channel_id}: {e}")
                 finally:
