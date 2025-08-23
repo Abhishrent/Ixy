@@ -306,7 +306,21 @@ class DailyWordleGame(commands.Cog):
 
         # Ensure top_streaks exists
         top_streaks = data.get("top_streaks", [])
-        top_streaks.append(new_entry)
+        
+        # Check if user already exists in top_streaks
+        user_exists = False
+        for i, entry in enumerate(top_streaks):
+            if entry["user_id"] == user_id:
+                user_exists = True
+                # Only update if the new streak is higher
+                if streak > entry["max_streak"]:
+                    top_streaks[i] = new_entry
+                break
+        
+        # If user doesn't exist in top_streaks, add them
+        if not user_exists:
+            top_streaks.append(new_entry)
+            
         # Sort by max_streak DESC, then most recent date
         top_streaks = sorted(top_streaks, key=lambda x: (-x["max_streak"], x["date"]))[:3]
         data["top_streaks"] = top_streaks

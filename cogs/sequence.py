@@ -26,6 +26,12 @@ class SequenceMemoryGame(commands.Cog):
     async def check_game_timeouts(self):
         current_time = time.time()
         for channel_id, game in list(self.games.items()):
+            # Prevent timeout if the game is showing sequence or waiting for player input
+            if game.get("showing_sequence", False) or (
+                game.get("game_started", False) and len(game.get("player_sequence", [])) < len(game.get("current_sequence", []))
+            ):
+                # Game is active, skip timeout
+                continue
             if current_time - game["last_interaction_time"] > self.game_timeout:
                 try:
                     await game["message"].edit(
@@ -237,16 +243,31 @@ class SequenceMemoryGame(commands.Cog):
             "date": today
         }
         scores = self.load_top_scores()
-        scores.append(new_entry)
+        
+        # Check if the user already has an entry in the scores list
+        user_exists = False
+        for i, entry in enumerate(scores):
+            if entry["user_id"] == user_id:
+                user_exists = True
+                # Only update if the new score is higher
+                if (max_round > entry["max_round"] or 
+                    (max_round == entry["max_round"] and tiles_memorised > entry["tiles_memorised"])):
+                    scores[i] = new_entry
+                break
+                
+        # If the user doesn't exist in the scores, add their entry
+        if not user_exists:
+            scores.append(new_entry)
+            
         # Sort by max_round DESC, then tiles_memorised DESC
         scores = sorted(scores, key=lambda x: (-x["max_round"], -x["tiles_memorised"]))[:3]
         self.save_top_scores(scores)
 
     async def handle_game_end(self, game, interaction, reason, color=discord.Color.red()):
         """Helper method to handle game ending scenarios."""
-        # Update top 3 scores before sending embed
-        max_round = game.get("round", 1) - 1
-        tiles_memorised = len(game.get("current_sequence", []))
+        # Use the tracked round and tiles
+        max_round = game.get("round_reached", game.get("round", 1))
+        tiles_memorised = game.get("tiles_correct", 0)
         user_id = interaction.user.id if hasattr(interaction, "user") else None
         username = str(interaction.user) if hasattr(interaction, "user") else "Unknown"
         if user_id is not None:
@@ -302,6 +323,9 @@ class SequenceMemoryGame(commands.Cog):
                 await self.start_new_round(game)
             else:
                 game["is_quitting"] = True
+                # Store round and tiles for quitting
+                game["round_reached"] = game["round"]
+                game["tiles_correct"] = len(game["player_sequence"])
                 await self.handle_game_end(game, interaction, f"Game ended at Round {game['round']}")
             return
 
@@ -314,6 +338,10 @@ class SequenceMemoryGame(commands.Cog):
 
         # Check if the button press was correct
         if game["player_sequence"][current_index] != game["current_sequence"][current_index]:
+            # Store round and how many tiles matched before failing
+            game["round_reached"] = game["round"]
+            # tiles_correct is number of correct tiles before the mistake
+            game["tiles_correct"] = current_index
             await interaction.response.defer()
             await self.show_error_and_end(game, interaction, button_index)
             return
