@@ -72,7 +72,7 @@ class DailyWordleGame(commands.Cog):
         return random.choice(self.hackathon_words)
 
     def reset_daily_game(self):
-        """Reset the game for a new day. If no winner yesterday, reset all streaks to 0."""
+        """Reset the game for a new day. Update streaks and recalculate top streaks."""
         today = self.get_today_date()
         yesterday = (datetime.now(timezone.utc) - timedelta(days=1)).strftime('%Y-%m-%d')
         previous_word = self.game_data.get("current_word")
@@ -81,9 +81,22 @@ class DailyWordleGame(commands.Cog):
 
         # If there was no winner yesterday, reset all streaks to 0
         if self.game_data["current_date"] != today:
-            if not previous_winner or previous_winner.get("date") != yesterday:
-                # Reset all streaks to 0
+            if previous_winner and previous_winner.get("date") == yesterday:
+                # Increment streak for the winner
+                winner_id = str(previous_winner["user_id"])
+                streaks[winner_id] = streaks.get(winner_id, 0) + 1
+            else:
+                # Reset all streaks to 0 if no winner
                 streaks = {uid: 0 for uid in streaks}
+
+            # Recalculate top streaks
+            self.update_top_streaks(
+                streak=max(streaks.values(), default=0),
+                user_id=max(streaks, key=streaks.get, default=None),
+                username=None  # Username will be updated in `update_top_streaks`
+            )
+
+            # Reset game data for the new day
             self.game_data = {
                 "current_word": self.get_new_daily_word(),
                 "current_date": today,
