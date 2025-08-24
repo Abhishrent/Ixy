@@ -517,25 +517,37 @@ class DailyWordleGame(commands.Cog):
     @commands.hybrid_command(name="reset_daily_wordle", with_app_command=True)
     @commands.has_permissions(administrator=True)
     async def force_reset(self, ctx):
-        """Force reset the daily wordle (Admin only)"""
-        self.game_data = {
+        """Force reset the daily wordle for the current day (Admin only)"""
+        today = self.get_today_date()
+        previous_word = self.game_data.get("current_word")
+        previous_winner = self.game_data.get("winner")
+        streaks = self.game_data.get("streaks", {})
+        top_streaks = self.game_data.get("top_streaks", [])
+
+        # Preserve important fields for other files
+        self.game_data["previous_word"] = previous_word
+        self.game_data["previous_day_winner"] = previous_winner is not None and previous_winner.get("date") == today
+        self.game_data["top_streaks"] = top_streaks
+
+        # Reset game data for the current day
+        self.game_data.update({
             "current_word": self.get_new_daily_word(),
-            "current_date": self.get_today_date(), 
+            "current_date": today,
             "winner": None,
             "game_active": True,
             "guesses_today": [],
-            "streaks": self.game_data.get("streaks", {})
-        }
+            "streaks": streaks  # Streaks remain unchanged
+        })
         self.save_game_data()
-        
+
         embed = discord.Embed(
             title="🔄 Daily Wordle Reset",
-            description="The daily wordle has been reset with a new word!",
+            description="The daily wordle has been reset for today with a new word!",
             color=discord.Color.green()
         )
         embed.set_thumbnail(url=EMBED_THUMBNAIL)
         await ctx.send(embed=embed)
-        
+
         await self.setup_daily_game()
 
 async def setup(bot):
