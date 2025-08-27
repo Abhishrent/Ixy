@@ -1,0 +1,8 @@
+{
+  "total_requests": 3,
+  "successful_requests": 3,
+  "failed_requests": 0,
+  "models_used": {
+    "mistralai/mistral-small-3.2-24b-instruct:free": 3
+  }
+}
