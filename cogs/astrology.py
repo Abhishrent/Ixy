@@ -1,6 +1,7 @@
 import discord
 from discord.ext import commands
 import requests
+from config import EMBED_THUMBNAIL
 
 class Astro(commands.Cog):
     def __init__(self, bot):
@@ -45,6 +46,7 @@ class Astro(commands.Cog):
                 title=f"Invalid rashi: '{sign}'",
                 color=discord.Color.red()
             )
+            error_embed.set_thumbnail(url=EMBED_THUMBNAIL)
             view = self.create_rashi_view()
             
             # Send error message based on context
@@ -72,6 +74,7 @@ class Astro(commands.Cog):
                 description=f'मिती: {current_date} \n{horoscope_message}',
                 color=discord.Color.blue()
             )
+            horoscope_embed.set_thumbnail(url=EMBED_THUMBNAIL)
             horoscope_embed.set_footer(text='Powered by Nepali Patro', icon_url='https://imgs.search.brave.com/Czd9eg6t12aqBY8yELbNiMfkijeQUDujIdxTAgNqyWE/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9wbGF5/LWxoLmdvb2dsZXVz/ZXJjb250ZW50LmNv/bS9HQWx6angwSFZf/OUtWYWZQcnRjT1I5/NGZZYk00U1Z6OFdh/WENFc2Njb1V6eVlP/dThLOUlIMVVZSHZm/TUhOUFRnU1NRPXcy/NDAtaDQ4MC1ydw')
             
             # Create view with rashi buttons
@@ -114,6 +117,7 @@ class Astro(commands.Cog):
                 title="Choose Your Rashi",
                 color=discord.Color.blue()
             )
+            no_sign_embed.set_thumbnail(url=EMBED_THUMBNAIL)
             view = self.create_rashi_view()
             await ctx.send(embed=no_sign_embed, view=view)
             return
@@ -131,6 +135,7 @@ class Astro(commands.Cog):
                 description="You forgot to include your rashi!",
                 color=discord.Color.orange()
             )
+            embed.set_thumbnail(url=EMBED_THUMBNAIL)
             await message.channel.send(embed=embed)
 
 # Dropdown (Select) class for rashi selection
