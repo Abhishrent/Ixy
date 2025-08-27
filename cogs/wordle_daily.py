@@ -23,7 +23,15 @@ class DailyWordleGame(commands.Cog):
             "UNITY", "PIXEL", "GRAPH", "PARSE", "TOKEN", "USERS", "ADMIN",
             "NGINX", "REDIS", "KAFKA", "SPARK", "MAVEN", "GRUNT", "BABEL",
             "STYLE", "SCOPE", "EVENT", "MODAL", "FORMS", "VIEWS", "ROUTE",
-            "SERVE", "FETCH", "HTTPS", "OAUTH", "TOKEN", "BENCH", "SCALE"
+            "SERVE", "FETCH", "HTTPS", "OAUTH", "TOKEN", "BENCH", "SCALE",
+            "TREES", "QUEUE", "NUMPY", "RAILS", "TESTS", "TYPES", "SHELL",
+            "TUPLE", "MACRO", "PEERS", "PORTS", "PROXY", "SLACK", "STDIN",
+            "WIRED", "CLOUD", "AGILE", "SCRUM", "FINAL", "THEME", "FLOAT",
+            "JULIA", "SOLID", "FLOWS", "CLEAN", "GROVE", "VIPER", "RETRY",
+            "APPLE", "DARTS", "GISTS", "JESTS", "CYCLE", "MONGO", "DRAFT",
+            "BLOCK", "RANKS", "WORDS", "WATCH", "IMAGE", "EMBED", "INPUT",
+            "ERROR", "FAULT", "HOOKS", "JOINS", "LAYER", "MIXER", "LATEX",
+            "PRIME", "PARAM", "MUTEX", "QUERY", "TRAIT", "UTILS", "VUEJS"
         ]
         self.game_data = self.load_game_data()
         # Add streaks dict if not present
@@ -78,26 +86,13 @@ class DailyWordleGame(commands.Cog):
         previous_word = self.game_data.get("current_word")
         previous_winner = self.game_data.get("winner")
         streaks = self.game_data.get("streaks", {})
+        # Preserve top_streaks data for leaderboards
+        top_streaks = self.game_data.get("top_streaks", [])
 
-        # If there was no winner yesterday, reset all streaks to 0
+        # Only process streak updates if date has changed
         if self.game_data["current_date"] != today:
-            if previous_winner and previous_winner.get("date") == yesterday:
-                # Increment streak for the winner
-                winner_id = str(previous_winner["user_id"])
-                streaks[winner_id] = streaks.get(winner_id, 0) + 1
-            else:
-                # Reset all streaks to 0 if no winner
-                streaks = {uid: 0 for uid in streaks}
-
-            # Recalculate top streaks
-            self.update_top_streaks(
-                streak=max(streaks.values(), default=0),
-                user_id=max(streaks, key=streaks.get, default=None),
-                username=None  # Username will be updated in `update_top_streaks`
-            )
-
             # Reset game data for the new day
-            self.game_data = {
+            new_game_data = {
                 "current_word": self.get_new_daily_word(),
                 "current_date": today,
                 "winner": None,
@@ -105,8 +100,32 @@ class DailyWordleGame(commands.Cog):
                 "guesses_today": [],
                 "previous_word": previous_word,
                 "previous_day_winner": previous_winner is not None and previous_winner.get("date") == yesterday,
-                "streaks": streaks
+                "streaks": streaks.copy(),  # Use a copy to avoid modifying original
+                "top_streaks": top_streaks  # Preserve top_streaks data
             }
+            
+            # TESTING: Commented out streak incrementing for previous winner to avoid unintended streak increases
+            # if previous_winner and previous_winner.get("date") == yesterday:
+            #     # Increment streak for the winner
+            #     winner_id = str(previous_winner["user_id"])
+            #     new_game_data["streaks"][winner_id] = streaks.get(winner_id, 0) + 1
+                
+            #     # Get username for top streak update
+            #     username = previous_winner.get("username", "Unknown")
+                
+            #     # Update top streaks with the correct username and new streak value
+            #     self.update_top_streaks(
+            #         streak=new_game_data["streaks"][winner_id],
+            #         user_id=winner_id,
+            #         username=username
+            #     )
+
+            # Only reset all streaks to 0 if no winner yesterday
+            if not (previous_winner and previous_winner.get("date") == yesterday):
+                new_game_data["streaks"] = {uid: 0 for uid in streaks}
+
+            # Update game data with new values
+            self.game_data = new_game_data
             self.save_game_data()
             return True, previous_word, previous_winner is not None and previous_winner.get("date") == yesterday
         return False, None, False
@@ -299,7 +318,24 @@ class DailyWordleGame(commands.Cog):
                 pass
 
     def update_top_streaks(self, streak, user_id, username):
+        # Don't update if streak is 0 or if user_id is None
+        if streak <= 0 or user_id is None:
+            return
+            
         today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+        
+        # If username is None, try to get from guild member
+        if username is None:
+            try:
+                # Try to get the username from any guild the bot is in
+                for guild in self.bot.guilds:
+                    member = guild.get_member(int(user_id))
+                    if member:
+                        username = str(member)
+                        break
+            except Exception:
+                username = f"User {user_id}"
+        
         new_entry = {
             "max_streak": streak,
             "user_id": user_id,
@@ -362,11 +398,12 @@ class DailyWordleGame(commands.Cog):
             if highest_streak_user and highest_streak > 0:
                 # Winner gets a new streak of 1 (not previous streak + 1)
                 streaks[user_id] = 1
+                # Store the correct streak value before resetting
+                stolen_count = highest_streak
                 # Previous streak holder's streak resets to 0
                 streaks[highest_streak_user] = 0
                 streak_stolen = True
                 stolen_from = highest_streak_user
-                stolen_count = highest_streak
             else:
                 # No streak to steal, start/continue own streak
                 streaks[user_id] = streaks.get(user_id, 0) + 1
@@ -522,12 +559,8 @@ class DailyWordleGame(commands.Cog):
         previous_word = self.game_data.get("current_word")
         previous_winner = self.game_data.get("winner")
         streaks = self.game_data.get("streaks", {})
+        # Make sure to preserve top_streaks for leaderboards
         top_streaks = self.game_data.get("top_streaks", [])
-
-        # Preserve important fields for other files
-        self.game_data["previous_word"] = previous_word
-        self.game_data["previous_day_winner"] = previous_winner is not None and previous_winner.get("date") == today
-        self.game_data["top_streaks"] = top_streaks
 
         # Reset game data for the current day
         self.game_data.update({
@@ -536,7 +569,10 @@ class DailyWordleGame(commands.Cog):
             "winner": None,
             "game_active": True,
             "guesses_today": [],
-            "streaks": streaks  # Streaks remain unchanged
+            "previous_word": previous_word,
+            "previous_day_winner": previous_winner is not None and previous_winner.get("date") == today,
+            "streaks": streaks,  # Streaks remain unchanged
+            "top_streaks": top_streaks  # Preserve top_streaks data
         })
         self.save_game_data()
 
