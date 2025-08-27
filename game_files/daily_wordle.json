@@ -1,27 +1,45 @@
 {
-  "current_word": "NODES",
-  "current_date": "2025-08-20",
+  "current_word": "APPLE",
+  "current_date": "2025-08-27",
   "winner": {
     "user_id": 934820587572953118,
     "username": "grishrana1",
-    "guess": "NODES",
-    "date": "2025-08-20",
-    "streak": 1
+    "guess": "APPLE",
+    "date": "2025-08-27"
   },
   "game_active": false,
   "guesses_today": [
-    "SNACK",
-    "SNEBD",
-    "SENDS",
-    "DENIS",
-    "NEEDS",
-    "NDCES",
-    "NEDES",
-    "NODES"
+    "PATCH",
+    "GRAPE",
+    "AMPLE",
+    "APPLE"
   ],
-  "previous_word": "BABEL",
+  "previous_word": "REACT",
   "previous_day_winner": true,
   "streaks": {
-    "934820587572953118": 1
-  }
+    "934820587572953118": 1,
+    "752811396391239691": 0,
+    "1003987908744708176": 0,
+    "936588636479184966": 0
+  },
+  "top_streaks": [
+    {
+      "max_streak": 3,
+      "user_id": 752811396391239691,
+      "username": "Miraj Bhattarai",
+      "date": "2025-08-24"
+    },
+    {
+      "max_streak": 2,
+      "user_id": 934820587572953118,
+      "username": "grishrana",
+      "date": "2025-08-21"
+    },
+    {
+      "max_streak": 2,
+      "user_id": 936588636479184966,
+      "username": "sachiiiiiiiiii",
+      "date": "2025-08-26"
+    }
+  ]
 }
