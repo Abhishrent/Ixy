@@ -20,8 +20,11 @@ class Leaderboards(commands.Cog):
             return []
         try:
             with open(path, "r") as f:
-                return json.load(f)
-        except Exception:
+                data = json.load(f)
+                # Ensure we return a list, even if the file contains something else
+                return data if isinstance(data, list) else []
+        except Exception as e:
+            print(f"Error loading {path}: {e}")
             return []
 
     def load_leaderboard_users(self):
@@ -29,8 +32,11 @@ class Leaderboards(commands.Cog):
             return {}
         try:
             with open(LEADERBOARD_USERS_FILE, "r") as f:
-                return json.load(f)
-        except Exception:
+                data = json.load(f)
+                # Ensure we return a dict, even if the file contains something else
+                return data if isinstance(data, dict) else {}
+        except Exception as e:
+            print(f"Error loading {LEADERBOARD_USERS_FILE}: {e}")
             return {}
 
     def user_mention(self, user_id):
