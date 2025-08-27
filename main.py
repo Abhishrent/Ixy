@@ -97,7 +97,7 @@ async def on_ready():
     # Sync slash commands
     await bot.tree.sync()
     print("Slash commands synced successfully!")
-    
+
     update_presence.start()  # Start hourly presence update
 
 # Sync slash commands after cog actions
@@ -156,11 +156,11 @@ async def switch_cogs(ctx, cog_to_unload: str, cog_to_load: str):
         # Unload the specified cog
         await bot.unload_extension(f'cogs.{cog_to_unload}')
         await ctx.send(f'Cog {cog_to_unload} unloaded successfully!')
-        
+
         # Load the new cog
         await bot.load_extension(f'cogs.{cog_to_load}')
         await ctx.send(f'Cog {cog_to_load} loaded successfully!')
-        
+
         # Sync commands
         await sync_commands(ctx)
     except Exception as e:
@@ -192,13 +192,20 @@ async def on_command_error(ctx, error):
         )
         await ctx.send(embed=embed, view=view)
     elif isinstance(error, commands.CheckFailure):
-        # Fallback embed for DM usage
-        embed = discord.Embed(
-            title="Error: Commands Not Allowed in DMs",
-            description="This command can only be used in a server.",
-            color=discord.Color.red()
-        )
-        await ctx.send(embed=embed)
+        if ctx.guild is None:  # Check if the command was used in a DM
+            # Fallback embed for DM usage
+            embed = discord.Embed(
+                title="Error: Commands Not Allowed in DMs",
+                description="This command can only be used in a server.",
+                color=discord.Color.red()
+            )
+        else:  # Command used in a server but user lacks permissions
+            embed = discord.Embed(
+                title="Error: Insufficient Permissions",
+                description="You do not have the required permissions to use this command.",
+                color=discord.Color.red()
+            )
+        await ctx.send(embed=embed, ephemeral=True)
 
 # Define a ping command
 @bot.command(name='ping')
