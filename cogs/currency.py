@@ -2,9 +2,26 @@ import discord
 from discord.ext import commands
 from discord.ui import Button, View
 import requests
-from config import COUNTRY_CODES
+import json
+import os
 from typing import List
 from config import EMBED_THUMBNAIL
+
+def load_currency_codes():
+    """Load currency codes from JSON file"""
+    try:
+        currency_codes_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'bot_memory', 'currency_codes.json')
+        with open(currency_codes_path, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    except FileNotFoundError:
+        print("Warning: currency_codes.json not found, using empty dict")
+        return {}
+    except json.JSONDecodeError:
+        print("Warning: Invalid JSON in currency_codes.json, using empty dict")
+        return {}
+
+# Load currency codes at module level
+CURRENCY_CODES = load_currency_codes()
 
 # Country Codes View with "View Country Codes" button
 class CountryCodesView(View):
@@ -15,7 +32,7 @@ class CountryCodesView(View):
     async def interaction_check(self, interaction: discord.Interaction):
         # When the "View Country Codes" button is clicked, show the letter buttons
         letter_buttons = []
-        for letter in COUNTRY_CODES.keys():
+        for letter in CURRENCY_CODES.keys():
             button = Button(label=letter, style=discord.ButtonStyle.secondary, custom_id=f"letter_{letter}")
             letter_buttons.append(button)
             button.callback = self.create_letter_button_callback(letter)  # Attach callback for each letter
@@ -36,7 +53,7 @@ class CountryCodesView(View):
         """Generate callback for each letter button."""
         async def letter_button_callback(interaction: discord.Interaction):
             # Get the list of countries and their codes that start with the letter
-            countries = COUNTRY_CODES.get(letter, [])
+            countries = CURRENCY_CODES.get(letter, [])
             country_list = "\n".join([f"{name} - {code}" for name, code in countries]) if countries else "No countries available."
 
             # Create the embed for the selected letter
@@ -60,7 +77,7 @@ class CurrencyConverterCog(commands.Cog):
     def _build_country_currency_map(self) -> dict:
         """Build a comprehensive map of countries to their currencies."""
         country_map = {}
-        for letter_group in COUNTRY_CODES.values():
+        for letter_group in CURRENCY_CODES.values():
             for country, currency in letter_group:
                 # Handle cases with multiple entries for same country
                 if country not in country_map:
