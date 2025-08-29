@@ -55,8 +55,8 @@ class AnnouncementCog(commands.Cog):
                     if attachment.content_type and attachment.content_type.startswith("image/"):
                         # Notify about image upload
                         notifier_embed = discord.Embed(
-                            title="Uploading Image",
-                            description="Please wait while the image is being uploaded...",
+                            title="Building Preview",
+                            description="Please wait while I generate the preview",
                             color=discord.Color.orange()
                         )
                         notifier_msg = await message.channel.send(embed=notifier_embed)
@@ -90,7 +90,7 @@ class AnnouncementCog(commands.Cog):
                     ),
                     view=None
                 )
-                await message.delete()
+                await message.delete()  # Delete the original user message
                 return
 
             if view.value:
@@ -126,6 +126,8 @@ class AnnouncementCog(commands.Cog):
                     ),
                     view=None
                 )
+                await message.delete()  # Delete the original user message
+                return
 
 async def setup(bot):
     await bot.add_cog(AnnouncementCog(bot))
