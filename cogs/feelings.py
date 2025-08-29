@@ -172,6 +172,11 @@ class Feelings(commands.Cog):
     async def on_message(self, message):
         if message.author.bot or not message.guild:
             return
+        
+        # Skip responses in ticket channels to avoid conflicts with the gpt/openrouter cog
+        if re.match(r"ticket-[a-zA-Z0-9_]+", message.channel.name):
+            return
+            
         if "ixy" not in message.content.lower():
             return
         # Avoid AI reply for general bot commands like "ixy count", "ixy help", etc.
