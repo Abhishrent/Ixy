@@ -1,10 +1,6 @@
 import discord
 from discord.ext import commands
-from config import EMBED_THUMBNAIL
-
-ANNOUNCE_INPUT_CHANNEL_ID = 1406952251695566908
-ANNOUNCE_OUTPUT_CHANNEL_ID = 1130103633141317643
-IMAGE_UPLOAD_CHANNEL_ID = 1410834897584783380
+from config import EMBED_THUMBNAIL, ANNOUNCE_INPUT_CHANNEL_ID, ANNOUNCE_OUTPUT_CHANNEL_ID, IMAGE_UPLOAD_CHANNEL_ID
 
 class ConfirmView(discord.ui.View):
     def __init__(self, author, timeout=60):

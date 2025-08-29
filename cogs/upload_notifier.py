@@ -5,11 +5,11 @@ from google.oauth2.service_account import Credentials
 import asyncio
 import json
 import os
+from config import NOTIFY_CHANNEL_ID
 
 # === CONFIG ===
 DRIVE_FOLDER_ID = "1hUa7ScMuhZ1nwZmHwtx8RjfruAFLc2fQ"
 CREDENTIALS_FILE = "google_drive.json"
-NOTIFY_CHANNEL_ID = 1388895797722091530  # Replace with your channel ID
 BOT_MEMORY_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../bot_memory")
 NOTIFIED_FILES_PATH = os.path.join(BOT_MEMORY_DIR, "notified_files.json")
 

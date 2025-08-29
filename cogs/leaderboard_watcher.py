@@ -4,7 +4,7 @@ import os
 import json
 import asyncio
 from datetime import datetime
-from config import EMBED_THUMBNAIL
+from config import EMBED_THUMBNAIL, LEADERBOARD_CHANNEL_ID
 
 # --- File paths ---
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
@@ -15,7 +15,7 @@ WORDLE_FILE = os.path.join(GAME_FILES, "daily_wordle.json")
 LEADERBOARD_STATE_FILE = os.path.join(GAME_FILES, "leaderboards.json")
 
 # --- Channel to post leaderboard changes ---
-LEADERBOARD_CHANNEL_ID = 1408845348214018118  # Replace with your channel ID
+# LEADERBOARD_CHANNEL_ID = 1408845348214018118  # Replace with your channel ID
 
 # --- Helper functions ---
 def safe_load_json(path, default):

@@ -143,7 +143,14 @@ class AnnouncerCog(commands.Cog):
             await view.wait()
 
             if view.value is None:
-                await preview_msg.edit(content="Timed out. Announcement not sent.", view=None)
+                await preview_msg.edit(
+                    embed=discord.Embed(
+                        title="Timed Out",
+                        description="Timed out. Announcement not sent.",
+                        color=discord.Color.red()
+                    ),
+                    view=None
+                )
                 await message.delete()
                 return
 
@@ -162,9 +169,23 @@ class AnnouncerCog(commands.Cog):
                         await output_channel.send(content=content, embed=embed)
                     except Exception:
                         pass
-                await preview_msg.edit(content="Announcement sent.", embed=None, view=None)
+                await preview_msg.edit(
+                    embed=discord.Embed(
+                        title="Announcement Sent",
+                        description="The announcement has been sent successfully.",
+                        color=discord.Color.green()
+                    ),
+                    view=None
+                )
             else:
-                await preview_msg.edit(content="Announcement cancelled.", embed=None, view=None)
+                await preview_msg.edit(
+                    embed=discord.Embed(
+                        title="Announcement Cancelled",
+                        description="The announcement was cancelled.",
+                        color=discord.Color.red()
+                    ),
+                    view=None
+                )
 
             return
 
@@ -182,7 +203,14 @@ class AnnouncerCog(commands.Cog):
                 if any(member.id in allowed_users for member in role.members):
                     roles_with_allowed.append(role)
             if not roles_with_allowed:
-                await message.channel.send("No roles with allowed users found.", delete_after=5)
+                await message.channel.send(
+                    embed=discord.Embed(
+                        title="No Roles Found",
+                        description="No roles with allowed users found.",
+                        color=discord.Color.red()
+                    ),
+                    delete_after=5
+                )
                 await message.delete()
                 return
 
@@ -214,12 +242,26 @@ class AnnouncerCog(commands.Cog):
             await preview_view.wait()
 
             if preview_view.value is None:
-                await preview_msg.edit(content="Timed out. DM not sent.", view=None)
+                await preview_msg.edit(
+                    embed=discord.Embed(
+                        title="Timed Out",
+                        description="Timed out. DM not sent.",
+                        color=discord.Color.red()
+                    ),
+                    view=None
+                )
                 await message.delete()
                 return
 
             if not preview_view.value:
-                await preview_msg.edit(content="DM cancelled.", embed=None, view=None)
+                await preview_msg.edit(
+                    embed=discord.Embed(
+                        title="DM Cancelled",
+                        description="The DM was cancelled.",
+                        color=discord.Color.red()
+                    ),
+                    view=None
+                )
                 await message.delete()
                 return
 
@@ -249,62 +291,113 @@ class AnnouncerCog(commands.Cog):
             await role_view.wait()
 
             if role_view.value is None:
-                await preview_msg.edit(content="Timed out. DM not sent.", view=None)
+                await preview_msg.edit(
+                    embed=discord.Embed(
+                        title="Timed Out",
+                        description="Timed out. DM not sent.",
+                        color=discord.Color.red()
+                    ),
+                    view=None
+                )
                 await message.delete()
                 return
 
-            if role_view.value:
-                # Collect users in selected roles who are in allowed_users
-                selected_roles = [role for role in roles_with_allowed if role.id in role_view.selected_role_ids]
-                users_to_dm = set()
-                for role in selected_roles:
-                    for member in role.members:
-                        if member.id in allowed_users:
-                            users_to_dm.add(member)
-                users = list(users_to_dm)
-                if not users:
-                    await preview_msg.edit(content="No valid users found in selected roles.", embed=None, view=None)
-                    await message.delete()
-                    return
-                failed_users = []
-                # --- Progress bar code starts here ---
-                total = len(users)
-                progress_bar_length = 10
-                sent_count = 0
-
-                def make_progress_bar(done, total, bar_len=10):
-                    filled = int(bar_len * done / total) if total else 0
-                    return "[" + "█" * filled + "-" * (bar_len - filled) + f"] {done}/{total}"
-
-                for idx, user in enumerate(users, 1):
-                    try:
-                        await user.send(embed=preview_embed)
-                        # Send attachments if any (non-image files)
-                        for attachment in message.attachments:
-                            if not (attachment.content_type and attachment.content_type.startswith("image/")):
-                                await user.send(file=await attachment.to_file())
-                    except Exception:
-                        failed_users.append(getattr(user, 'mention', str(user)))
-                    sent_count += 1
-                    # Update progress every 5 users or on last user
-                    if sent_count % 5 == 0 or sent_count == total:
-                        progress = make_progress_bar(sent_count, total, progress_bar_length)
-                        await preview_msg.edit(
-                            content=f"DMing users: {progress}",
-                            embed=None,
-                            view=None
-                        )
-                await preview_msg.edit(content="DM sent to selected roles.", embed=None, view=None)
-                if failed_users:
-                    failed_embed = discord.Embed(
-                        title="Some users could not be DMed",
-                        description="\n".join(failed_users),
+            if not role_view.value:
+                await preview_msg.edit(
+                    embed=discord.Embed(
+                        title="DM Cancelled",
+                        description="The DM was cancelled.",
                         color=discord.Color.red()
-                    )
-                    await message.channel.send(embed=failed_embed)
-            else:
-                await preview_msg.edit(content="DM cancelled.", embed=None, view=None)
+                    ),
+                    view=None
+                )
+                await message.delete()
+                return
 
+            # Collect users in selected roles who are in allowed_users
+            selected_roles = [role for role in roles_with_allowed if role.id in role_view.selected_role_ids]
+            users_to_dm = set()
+            for role in selected_roles:
+                for member in role.members:
+                    if member.id in allowed_users:
+                        users_to_dm.add(member)
+            users = list(users_to_dm)
+            if not users:
+                await preview_msg.edit(
+                    embed=discord.Embed(
+                        title="No Valid Users Found",
+                        description="No valid users found in selected roles.",
+                        color=discord.Color.red()
+                    ),
+                    view=None
+                )
+                await message.delete()
+                return
+            failed_users = []
+            # --- Progress bar code starts here ---
+            total = len(users)
+            progress_bar_length = 10
+            sent_count = 0
+
+            def make_progress_bar(done, total, bar_len=10):
+                filled = int(bar_len * done / total) if total else 0
+                return "[" + "█" * filled + "-" * (bar_len - filled) + f"] {done}/{total}"
+
+            # Show initial progress bar
+            progress = make_progress_bar(sent_count, total, progress_bar_length)
+            await preview_msg.edit(
+                embed=discord.Embed(
+                    title="DMing Users",
+                    description=f"DMing users: {progress}",
+                    color=discord.Color.blue()
+                ),
+                view=None
+            )
+
+            for idx, user in enumerate(users, 1):
+                try:
+                    await user.send(embed=preview_embed)
+                    # Send attachments if any (non-image files)
+                    for attachment in message.attachments:
+                        if not (attachment.content_type and attachment.content_type.startswith("image/")):
+                            await user.send(file=await attachment.to_file())
+                except Exception:
+                    failed_users.append(getattr(user, 'mention', str(user)))
+                sent_count += 1
+                # Update progress every 5 users or on last user
+                if sent_count % 5 == 0 or sent_count == total:
+                    progress = make_progress_bar(sent_count, total, progress_bar_length)
+                    await preview_msg.edit(
+                        embed=discord.Embed(
+                            title="DMing Users",
+                            description=f"DMing users: {progress}",
+                            color=discord.Color.blue()
+                        ),
+                        view=None
+                    )
+            await preview_msg.edit(
+                embed=discord.Embed(
+                    title="DM Sent",
+                    description="DM sent to selected roles.",
+                    color=discord.Color.green()
+                ),
+                view=None
+            )
+            if failed_users:
+                failed_embed = discord.Embed(
+                    title="Some Users Could Not Be DMed",
+                    description="\n".join(failed_users),
+                    color=discord.Color.red()
+                )
+                await message.channel.send(embed=failed_embed)
+            else:
+                await message.channel.send(
+                    embed=discord.Embed(
+                        title="DM Completed",
+                        description="DM sent to all selected users.",
+                        color=discord.Color.green()
+                    )
+                )
             await message.delete()
 
 async def setup(bot):

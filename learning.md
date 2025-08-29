@@ -301,3 +301,38 @@ self.bot.add_view(HelpView(self))  # Pass cog reference
 ```
 
 **The critical difference is passing the cog instance to the view constructor, matching the pattern used in the working attendance system.**
+
+---
+
+## Slash Command Logging: Ensuring Comprehensive Coverage
+
+### Problem
+
+Need to log all slash command invocations for monitoring and debugging. Previously, some commands were not being logged.
+
+---
+
+## Why Slash Command Logging Did Not Work Before, and What Fixed It
+
+### What Didn't Work
+
+Previously, only the `on_command` event and (optionally) `on_application_command` were being used to log command usage. However, these listeners do **not** always capture all types of slash command invocations, especially if:
+
+- The command is a pure application (slash) command (using `@app_commands.command` or `@bot.tree.command`).
+- The event name or signature does not match the discord.py version in use.
+- The command is a hybrid command or registered in a way that bypasses the listener.
+
+As a result, some slash commands (like `/udau`) were not being logged, because their invocations did not trigger the expected event handler.
+
+### What Made It Work
+
+Adding a listener for `on_app_command_completion` (discord.py 2.x+) ensures that **all** application command completions—including pure slash commands and hybrid commands—are logged. This event is specifically designed to fire after any application command (slash command) is executed, regardless of how it was registered.
+
+**Key changes that made it work:**
+
+- Added the `on_app_command_completion` listener to the cog.
+- Used the `interaction` and `command` parameters to extract user, command name, and options.
+- Ensured the logging logic is compatible with both hybrid and pure slash commands.
+
+**Summary:**  
+The fix was to use the correct event (`on_app_command_completion`) that is guaranteed to fire for all slash command invocations, ensuring comprehensive logging of all command types, including `/udau`.
