@@ -3,8 +3,7 @@ from discord.ext import commands, tasks
 from discord import app_commands, Interaction
 import pytz
 from datetime import datetime, time, timedelta
-
-ATTENDANCE_CHANNEL_ID = 1393576065427046621
+from config import ATTENDANCE_CHANNEL_ID
 
 class AttendanceView(discord.ui.View):
     def __init__(self, cog):

@@ -1,7 +1,6 @@
 import discord
 from discord.ext import commands
-
-LOG_CHANNEL_ID = 1408799166267920455  # Replace with your log channel ID
+from config import LOG_CHANNEL_ID
 
 class LogsCog(commands.Cog):
     def __init__(self, bot):

@@ -5,3 +5,9 @@ __pycache__/
 # Ignore virtual environment directories
 venv/
 env/
+
+# Ignore learning documentation files
+learning_progress.md
+learning.md
+notes.md
+nohup.out

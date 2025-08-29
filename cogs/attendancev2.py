@@ -4,9 +4,8 @@ import pytz
 from datetime import datetime, timedelta
 import os
 import json
+from config import ATTENDANCE_CHANNEL_ID, MANAGER_CHANNEL_ID
 
-ATTENDANCE_CHANNEL_ID = 1393576065427046621
-MANAGER_CHANNEL_ID = 1390954199591813121
 ROLE_ID = 1130051976189722680
 ATTENDANCE_KEYWORD = "jay"  # Users must reply with this word (case-insensitive)
 
