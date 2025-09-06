@@ -100,8 +100,8 @@ class WelcomeDetailsSelect(discord.ui.Select):
                     "📍 **IdeaX Registration Opens:** July 21\n"
                     "📍 **Internal Ideathon Registration:** August 10 to August 26\n"
                     "📍 **Internal Ideathon:** August 29\n"
-                    "📍 **IdeaX Registration Closes:** September 6\n"
-                    "📍 **IdeaX Online Round:** September 11 to 16\n"
+                    "📍 **IdeaX Registration Closes:** September 16\n"
+                    "📍 **IdeaX Online Round:** September 19 to 21\n"
                     "📍 **IdeaX Final Hackathon:** October 31, November 1, November 2\n\n"
                     "The event is scheduled for October/November 2025, immediately after Tihar and Chhath holidays."
                 ),
