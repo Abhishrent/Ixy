@@ -68,9 +68,13 @@ class DailyWordleGame(commands.Cog):
         with open(GAME_DATA_FILE, 'w') as f:
             json.dump(self.game_data, f, indent=2)
 
+    def get_nepal_now(self):
+        """Get current datetime in Nepal Time (UTC+5:45)"""
+        return datetime.now(timezone.utc) + timedelta(hours=5, minutes=45)
+
     def get_today_date(self):
-        """Get today's date in YYYY-MM-DD format"""
-        return datetime.now(timezone.utc).strftime('%Y-%m-%d')
+        """Get today's date in YYYY-MM-DD format (Nepal Time)"""
+        return self.get_nepal_now().strftime('%Y-%m-%d')
 
     def get_new_daily_word(self):
         """Get a new word for today"""
@@ -79,7 +83,7 @@ class DailyWordleGame(commands.Cog):
     def reset_daily_game(self):
         """Reset the game for a new day. Update streaks and recalculate top streaks."""
         today = self.get_today_date()
-        yesterday = (datetime.now(timezone.utc) - timedelta(days=1)).strftime('%Y-%m-%d')
+        yesterday = (self.get_nepal_now() - timedelta(days=1)).strftime('%Y-%m-%d')
         previous_word = self.game_data.get("current_word")
         previous_winner = self.game_data.get("winner")
         streaks = self.game_data.get("streaks", {})
@@ -101,22 +105,6 @@ class DailyWordleGame(commands.Cog):
                 "top_streaks": top_streaks  # Preserve top_streaks data
             }
             
-            # TESTING: Commented out streak incrementing for previous winner to avoid unintended streak increases
-            # if previous_winner and previous_winner.get("date") == yesterday:
-            #     # Increment streak for the winner
-            #     winner_id = str(previous_winner["user_id"])
-            #     new_game_data["streaks"][winner_id] = streaks.get(winner_id, 0) + 1
-                
-            #     # Get username for top streak update
-            #     username = previous_winner.get("username", "Unknown")
-                
-            #     # Update top streaks with the correct username and new streak value
-            #     self.update_top_streaks(
-            #         streak=new_game_data["streaks"][winner_id],
-            #         user_id=winner_id,
-            #         username=username
-            #     )
-
             # Only reset all streaks to 0 if no winner yesterday
             if not (previous_winner and previous_winner.get("date") == yesterday):
                 new_game_data["streaks"] = {uid: 0 for uid in streaks}
@@ -180,7 +168,7 @@ class DailyWordleGame(commands.Cog):
             inline=False
         )
         embed.set_thumbnail(url=EMBED_THUMBNAIL)
-        embed.set_footer(text="New word every day at midnight UTC!")
+        embed.set_footer(text="New word every day at midnight")
 
         await channel.send(embed=embed, view=view)
 
@@ -233,7 +221,7 @@ class DailyWordleGame(commands.Cog):
                 temp_msg = await message.channel.send(
                     embed=discord.Embed(
                         title="Game Over",
-                        description="Today's game has already been won! New word tomorrow at midnight UTC.",
+                        description="Today's game has already been won! New word tomorrow at midnight",
                         color=discord.Color.red()
                     ).set_thumbnail(url=EMBED_THUMBNAIL),
                     delete_after=5
@@ -319,7 +307,7 @@ class DailyWordleGame(commands.Cog):
         if streak <= 0 or user_id is None:
             return
             
-        today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+        today = self.get_today_date()
         
         # If username is None, try to get from guild member
         if username is None:
@@ -579,6 +567,7 @@ class DailyWordleGame(commands.Cog):
             color=discord.Color.green()
         )
         embed.set_thumbnail(url=EMBED_THUMBNAIL)
+        embed.set_footer(text="New word every day at midnight")
         await ctx.send(embed=embed)
 
         await self.setup_daily_game()
