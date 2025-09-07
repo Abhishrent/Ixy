@@ -190,8 +190,36 @@ class LeaderboardWatcher(commands.Cog):
             # Replace "achieved a new personal best" with "achieved a new personal best"
             dm_msg = dm_msg.replace("achieved a new personal best", "achieved a new personal best")
 
+        # --- Embed title logic ---
+        # Try to extract game name and event type from the message
+        title = "Leaderboard Update"
+        if "Memory" in msg:
+            game = "Memory"
+        elif "Sequence" in msg:
+            game = "Sequence"
+        elif "Wordle" in msg:
+            game = "Wordle"
+        else:
+            game = "Leaderboard"
+
+        if "entered the" in msg:
+            event = "New Entry"
+        elif "was removed" in msg:
+            event = "Removal"
+        elif "moved up" in msg:
+            event = "Promotion"
+        elif "moved down" in msg:
+            event = "Demotion"
+        elif "personal best" in msg:
+            event = "Personal Best"
+        else:
+            event = "Update"
+
+        title = f"{game} Leaderboard - {event}"
+
         # Channel embed (third person)
         embed = discord.Embed(
+            title=title,
             description=msg,
             color=discord.Color.gold()
         )
@@ -200,6 +228,7 @@ class LeaderboardWatcher(commands.Cog):
 
         # DM embed (second person)
         dm_embed = discord.Embed(
+            title=title,
             description=dm_msg,
             color=discord.Color.gold()
         )
