@@ -1,16 +1,56 @@
 {
-  "mood": "overjoyed",
+  "mood": "happy",
   "members": {
     "1003987908744708176": {
       "name": "Abhishrent",
-      "friendship": 26,
+      "friendship": 2,
       "favorite": false,
       "gifts": [
         "🌹",
         "💎",
         "🍌",
         "📢",
-        "💀"
+        "💀",
+        "💣",
+        "🎀",
+        "🍼",
+        "🫁",
+        "💐"
+      ]
+    },
+    "1020287053533020191": {
+      "name": "Maehofamous",
+      "friendship": 16,
+      "favorite": false,
+      "gifts": [
+        "💀🚕🖕🏿✌🏿🌼🤨😎🤫🫡🤟🫳🫴🦾🧠",
+        "🍨🍲🍲🍰🍲🍰🎾🥊🎾🤿🤿🥎🤿🏏🪃🏐🪃🥅🥊🪀🛹🪀🏎️🚔🏎️🏍️🚎🦼🏎️🛺🚍🚓🚍🚓🖥️📟📟🎞️🖥️🎞️📞🖨️📞📠💻📲🖨️🕹️🖲️🗜️📀📺💷⏲️💸⏲️💸🧯💘💘💞🩵💞💓💗🪯♐️♐️🪯♐️🪯㊗️🈚️㊗️🈚️🈹🈚️🈲🈚️🈲🈚️⚠️♨️⚠️⁉️♨️⁉️⚠️♨️⚠️♨️〽️🈂️🈂️🈳🛅🔤🏳️🇦🇬🏳️🇧🇸🏳️‍⚧️🏳️‍⚧️🇦🇹🏳️‍⚧️🏳️‍⚧️🏳️‍🌈🇧🇭🏳️‍🌈🇳🇵🇳🇵🇳🇵🇳🇵🇳🇵🇳🇵🇳🇵🇳🇵🇳🇵🇳🇵🇳🇵🇳🇵"
+      ]
+    },
+    "1386173904355328071": {
+      "name": "𝓘𝔁𝔂",
+      "friendship": 0,
+      "favorite": false,
+      "gifts": []
+    },
+    "542227412671397899": {
+      "name": "Banshaj.Bhairu",
+      "friendship": 0,
+      "favorite": false,
+      "gifts": []
+    },
+    "936588636479184966": {
+      "name": "Sachita",
+      "friendship": -7,
+      "favorite": false,
+      "gifts": []
+    },
+    "758266841876922438": {
+      "name": "nilinili",
+      "friendship": 6,
+      "favorite": false,
+      "gifts": [
+        "🌸"
       ]
     }
   }
