@@ -19,6 +19,12 @@
   ],
   "wordle": [
     {
+      "max_streak": 5,
+      "user_id": 936588636479184966,
+      "username": "sachiiiiiiiiii",
+      "date": "2025-09-06"
+    },
+    {
       "max_streak": 3,
       "user_id": 752811396391239691,
       "username": "Miraj Bhattarai",
@@ -29,12 +35,6 @@
       "user_id": 934820587572953118,
       "username": "grishrana",
       "date": "2025-08-21"
-    },
-    {
-      "max_streak": 2,
-      "user_id": 936588636479184966,
-      "username": "sachiiiiiiiiii",
-      "date": "2025-08-26"
     }
   ]
 }
