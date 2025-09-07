@@ -1,27 +1,37 @@
 {
-  "current_word": "STATE",
-  "current_date": "2025-08-28",
+  "current_word": "USERS",
+  "current_date": "2025-09-07",
   "winner": {
-    "user_id": 934820587572953118,
-    "username": "grishrana1",
-    "guess": "STATE",
-    "date": "2025-08-28"
+    "user_id": 758266841876922438,
+    "username": "nekonya0151",
+    "guess": "USERS",
+    "date": "2025-09-07"
   },
   "game_active": false,
   "guesses_today": [
-    "HACKS",
-    "STACK",
-    "STATE"
+    "AEIOU",
+    "ELUDE",
+    "TUPEL",
+    "QUEUE",
+    "UBERS",
+    "USERS"
   ],
-  "previous_word": "APPLE",
+  "previous_word": "TOKEN",
   "previous_day_winner": true,
   "streaks": {
-    "934820587572953118": 2,
+    "934820587572953118": 0,
     "752811396391239691": 0,
     "1003987908744708176": 0,
-    "936588636479184966": 0
+    "936588636479184966": 0,
+    "758266841876922438": 1
   },
   "top_streaks": [
+    {
+      "max_streak": 5,
+      "user_id": 936588636479184966,
+      "username": "sachiiiiiiiiii",
+      "date": "2025-09-06"
+    },
     {
       "max_streak": 3,
       "user_id": 752811396391239691,
@@ -33,12 +43,6 @@
       "user_id": 934820587572953118,
       "username": "grishrana",
       "date": "2025-08-21"
-    },
-    {
-      "max_streak": 2,
-      "user_id": 936588636479184966,
-      "username": "sachiiiiiiiiii",
-      "date": "2025-08-26"
     }
   ]
 }
