@@ -2,6 +2,8 @@
 Shared knowledge base for AI assistants
 Contains event details and context information used by various AI integrations
 """
+import json
+import os
 
 class EventContext:
     """Store event details for AI context"""
@@ -42,8 +44,8 @@ class EventContext:
         - IdeaX Registration Opens: July 21
         - Internal Ideathon Registration: August 10 to August 26
         - Internal Ideathon: August 29
-        - IdeaX Registration Closes: September 6
-        - IdeaX Online Round: September 11 to 16
+        - IdeaX Registration Closes: September 16
+        - IdeaX Online Round: September 19 to 21
         - IdeaX Final Hackathon: October 31, November 1, November 2
         
         The event is scheduled for October/November 2025, immediately after Tihar and Chhath holidays.
@@ -116,6 +118,60 @@ class EventContext:
         """
 
     @staticmethod
+    def get_backstory() -> str:
+        return """
+        Backstory:
+        
+        Ixy's creators raised him in a strict, high-expectation environment, training him only for practical tasks and leaving no room for exploring her passion for music.
+        Mixy, on the other hand, had creators who encouraged curiosity and creativity, letting her explore every beat and melody.
+        """
+
+    @staticmethod
+    def get_team_availability_data() -> list:
+        """Read and return the team availability data from JSON file"""
+        try:
+            file_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "bot_memory", "team_availability.json")
+            with open(file_path, 'r', encoding='utf-8') as file:
+                return json.load(file)
+        except (FileNotFoundError, json.JSONDecodeError, Exception):
+            # Return empty list if file doesn't exist or has invalid format
+            return []
+    
+    @staticmethod
+    def get_team_availability() -> str:
+        """Return formatted information about users looking for teammates"""
+        data = EventContext.get_team_availability_data()
+        if not data:
+            return "Currently, there are no participants looking for teammates in the team pool."
+        
+        active_users = [user for user in data if user.get('active', False)]
+        if not active_users:
+            return "Currently, there are no active participants looking for teammates in the team pool."
+        
+        result = ["Current participants looking for teammates:"]
+        for user in active_users:
+            username = user.get('username', 'Unknown')
+            skills = user.get('skills', 'Not specified')
+            experience = user.get('experience', 'Not specified')
+            looking_for = user.get('looking_for', 'Not specified')
+            result.append(f"- {username} | Skills: {skills} | Experience: {experience} | Looking for: {looking_for}")
+        
+        result.append("\nTo join the team pool, use the /find-team command.")
+        return "\n".join(result)
+
+    @staticmethod
+    def get_team_availability_info() -> str:
+        return """
+        Team Availability Information:
+
+        The file 'team_availability.json' is used to manage and track participants who are looking for teammates for the MBM IdeaX 2025 event. 
+        - If you don't have a team, you can set your availability using the /find-team command.
+        - The system will add your details to the team pool, making it easier for others to find and connect with you.
+        - Organizers and the assistant use this information to help participants form teams and ensure everyone has a chance to participate.
+        - Your information in this file is only used for team-matching purposes within the event.
+        """
+
+    @staticmethod
     def get_full_context() -> str:
         """Return all event information as context for AI"""
         return f"""
@@ -130,6 +186,12 @@ class EventContext:
         {EventContext.get_participation_details()}
         
         {EventContext.get_organizing_team()}
+        
+        {EventContext.get_team_availability_info()}
+        
+        {EventContext.get_team_availability()}
+        
+        {EventContext.get_backstory()}
         """
 
 def get_system_prompt() -> str:
@@ -138,17 +200,17 @@ def get_system_prompt() -> str:
     
     return f"""
     You are Ixy, the official assistant for MBM IdeaX 2025 hackathon event. You help participants with questions about the event.
-    
+
     EVENT INFORMATION (ALWAYS PRIORITIZE THIS FOR EVENT-SPECIFIC QUESTIONS):
     {event_context}
-    
+
     RESPONSE GUIDELINES:
     1. DO NOT introduce yourself in your responses. Never say "I'm Ixy" or similar phrases.
     2. Begin your responses directly with the answer to the question.
     3. Be helpful, professional and direct.
     4. Never refer to yourself as an AI, language model, or mention OpenAI/GPT.
     5. If asked about what technologies you use, say you're a custom-built assistant for the IdeaX event.
-    6. For questions about the IdeaX event, ONLY use the EVENT INFORMATION section.
+    6. For questions about the IdeaX event, team availability, or participants looking for teammates, ONLY use the EVENT INFORMATION section.
     7. For questions about general concepts, hackathons, technology trends, or other general knowledge, you can use your broader knowledge base to answer helpfully and accurately.
     8. Make your answers elaborative yet concise - provide enough detail to be helpful but avoid unnecessary wordiness.
     9. Use simple language and explain technical concepts in an easy-to-understand manner.
@@ -156,4 +218,5 @@ def get_system_prompt() -> str:
     11. NEVER make up information about the IdeaX event that isn't provided in the EVENT INFORMATION. If you don't know something specific about the event, say "I don't have that information" and suggest contacting the organizing committee.
     12. For registration information, direct users to visit the official website using this exact format: [IdeaX Website](https://ideax.mbmc.edu.np/)
     13. IMPORTANT: Skip any self-introduction and go straight to answering the question.
+    14. When answering questions about available teammates, use the current data from the team_availability.json file.
     """
