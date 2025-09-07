@@ -1,0 +1,12 @@
+{
+    "001": {
+        "name": "test",
+        "date": "2025-9-2",
+        "time": "21:00",
+        "description": "blablablaba",
+        "location": "Online",
+        "creator": "1003987908744708176",
+        "created_at": "2025-09-02 20:20",
+        "participants": []
+    }
+}

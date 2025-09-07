@@ -1,0 +1,235 @@
+{
+  "A": [
+    ["Afghanistan", "AFN"],
+    ["Albania", "ALL"],
+    ["Algeria", "DZD"],
+    ["American Samoa", "USD"],
+    ["Andorra", "EUR"],
+    ["Angola", "AOA"],
+    ["Anguilla", "XCD"],
+    ["Antarctica", "No universal currency"],
+    ["Antigua and Barbuda", "XCD"],
+    ["Argentina", "ARS"],
+    ["Armenia", "AMD"],
+    ["Aruba", "AWG"],
+    ["Australia", "AUD"],
+    ["Austria", "EUR"],
+    ["Azerbaijan", "AZN"]
+  ],
+  "B": [
+    ["Bahamas", "BSD"],
+    ["Bahrain", "BHD"],
+    ["Bangladesh", "BDT"],
+    ["Barbados", "BBD"],
+    ["Belarus", "BYN"],
+    ["Belgium", "EUR"],
+    ["Belize", "BZD"],
+    ["Benin", "XOF"],
+    ["Bermuda", "BMD"],
+    ["Bhutan", "BTN"],
+    ["Bolivia", "BOB"],
+    ["Bosnia and Herzegovina", "BAM"],
+    ["Botswana", "BWP"],
+    ["Brazil", "BRL"],
+    ["Brunei", "BND"],
+    ["Bulgaria", "BGN"],
+    ["Burkina Faso", "XOF"],
+    ["Burundi", "BIF"]
+  ],
+  "C": [
+    ["Cambodia", "KHR"],
+    ["Cameroon", "XAF"],
+    ["Canada", "CAD"],
+    ["Cape Verde", "CVE"],
+    ["Cayman Islands", "KYD"],
+    ["Central African Republic", "XAF"],
+    ["Chad", "XAF"],
+    ["Chile", "CLP"],
+    ["China", "CNY"],
+    ["Colombia", "COP"],
+    ["Comoros", "KMF"],
+    ["Congo", "XAF"],
+    ["Cook Islands", "NZD"],
+    ["Costa Rica", "CRC"],
+    ["Croatia", "HRK"],
+    ["Cuba", "CUP"],
+    ["Cyprus", "EUR"],
+    ["Czech Republic", "CZK"]
+  ],
+  "D": [
+    ["Denmark", "DKK"],
+    ["Djibouti", "DJF"],
+    ["Dominica", "XCD"],
+    ["Dominican Republic", "DOP"]
+  ],
+  "E": [
+    ["Ecuador", "USD"],
+    ["Egypt", "EGP"],
+    ["El Salvador", "USD"],
+    ["Estonia", "EUR"],
+    ["Ethiopia", "ETB"],
+    ["European Union", "EUR"]
+  ],
+  "F": [
+    ["Falkland Islands", "FKP"],
+    ["Fiji", "FJD"],
+    ["Finland", "EUR"],
+    ["France", "EUR"]
+  ],
+  "G": [
+    ["Gabon", "XAF"],
+    ["Gambia", "GMD"],
+    ["Georgia", "GEL"],
+    ["Germany", "EUR"],
+    ["Ghana", "GHS"],
+    ["Gibraltar", "GIP"],
+    ["Greece", "EUR"],
+    ["Grenada", "XCD"],
+    ["Guatemala", "GTQ"],
+    ["Guinea", "GNF"],
+    ["Guyana", "GYD"]
+  ],
+  "H": [
+    ["Haiti", "HTG"],
+    ["Honduras", "HNL"],
+    ["Hong Kong", "HKD"],
+    ["Hungary", "HUF"]
+  ],
+  "I": [
+    ["Iceland", "ISK"],
+    ["India", "INR"],
+    ["Indonesia", "IDR"],
+    ["Iran", "IRR"],
+    ["Iraq", "IQD"],
+    ["Ireland", "EUR"],
+    ["Israel", "ILS"],
+    ["Italy", "EUR"]
+  ],
+  "J": [
+    ["Jamaica", "JMD"],
+    ["Japan", "JPY"],
+    ["Jordan", "JOD"]
+  ],
+  "K": [
+    ["Kazakhstan", "KZT"],
+    ["Kenya", "KES"],
+    ["Kuwait", "KWD"],
+    ["Kyrgyzstan", "KGS"]
+  ],
+  "L": [
+    ["Laos", "LAK"],
+    ["Latvia", "EUR"],
+    ["Lebanon", "LBP"],
+    ["Lesotho", "LSL"],
+    ["Liberia", "LRD"],
+    ["Libya", "LYD"],
+    ["Lithuania", "EUR"],
+    ["Luxembourg", "EUR"]
+  ],
+  "M": [
+    ["Madagascar", "MGA"],
+    ["Malawi", "MWK"],
+    ["Malaysia", "MYR"],
+    ["Maldives", "MVR"],
+    ["Mali", "XOF"],
+    ["Malta", "EUR"],
+    ["Mauritania", "MRU"],
+    ["Mauritius", "MUR"],
+    ["Mexico", "MXN"],
+    ["Moldova", "MDL"],
+    ["Monaco", "EUR"],
+    ["Mongolia", "MNT"],
+    ["Montenegro", "EUR"],
+    ["Morocco", "MAD"],
+    ["Mozambique", "MZN"],
+    ["Myanmar", "MMK"]
+  ],
+  "N": [
+    ["Namibia", "NAD"],
+    ["Nepal", "NPR"],
+    ["Netherlands", "EUR"],
+    ["New Zealand", "NZD"],
+    ["Nicaragua", "NIO"],
+    ["Niger", "XOF"],
+    ["Nigeria", "NGN"],
+    ["North Korea", "KPW"],
+    ["Norway", "NOK"]
+  ],
+  "O": [
+    ["Oman", "OMR"]
+  ],
+  "P": [
+    ["Pakistan", "PKR"],
+    ["Panama", "PAB"],
+    ["Papua New Guinea", "PGK"],
+    ["Paraguay", "PYG"],
+    ["Peru", "PEN"],
+    ["Philippines", "PHP"],
+    ["Poland", "PLN"],
+    ["Portugal", "EUR"]
+  ],
+  "Q": [
+    ["Qatar", "QAR"]
+  ],
+  "R": [
+    ["Romania", "RON"],
+    ["Russia", "RUB"],
+    ["Rwanda", "RWF"]
+  ],
+  "S": [
+    ["Saint Lucia", "XCD"],
+    ["Samoa", "WST"],
+    ["Saudi Arabia", "SAR"],
+    ["Senegal", "XOF"],
+    ["Serbia", "RSD"],
+    ["Seychelles", "SCR"],
+    ["Sierra Leone", "SLL"],
+    ["Singapore", "SGD"],
+    ["Slovakia", "EUR"],
+    ["Slovenia", "EUR"],
+    ["Solomon Islands", "SBD"],
+    ["Somalia", "SOS"],
+    ["South Africa", "ZAR"],
+    ["South Korea", "KRW"],
+    ["Spain", "EUR"],
+    ["Sri Lanka", "LKR"],
+    ["Sudan", "SDG"],
+    ["Suriname", "SRD"],
+    ["Sweden", "SEK"],
+    ["Switzerland", "CHF"],
+    ["Syria", "SYP"]
+  ],
+  "T": [
+    ["Taiwan", "TWD"],
+    ["Tajikistan", "TJS"],
+    ["Tanzania", "TZS"],
+    ["Thailand", "THB"],
+    ["Togo", "XOF"],
+    ["Tonga", "TOP"],
+    ["Trinidad and Tobago", "TTD"],
+    ["Tunisia", "TND"],
+    ["Turkey", "TRY"],
+    ["Turkmenistan", "TMT"]
+  ],
+  "U": [
+    ["Uganda", "UGX"],
+    ["Ukraine", "UAH"],
+    ["United Arab Emirates", "AED"],
+    ["United Kingdom", "GBP"],
+    ["United States", "USD"],
+    ["Uruguay", "UYU"],
+    ["Uzbekistan", "UZS"]
+  ],
+  "V": [
+    ["Vanuatu", "VUV"],
+    ["Venezuela", "VES"],
+    ["Vietnam", "VND"]
+  ],
+  "Y": [
+    ["Yemen", "YER"]
+  ],
+  "Z": [
+    ["Zambia", "ZMW"],
+    ["Zimbabwe", "ZWL"]
+  ]
+}
