@@ -100,6 +100,13 @@ class AnnouncementCog(commands.Cog):
                             pings.extend(user.mention for user in message.mentions)
                         if message.role_mentions:
                             pings.extend(role.mention for role in message.role_mentions)
+                        
+                        # Check for @everyone and @here mentions
+                        if "@everyone" in message.content:
+                            pings.append("@everyone")
+                        if "@here" in message.content:
+                            pings.append("@here")
+                        
                         content = " ".join(pings) if pings else None
                         await output_channel.send(content=content, embed=embed)
                     except Exception:
