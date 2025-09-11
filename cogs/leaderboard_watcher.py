@@ -7,11 +7,12 @@ from datetime import datetime
 from config import EMBED_THUMBNAIL, LEADERBOARD_CHANNEL_ID
 
 # --- File paths ---
-BASE_DIR = os.path.dirname(os.path.dirname(__file__))
-GAME_FILES = os.path.join(BASE_DIR, "game_files")
+BASE_DIR = os.path.dirname(__file__)
+GAME_FILES = os.path.join(BASE_DIR, "games", "game_files")
 MEMORY_FILE = os.path.join(GAME_FILES, "memory.json")
 SEQUENCE_FILE = os.path.join(GAME_FILES, "sequence.json")
 WORDLE_FILE = os.path.join(GAME_FILES, "daily_wordle.json")
+NUMBER_GUESSER_FILE = os.path.join(GAME_FILES, "number_guesser.json")
 LEADERBOARD_STATE_FILE = os.path.join(GAME_FILES, "leaderboards.json")
 
 # --- Channel to post leaderboard changes ---
@@ -55,6 +56,7 @@ class LeaderboardWatcher(commands.Cog):
         self.memory_fields = ["user_id", "username", "best_time", "time_display", "date"]
         self.sequence_fields = ["user_id", "username", "max_round", "tiles_memorised", "date"]
         self.wordle_fields = ["user_id", "username", "max_streak", "date"]
+        self.number_guesser_fields = ["user_id", "username", "wins"]
         self.check_leaderboards.start()
 
     def cog_unload(self):
@@ -75,12 +77,26 @@ class LeaderboardWatcher(commands.Cog):
         sequence = safe_load_json(SEQUENCE_FILE, [])
         wordle_data = safe_load_json(WORDLE_FILE, {})
         wordle = wordle_data.get("top_streaks", [])
+        
+        # Load number guesser scores and convert to leaderboard format
+        number_guesser_data = safe_load_json(NUMBER_GUESSER_FILE, {})
+        number_guesser_scores = number_guesser_data.get("scores", {})
+        number_guesser = []
+        for user_id, wins in number_guesser_scores.items():
+            number_guesser.append({
+                "user_id": user_id,
+                "username": "Unknown",  # Will be populated by the system
+                "wins": wins
+            })
+        # Sort by wins (descending)
+        number_guesser.sort(key=lambda x: x["wins"], reverse=True)
 
         # Prepare current state
         curr_state = {
             "memory": memory,
             "sequence": sequence,
-            "wordle": wordle
+            "wordle": wordle,
+            "number_guesser": number_guesser
         }
 
         # Compare and detect changes for each game
@@ -108,6 +124,15 @@ class LeaderboardWatcher(commands.Cog):
             prev_state.get("wordle", []),
             self.wordle_fields,
             key_score="max_streak",
+            better="higher",
+            channel=channel
+        )
+        await self.process_game(
+            "Number Guesser",
+            number_guesser,
+            prev_state.get("number_guesser", []),
+            self.number_guesser_fields,
+            key_score="wins",
             better="higher",
             channel=channel
         )
@@ -199,6 +224,8 @@ class LeaderboardWatcher(commands.Cog):
             game = "Sequence"
         elif "Wordle" in msg:
             game = "Wordle"
+        elif "Number Guesser" in msg:
+            game = "Number Guesser"
         else:
             game = "Leaderboard"
 
