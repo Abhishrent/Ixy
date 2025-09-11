@@ -84,15 +84,18 @@ async def on_ready():
     # except Exception as error:
     #     print(f"Oh, something went wrong: {error}")
 
-    # Dynamically load cogs from the cogs directory
-    for filename in os.listdir('./cogs'):
-        if filename.endswith('.py'):
-            cog_name = f'cogs.{filename[:-3]}'
-            try:
-                await bot.load_extension(cog_name)
-                print(f'Loaded cog: {cog_name}')
-            except Exception as e:
-                print(f'Failed to load cog {cog_name}: {e}')
+    # Dynamically load cogs from the cogs directory and its subdirectories
+    for root, _, files in os.walk('./cogs'):
+        for file in files:
+            if file.endswith('.py'):
+                # Construct the cog name with subdirectory support
+                cog_path = os.path.join(root, file).replace('./', '').replace('/', '.').replace('\\', '.')
+                cog_name = cog_path[:-3]  # Remove the .py extension
+                try:
+                    await bot.load_extension(cog_name)
+                    print(f'Loaded cog: {cog_name}')
+                except Exception as e:
+                    print(f'Failed to load cog {cog_name}: {e}')
 
     # Sync slash commands
     await bot.tree.sync()
