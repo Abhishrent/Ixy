@@ -6,10 +6,11 @@ from config import EMBED_THUMBNAIL
 
 MEDALS = [":first_place:", ":second_place:", ":third_place:"]
 
-MEMORY_FILE = os.path.join(os.path.dirname(os.path.dirname(__file__)), "game_files", "memory.json")
-SEQUENCE_FILE = os.path.join(os.path.dirname(os.path.dirname(__file__)), "game_files", "sequence.json")
-WORDLE_FILE = os.path.join(os.path.dirname(os.path.dirname(__file__)), "game_files", "daily_wordle.json")
-LEADERBOARD_USERS_FILE = os.path.join(os.path.dirname(os.path.dirname(__file__)), "game_files", "leaderboards.json")
+MEMORY_FILE = os.path.join(os.path.dirname(__file__), "games", "game_files", "memory.json")
+SEQUENCE_FILE = os.path.join(os.path.dirname(__file__), "games", "game_files", "sequence.json")
+WORDLE_FILE = os.path.join(os.path.dirname(__file__), "games", "game_files", "daily_wordle.json")
+NUMBER_GUESSER_FILE = os.path.join(os.path.dirname(__file__), "games", "game_files", "number_guesser.json")
+LEADERBOARD_USERS_FILE = os.path.join(os.path.dirname(__file__), "games", "game_files", "leaderboards.json")
 
 class Leaderboards(commands.Cog):
     def __init__(self, bot):
@@ -99,6 +100,37 @@ class Leaderboards(commands.Cog):
         else:
             wordle_text = "No streaks yet."
 
+        # --- Number Guesser ---
+        number_guesser_text = ""
+        if os.path.exists(NUMBER_GUESSER_FILE):
+            try:
+                with open(NUMBER_GUESSER_FILE, "r") as f:
+                    data = json.load(f)
+                scores = data.get("scores", {})
+            except Exception:
+                scores = {}
+            
+            if scores:
+                # Convert to list format for sorting
+                score_list = []
+                for user_id, wins in scores.items():
+                    username = user_map.get(str(user_id), "Unknown")
+                    score_list.append({"user_id": user_id, "username": username, "wins": wins})
+                
+                # Sort by wins (descending)
+                score_list.sort(key=lambda x: x["wins"], reverse=True)
+                
+                for idx, entry in enumerate(score_list[:10], 1):
+                    medal = MEDALS[idx-1] if idx <= 3 else ""
+                    user_id = entry.get("user_id")
+                    mention = self.user_mention(user_id)
+                    username = entry.get("username", "Unknown")
+                    number_guesser_text += f"{medal} {mention} ({username})\nWins: **{entry.get('wins', 0)}**\n\n"
+            else:
+                number_guesser_text = "No wins yet."
+        else:
+            number_guesser_text = "No wins yet."
+
         embed = discord.Embed(
             title="🏅 Game Leaderboards",
             color=discord.Color.purple()
@@ -117,6 +149,11 @@ class Leaderboards(commands.Cog):
         embed.add_field(
             name="🏆 Daily Wordle (Longest Streaks)",
             value=wordle_text,
+            inline=True
+        )
+        embed.add_field(
+            name="🎯 Number Guesser (Most Wins)",
+            value=number_guesser_text,
             inline=True
         )
         await ctx.send(embed=embed)
