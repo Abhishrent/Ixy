@@ -2,7 +2,6 @@ import discord
 from discord.ext import commands, tasks
 from googleapiclient.discovery import build
 from google.oauth2.service_account import Credentials
-import asyncio
 import json
 import os
 from config import NOTIFY_CHANNEL_ID

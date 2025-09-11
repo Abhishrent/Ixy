@@ -1,23 +1,21 @@
 {
-  "current_word": "USERS",
-  "current_date": "2025-09-07",
+  "current_word": "STACK",
+  "current_date": "2025-09-11",
   "winner": {
     "user_id": 758266841876922438,
     "username": "nekonya0151",
-    "guess": "USERS",
-    "date": "2025-09-07"
+    "guess": "STACK",
+    "date": "2025-09-11"
   },
   "game_active": false,
   "guesses_today": [
     "AEIOU",
-    "ELUDE",
-    "TUPEL",
-    "QUEUE",
-    "UBERS",
-    "USERS"
+    "BLANK",
+    "TRACK",
+    "STACK"
   ],
-  "previous_word": "TOKEN",
-  "previous_day_winner": true,
+  "previous_word": "REDIS",
+  "previous_day_winner": false,
   "streaks": {
     "934820587572953118": 0,
     "752811396391239691": 0,
