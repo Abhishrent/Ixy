@@ -5,7 +5,7 @@ import os
 import random
 import asyncio
 
-GAME_DATA_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../game_files/guess_number.json")
+GAME_DATA_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../game_files/number_guesser.json")
 GUESS_CHANNEL_ID = 1130051976667865095  # Channel where guess embeds are sent
 
 def load_scores():

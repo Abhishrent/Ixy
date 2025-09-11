@@ -12,7 +12,7 @@ CHECK_FREQUENCY = 1                               #
 TIMEOUT_DURATION = 5*60                              #
 #-------------------------------------------------#
 
-MEMORY_FILE = os.path.join(os.path.dirname(os.path.dirname(__file__)), "game_files", "memory.json")
+MEMORY_FILE = os.path.join(os.path.dirname(__file__), "game_files", "memory.json")
 
 class MemoryMatchingGame(commands.Cog):
     def __init__(self, bot):
