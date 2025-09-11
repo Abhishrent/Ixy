@@ -13,7 +13,7 @@ class WordleGame(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.games = {}
-        words_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../game_files/words.txt")
+        words_file = os.path.join(os.path.dirname(__file__), "game_files", "words.txt")
         self.word_list = self.load_words(words_file)
         self.game_timeout = TIMEOUT_DURATION
         self.check_game_timeouts.start()

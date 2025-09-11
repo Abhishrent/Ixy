@@ -215,7 +215,7 @@ class SequenceMemoryGame(commands.Cog):
             )
 
     def get_scores_filepath(self):
-        return os.path.join(os.path.dirname(os.path.dirname(__file__)), "game_files", "sequence.json")
+        return os.path.join(os.path.dirname(__file__), "game_files", "sequence.json")
 
     def load_top_scores(self):
         filepath = self.get_scores_filepath()

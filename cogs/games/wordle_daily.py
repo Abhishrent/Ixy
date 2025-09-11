@@ -7,7 +7,7 @@ import random
 from config import EMBED_THUMBNAIL, DAILY_WORDLE_CHANNEL_ID, WINNER_ANNOUNCEMENT_CHANNEL_ID
 
 # Constants
-GAME_DATA_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../game_files/daily_wordle.json")
+GAME_DATA_FILE = os.path.join(os.path.dirname(__file__), "game_files", "daily_wordle.json")
 
 class DailyWordleGame(commands.Cog):
     def __init__(self, bot):

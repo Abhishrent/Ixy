@@ -1,0 +1,46 @@
+{
+  "current_word": "STACK",
+  "current_date": "2025-09-11",
+  "winner": {
+    "user_id": 758266841876922438,
+    "username": "nekonya0151",
+    "guess": "STACK",
+    "date": "2025-09-11"
+  },
+  "game_active": false,
+  "guesses_today": [
+    "AEIOU",
+    "BLANK",
+    "TRACK",
+    "STACK"
+  ],
+  "previous_word": "REDIS",
+  "previous_day_winner": false,
+  "streaks": {
+    "934820587572953118": 0,
+    "752811396391239691": 0,
+    "1003987908744708176": 0,
+    "936588636479184966": 0,
+    "758266841876922438": 1
+  },
+  "top_streaks": [
+    {
+      "max_streak": 5,
+      "user_id": 936588636479184966,
+      "username": "sachiiiiiiiiii",
+      "date": "2025-09-06"
+    },
+    {
+      "max_streak": 3,
+      "user_id": 752811396391239691,
+      "username": "Miraj Bhattarai",
+      "date": "2025-08-24"
+    },
+    {
+      "max_streak": 2,
+      "user_id": 934820587572953118,
+      "username": "grishrana",
+      "date": "2025-08-21"
+    }
+  ]
+}
