@@ -1,6 +1,15 @@
 {
   "scores": {
-    "1003987908744708176": 1
+    "1003987908744708176": 2,
+    "542227412671397899": 1
   },
-  "active_game": null
+  "active_game": {
+    "secret_number": 87,
+    "min_range": 1,
+    "max_range": 100,
+    "attempts": 0,
+    "starter": 1386173904355328071,
+    "channel_id": 1130051976667865095,
+    "is_random_drop": true
+  }
 }
