@@ -7,7 +7,7 @@ import json
 from config import ATTENDANCE_CHANNEL_ID, MANAGER_CHANNEL_ID
 
 ROLE_ID = 1130051976189722680
-ATTENDANCE_KEYWORD = "jay"  # Users must reply with this word (case-insensitive)
+ATTENDANCE_KEYWORD = "desh chhod"  # Users must reply with this word (case-insensitive)
 
 BOT_MEMORY_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../bot_memory")
 ATTENDANCE_FILE = os.path.join(BOT_MEMORY_DIR, "attendance.json")
@@ -48,7 +48,7 @@ class AttendanceCog(commands.Cog):
         role = guild.get_role(ROLE_ID) if guild else None
         if channel and role:
             msg = await channel.send(
-                f"{role.mention} Shree Krishna bhagwan ko..."
+                f"{role.mention} KP chor"
             )
             self.last_attendance_message_id = msg.id
 
@@ -109,9 +109,9 @@ class AttendanceCog(commands.Cog):
                     if top_users:
                         top_mentions = ", ".join(f"**{name}**" for name in top_users)
                         divine_msg = (
-                            f"🌺 {top_mentions} chanted 'jay' {max_count} times today!\n"
-                            "✨ By the grace of Lord Krishna, your devotion shines the brightest today! ✨\n"
-                            "जय श्री कृष्णा! 🙏"
+                            f"🌺 {top_mentions} chanted 'desh chhod' {max_count} times today!\n"
+                            "✨ Your voice has echoed the sentiments of the people with unwavering determination! ✨\n"
+                            "जय जनता! 🙏"
                         )
                         await attendance_channel.send(divine_msg)
                 self.summary_sent_today = True
@@ -159,7 +159,7 @@ class AttendanceCog(commands.Cog):
                 save_attendance_today(self.attendance_today)
                 user_count = self.attendance_today[user_id]["count"]
                 await message.reply(
-                    f"You have chanted 'jay' {user_count} times today.",
+                    f"({user_count})",
                     mention_author=False,
                     delete_after=5
                 )
