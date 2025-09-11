@@ -463,7 +463,7 @@ class DailyWordleGame(commands.Cog):
                     inline=True
                 )
             winner_embed.set_thumbnail(url=EMBED_THUMBNAIL)
-            winner_embed.set_footer(text="New word tomorrow at midnight UTC!")
+            winner_embed.set_footer(text="New word tomorrow at midnight")
 
             await message.channel.send(embed=winner_embed, view=view)
             await message.delete()
