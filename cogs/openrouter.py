@@ -6,7 +6,7 @@ import re
 import json
 import aiohttp
 from typing import List, Dict, Any
-from .knowledge_base import get_system_prompt
+from utils.knowledge_base import get_system_prompt
 
 # Constants
 OPENROUTER_API_KEY = "***REMOVED***"
