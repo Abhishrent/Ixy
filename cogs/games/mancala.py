@@ -36,6 +36,51 @@ class Mancala(commands.Cog):
         
     def cog_unload(self):
         self.timeout_check.cancel()
+    
+    async def update_game_embed(self, channel, game, title="🏺 Mancala Game", description=None, color=discord.Color.purple()):
+        """Update the game embed with current state"""
+        if description is None:
+            if game["current_turn"] == 1:
+                description = f"{game['player1_name']}'s turn!"
+            else:
+                description = f"{game['player2_name']}'s turn!"
+        
+        embed = discord.Embed(title=title, description=description, color=color)
+        embed.add_field(
+            name="Game Board",
+            value=self.display_board(game["board"], game["player1_store"], game["player2_store"], 
+                                   game["player1_name"], game["player2_name"]),
+            inline=False
+        )
+        embed.add_field(
+            name="Score",
+            value=f"{game['player1_name']}: {game['player1_store']} stones\n{game['player2_name']}: {game['player2_store']} stones",
+            inline=False
+        )
+        
+        if not title.startswith("🏆") and not title.startswith("🤝"):  # Not game over
+            embed.add_field(name="Next Move", value="Type a number (1-6) to choose your pit!", inline=False)
+        
+        embed.set_thumbnail(url=EMBED_THUMBNAIL)
+        
+        footer_text = "Mancala"
+        if game.get("is_ai_game"):
+            footer_text += f" vs {BOT_NAME}"
+            if game.get("ai_difficulty"):
+                footer_text += f" ({game['ai_difficulty'].title()})"
+        footer_text += " • Collect the most stones! • 10min timeout"
+        embed.set_footer(text=footer_text)
+        
+        try:
+            if game.get("game_message_id"):
+                game_message = await channel.fetch_message(game["game_message_id"])
+                await game_message.edit(embed=embed)
+            else:
+                new_message = await channel.send(embed=embed)
+                game["game_message_id"] = new_message.id
+        except discord.NotFound:
+            new_message = await channel.send(embed=embed)
+            game["game_message_id"] = new_message.id
         
     @tasks.loop(minutes=2)
     async def timeout_check(self):
@@ -52,17 +97,12 @@ class Mancala(commands.Cog):
             channel = self.bot.get_channel(game["channel_id"])
             
             if channel:
-                embed = discord.Embed(
+                await self.update_game_embed(
+                    channel, game,
                     title="⏰ Mancala Game Timed Out",
                     description="The game has been automatically ended due to inactivity (10 minutes).",
                     color=discord.Color.orange()
                 )
-                embed.add_field(
-                    name="Final Board",
-                    value=self.display_board(game["board"], game["player1_store"], game["player2_store"]),
-                    inline=False
-                )
-                await channel.send(embed=embed)
             
             del self.active_games[channel_id]
         
@@ -79,23 +119,20 @@ class Mancala(commands.Cog):
     
     def display_board(self, board, player1_store, player2_store, player1_name="Player 1", player2_name="Player 2"):
         """Display the Mancala board with the given design and player names."""
-        p2_pits = [board[11], board[10], board[9], board[8], board[7], board[6]]
-        p1_pits = board[0:6]  # Player 1's side (pits 0-5)
-
-        board_str = "```\n"
-        board_str += f"+-------------------+\n"
-        board_str += f"|     {player2_name} ({player2_store})   |\n"
-        board_str += f"+-------------------+\n"
-
-        for p2, p1 in zip(p2_pits, p1_pits):
-            board_str += f"|   ({p2:2})   |   ({p1:2})   |\n"
-
-        board_str += f"+-------------------+\n"
-        board_str += f"|     {player1_name} ({player1_store})   |\n"
-        board_str += f"+-------------------+\n"
-        board_str += "```"
-
-        return board_str
+        return f"""```
+       +---------------------------+
+       |       {player2_name} ({player2_store})      |
+       +---------------------------+
+R1 ->  |     {board[11]}        |     {board[0]}      |  <- R1
+R2 ->  |     {board[10]}        |     {board[1]}      |  <- R2
+R3 ->  |     {board[9]}        |     {board[2]}      |  <- R3
+R4 ->  |     {board[8]}        |     {board[3]}      |  <- R4
+R5 ->  |     {board[7]}        |     {board[4]}      |  <- R5
+R6 ->  |     {board[6]}        |     {board[5]}      |  <- R6
+       +---------------------------+
+       |       {player1_name} ({player1_store})      |
+       +---------------------------+
+       ```"""
     
     def make_move(self, board, player1_store, player2_store, pit_index, current_player):
         """
@@ -366,44 +403,13 @@ class Mancala(commands.Cog):
         if not channel:
             return
 
-        # Update the game embed to show "AI is thinking..."
-        embed = discord.Embed(
-            title="🏺 Mancala Game",
-            description=f"🤖 {BOT_NAME} is thinking...",
-            color=discord.Color.blue()
-        )
-        embed.add_field(
-            name="Game Board",
-            value=self.display_board(game["board"], game["player1_store"], game["player2_store"]),
-            inline=False
-        )
-        embed.add_field(
-            name="Score",
-            value=f"Player 1: {game['player1_store']} stones\n{BOT_NAME}: {game['player2_store']} stones",
-            inline=False
-        )
-        embed.set_thumbnail(url=EMBED_THUMBNAIL)
-        embed.set_footer(text="Mancala vs AI • Collect the most stones! • 10min timeout")
-
-        try:
-            if game.get("game_message_id"):
-                game_message = await channel.fetch_message(game["game_message_id"])
-                await game_message.edit(embed=embed)
-            else:
-                new_message = await channel.send(embed=embed)
-                game["game_message_id"] = new_message.id
-        except discord.NotFound:
-            new_message = await channel.send(embed=embed)
-            game["game_message_id"] = new_message.id
+        # Show AI thinking
+        await self.update_game_embed(channel, game, description=f"🤖 {BOT_NAME} is thinking...", color=discord.Color.blue())
 
         # Simulate thinking time based on difficulty
         difficulty = game.get("ai_difficulty", "normal")
-        if difficulty == "easy":
-            await asyncio.sleep(random.uniform(0.5, 1.5))
-        elif difficulty == "normal":
-            await asyncio.sleep(random.uniform(1.0, 2.5))
-        else:  # hard
-            await asyncio.sleep(random.uniform(2.0, 4.0))
+        think_time = {"easy": (0.5, 1.5), "normal": (1.0, 2.5), "hard": (2.0, 4.0)}
+        await asyncio.sleep(random.uniform(*think_time[difficulty]))
 
         # Get AI move
         ai_move = self.get_ai_move(
@@ -415,7 +421,6 @@ class Mancala(commands.Cog):
         )
 
         if ai_move is None:
-            # No valid moves, this shouldn't happen but handle it gracefully
             await channel.send("❌ AI has no valid moves available!")
             return
 
@@ -442,34 +447,7 @@ class Mancala(commands.Cog):
 
         # Show AI's move
         ai_pit_display = ai_move - 5  # Convert back to 1-6 display format for Player 2
-        embed = discord.Embed(
-            title="🏺 Mancala Game",
-            description=f"{BOT_NAME} chose pit {ai_pit_display}!",
-            color=discord.Color.green()
-        )
-        embed.add_field(
-            name="Game Board",
-            value=self.display_board(new_board, new_p1_store, new_p2_store),
-            inline=False
-        )
-        embed.add_field(
-            name="Score",
-            value=f"Player 1: {new_p1_store} stones\n{BOT_NAME}: {new_p2_store} stones",
-            inline=False
-        )
-        embed.set_thumbnail(url=EMBED_THUMBNAIL)
-        embed.set_footer(text="Mancala vs AI • Collect the most stones! • 10min timeout")
-
-        try:
-            if game.get("game_message_id"):
-                game_message = await channel.fetch_message(game["game_message_id"])
-                await game_message.edit(embed=embed)
-            else:
-                new_message = await channel.send(embed=embed)
-                game["game_message_id"] = new_message.id
-        except discord.NotFound:
-            new_message = await channel.send(embed=embed)
-            game["game_message_id"] = new_message.id
+        await self.update_game_embed(channel, game, description=f"{BOT_NAME} chose pit {ai_pit_display}!", color=discord.Color.green())
 
         if game_over:
             # Handle game over
@@ -482,39 +460,11 @@ class Mancala(commands.Cog):
             elif winner == 2:
                 winner_name = BOT_NAME
 
-            if winner == 0:
-                embed = discord.Embed(
-                    title="🤝 Mancala Tie!",
-                    description="Both players collected the same number of stones!",
-                    color=discord.Color.orange()
-                )
-            else:
-                embed = discord.Embed(
-                    title="🏆 Mancala Winner!",
-                    description=f"**{winner_name}** wins with {new_p1_store if winner == 1 else new_p2_store} stones!",
-                    color=discord.Color.gold()
-                )
-
-            embed.add_field(
-                name="Final Board",
-                value=self.display_board(new_board, new_p1_store, new_p2_store),
-                inline=False
-            )
-            embed.add_field(
-                name="Final Score",
-                value=f"Player 1: {new_p1_store} stones\n{BOT_NAME}: {new_p2_store} stones",
-                inline=False
-            )
-
-            try:
-                if game.get("game_message_id"):
-                    game_message = await channel.fetch_message(game["game_message_id"])
-                    await game_message.edit(embed=embed)
-                else:
-                    await channel.send(embed=embed)
-            except discord.NotFound:
-                await channel.send(embed=embed)
-
+            title = "🤝 Mancala Tie!" if winner == 0 else "🏆 Mancala Winner!"
+            description = "Both players collected the same number of stones!" if winner == 0 else f"**{winner_name}** wins with {new_p1_store if winner == 1 else new_p2_store} stones!"
+            color = discord.Color.orange() if winner == 0 else discord.Color.gold()
+            
+            await self.update_game_embed(channel, game, title=title, description=description, color=color)
             save_data(self.scores, self.active_games)
             return
 
@@ -531,42 +481,7 @@ class Mancala(commands.Cog):
             return
 
         # Show updated board for player's turn
-        current_player = self.bot.get_user(game["player1"])
-        embed = discord.Embed(
-            title="🏺 Mancala Game",
-            description=f"{current_player.display_name}'s turn!",
-            color=discord.Color.purple()
-        )
-        embed.add_field(
-            name="Game Board",
-            value=self.display_board(game["board"], game["player1_store"], game["player2_store"]),
-            inline=False
-        )
-        embed.add_field(
-            name="Score",
-            value=f"{current_player.display_name}: {game['player1_store']} stones\n{BOT_NAME}: {game['player2_store']} stones",
-            inline=False
-        )
-        embed.add_field(
-            name="Next Move",
-            value="Type a number (1-6) to choose your pit!",
-            inline=False
-        )
-        embed.set_thumbnail(url=EMBED_THUMBNAIL)
-        embed.set_footer(text=f"Mancala vs {BOT_NAME} • Collect the most stones! • 10min timeout")
-
-        try:
-            if game.get("game_message_id"):
-                game_message = await channel.fetch_message(game["game_message_id"])
-                await game_message.edit(embed=embed)
-            else:
-                new_message = await channel.send(embed=embed)
-                game["game_message_id"] = new_message.id
-        except discord.NotFound:
-            new_message = await channel.send(embed=embed)
-            game["game_message_id"] = new_message.id
-
-        save_data(self.scores, self.active_games)
+        await self.update_game_embed(channel, game)
     
     @commands.hybrid_command(name="mancala", with_app_command=True)
     async def start_mancala(self, ctx, player1: discord.Member = None, player2: discord.Member = None, difficulty: str = "normal"):
@@ -600,58 +515,45 @@ class Mancala(commands.Cog):
         board = self.create_board()
         current_time = time.time()
         
+        player1_name = player1.display_name
+        player2_name = player2 if is_ai_game else player2.display_name
+        
+        game_data = {
+            "board": board,
+            "player1": player1.id,
+            "player2": player2 if is_ai_game else player2.id,
+            "player1_store": 0,
+            "player2_store": 0,
+            "current_turn": 1,  # Player 1 always starts
+            "channel_id": ctx.channel.id,
+            "start_time": current_time,
+            "last_move": current_time,
+            "game_message_id": None,
+            "is_ai_game": is_ai_game,
+            "ai_difficulty": difficulty if is_ai_game else None,
+            "player1_name": player1_name,
+            "player2_name": player2_name
+        }
+        
         if is_ai_game:
-            difficulty = difficulty.lower()
-            if difficulty not in ["easy", "normal", "hard"]:
-                await ctx.send("❌ Invalid difficulty! Choose: easy, normal, or hard")
-                return
-            
-            game_data = {
-                "board": board,
-                "player1": player1.id,
-                "player2": BOT_NAME,
-                "player1_store": 0,
-                "player2_store": 0,
-                "current_turn": 1,  # Player 1 always starts
-                "channel_id": ctx.channel.id,
-                "start_time": current_time,
-                "last_move": current_time,
-                "game_message_id": None,
-                "is_ai_game": True,
-                "ai_difficulty": difficulty
-            }
-            
             difficulty_emojis = {"easy": "😊", "normal": "🤔", "hard": "😈"}
             embed = discord.Embed(
                 title=f"🏺 Mancala vs {BOT_NAME}! 🤖",
-                description=f"**{player1.display_name}** vs **{BOT_NAME} ({difficulty.title()})** {difficulty_emojis.get(difficulty, '🤖')}\n\n{player1.mention}'s turn!",
+                description=f"**{player1_name}** vs **{BOT_NAME} ({difficulty.title()})** {difficulty_emojis.get(difficulty, '🤖')}\n\n{player1.mention}'s turn!",
                 color=discord.Color.purple()
             )
             embed.set_footer(text=f"Mancala vs {BOT_NAME} ({difficulty.title()}) • Collect the most stones! • 10min timeout")
         else:
-            game_data = {
-                "board": board,
-                "player1": player1.id,
-                "player2": player2.id,
-                "player1_store": 0,
-                "player2_store": 0,
-                "current_turn": 1,
-                "channel_id": ctx.channel.id,
-                "start_time": current_time,
-                "last_move": current_time,
-                "game_message_id": None
-            }
-            
             embed = discord.Embed(
                 title="🏺 Mancala Game Started! 🏺",
-                description=f"**{player1.display_name}** vs **{player2.display_name}**\n\n{player1.mention}'s turn!",
+                description=f"**{player1_name}** vs **{player2_name}**\n\n{player1.mention}'s turn!",
                 color=discord.Color.purple()
             )
             embed.set_footer(text="Mancala • Collect the most stones! • 10min timeout")
         
         embed.add_field(
             name="Game Board",
-            value=self.display_board(board, 0, 0),
+            value=self.display_board(board, 0, 0, player1_name, player2_name),
             inline=False
         )
         embed.add_field(
@@ -754,50 +656,21 @@ class Mancala(commands.Cog):
             winner_id = None
             if winner == 1:
                 winner_id = str(game["player1"])
-                winner_name = message.author.display_name
+                winner_name = game["player1_name"]
                 self.scores[winner_id] = self.scores.get(winner_id, 0) + 1
             elif winner == 2:
                 if game.get("is_ai_game"):
                     winner_name = BOT_NAME
                 else:
                     winner_id = str(game["player2"])
-                    winner_name = self.bot.get_user(game["player2"]).display_name
+                    winner_name = game["player2_name"]
                     self.scores[winner_id] = self.scores.get(winner_id, 0) + 1
             
-            if winner == 0:
-                embed = discord.Embed(
-                    title="🤝 Mancala Tie!",
-                    description="Both players collected the same number of stones!",
-                    color=discord.Color.orange()
-                )
-            else:
-                embed = discord.Embed(
-                    title="🏆 Mancala Winner!",
-                    description=f"**{winner_name}** wins with {new_p1_store if winner == 1 else new_p2_store} stones!",
-                    color=discord.Color.gold()
-                )
+            title = "🤝 Mancala Tie!" if winner == 0 else "🏆 Mancala Winner!"
+            description = "Both players collected the same number of stones!" if winner == 0 else f"**{winner_name}** wins with {new_p1_store if winner == 1 else new_p2_store} stones!"
+            color = discord.Color.orange() if winner == 0 else discord.Color.gold()
             
-            embed.add_field(
-                name="Final Board",
-                value=self.display_board(new_board, new_p1_store, new_p2_store),
-                inline=False
-            )
-            embed.add_field(
-                name="Final Score",
-                value=f"Player 1: {new_p1_store} stones\nPlayer 2: {new_p2_store} stones",
-                inline=False
-            )
-            
-            # Edit original message
-            try:
-                if game.get("game_message_id"):
-                    game_message = await message.channel.fetch_message(game["game_message_id"])
-                    await game_message.edit(embed=embed)
-                else:
-                    await message.channel.send(embed=embed)
-            except discord.NotFound:
-                await message.channel.send(embed=embed)
-            
+            await self.update_game_embed(message.channel, game, title=title, description=description, color=color)
             save_data(self.scores, self.active_games)
             return
         
@@ -813,51 +686,12 @@ class Mancala(commands.Cog):
             asyncio.create_task(self.process_ai_turn(channel_id))
             return
         
-        # Regular player vs player game or player's extra turn
-        if game["current_turn"] == 1:
-            current_player = self.bot.get_user(game["player1"])
-            turn_text = f"{current_player.display_name}'s turn!"
-        else:
-            current_player = self.bot.get_user(game["player2"])
-            turn_text = f"{current_player.display_name}'s turn!"
-        
+        # Show turn message with extra turn indicator if applicable
+        turn_text = f"{game['player1_name']}'s turn!" if game["current_turn"] == 1 else f"{game['player2_name']}'s turn!"
         if extra_turn:
             turn_text = f"Extra turn! {turn_text}"
         
-        embed = discord.Embed(
-            title="🏺 Mancala Game",
-            description=turn_text,
-            color=discord.Color.purple()
-        )
-        embed.add_field(
-            name="Game Board",
-            value=self.display_board(game["board"], game["player1_store"], game["player2_store"]),
-            inline=False
-        )
-        embed.add_field(
-            name="Score",
-            value=f"Player 1: {game['player1_store']} stones\nPlayer 2: {game['player2_store']} stones",
-            inline=False
-        )
-        embed.add_field(
-            name="Next Move",
-            value="Type a number (1-6) to choose your pit!",
-            inline=False
-        )
-        embed.set_thumbnail(url=EMBED_THUMBNAIL)
-        embed.set_footer(text="Mancala • Collect the most stones! • 10min timeout")
-        
-        try:
-            if game.get("game_message_id"):
-                game_message = await message.channel.fetch_message(game["game_message_id"])
-                await game_message.edit(embed=embed)
-            else:
-                new_message = await message.channel.send(embed=embed)
-                game["game_message_id"] = new_message.id
-        except discord.NotFound:
-            new_message = await message.channel.send(embed=embed)
-            game["game_message_id"] = new_message.id
-        
+        await self.update_game_embed(message.channel, game, description=turn_text)
         save_data(self.scores, self.active_games)
     
     @commands.hybrid_command(name="stop_mancala", with_app_command=True)
@@ -876,21 +710,15 @@ class Mancala(commands.Cog):
             await ctx.send("❌ Only the players or moderators can stop the game!")
             return
         
-        embed = discord.Embed(
+        await self.update_game_embed(
+            ctx.channel, game,
             title="🛑 Mancala Game Stopped",
             description="The game has been stopped.",
             color=discord.Color.red()
         )
-        embed.add_field(
-            name="Final Board",
-            value=self.display_board(game["board"], game["player1_store"], game["player2_store"]),
-            inline=False
-        )
         
         del self.active_games[channel_id]
         save_data(self.scores, self.active_games)
-        
-        await ctx.send(embed=embed)
     
     @commands.hybrid_command(name="mancala_scores", with_app_command=True)
     async def show_mancala_scores(self, ctx):
