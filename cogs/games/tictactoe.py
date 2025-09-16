@@ -16,7 +16,10 @@ class TicTacToeGame(commands.Cog):
     async def start_game(self, ctx: commands.Context, player1: discord.Member = None, player2: discord.Member = None):
         """
         Start a new Tic-Tac-Toe game.
-        If no player2 is specified, the game defaults to AI as the opponent.
+
+        Args:
+            player1: First player (defaults to command user)
+            player2: Second player (leave empty for AI, or specify a player)
         """
         # Check if a game is already active in the channel
         if ctx.channel.id in self.games:
@@ -34,7 +37,17 @@ class TicTacToeGame(commands.Cog):
         is_ai_game = player2 is None
 
         # Determine player2
-        player2 = player2 if not is_ai_game else "AI"
+        player2 = player2 if not is_ai_game else BOT_NAME
+        
+        # Validate players
+        if not is_ai_game:
+            if player2.bot:
+                await ctx.send(f"❌ You can't play against a bot! Leave player2 empty to play against {BOT_NAME}.")
+                return
+            
+            if player1.id == player2.id:
+                await ctx.send("❌ Players can't be the same person!")
+                return
 
         # Create initial game state
         view = discord.ui.View()
@@ -71,7 +84,10 @@ class TicTacToeGame(commands.Cog):
         embed.set_thumbnail(url=EMBED_THUMBNAIL)
 
         # Send the initial grid and embed
-        message = await ctx.send(embed=embed, view=view)
+        if is_ai_game:
+            message = await ctx.send(embed=embed, view=view)
+        else:
+            message = await ctx.send(f"{player1.mention} vs {player2.mention}", embed=embed, view=view)
 
         # Store game state
         self.games[ctx.channel.id] = {
@@ -192,7 +208,7 @@ class TicTacToeGame(commands.Cog):
             return
 
         # Check if it's the correct player's turn
-        if game["players"][game["current_player"]] != interaction.user and game["players"][game["current_player"]] != "AI":
+        if game["players"][game["current_player"]] != interaction.user and game["players"][game["current_player"]] != BOT_NAME:
             embed = discord.Embed(
                 title="Not Your Turn",
                 description=f"It's {game['players'][game['current_player']].name}'s turn.",
@@ -302,7 +318,7 @@ class TicTacToeGame(commands.Cog):
             if channel_id in self.games:
                 game = self.games[channel_id]
                 current_player = game["players"][game["current_player"]]
-                if current_player != "AI":  # Skip timeout handling for AI
+                if current_player != BOT_NAME:  # Skip timeout handling for Bot
                     embed = discord.Embed(
                         title="Turn Timeout",
                         description=f"{current_player.name} took too long! Game over.",

@@ -4,7 +4,8 @@ import json
 import os
 import time
 import asyncio
-from config import EMBED_THUMBNAIL
+import random
+from config import EMBED_THUMBNAIL, BOT_NAME
 
 GAME_DATA_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "game_files/connect_4.json")
 
@@ -145,17 +146,160 @@ class Connect4(commands.Cog):
         """Check if the board is full (tie game)"""
         return all(board[0][col] != '⚫' for col in range(7))
     
+    def get_ai_move(self, board, difficulty, ai_piece, player_piece):
+        """Get AI move based on difficulty level"""
+        if difficulty == "easy":
+            return self._easy_ai_move(board)
+        elif difficulty == "normal":
+            return self._normal_ai_move(board, ai_piece, player_piece)
+        elif difficulty == "hard":
+            return self._hard_ai_move(board, ai_piece, player_piece)
+        else:
+            return self._easy_ai_move(board)
+    
+    def _easy_ai_move(self, board):
+        """Easy AI - just picks a random valid column"""
+        valid_columns = [col for col in range(7) if board[0][col] == '⚫']
+        return random.choice(valid_columns) if valid_columns else None
+    
+    def _normal_ai_move(self, board, ai_piece, player_piece):
+        """Normal AI - blocks player wins and goes for easy wins"""
+        # First, check if AI can win
+        for col in range(7):
+            if board[0][col] == '⚫':  # Column not full
+                # Try placing AI piece
+                temp_board = [row[:] for row in board]
+                if self.drop_piece(temp_board, col, ai_piece):
+                    if self.check_winner(temp_board, ai_piece):
+                        return col
+        
+        # Second, check if AI needs to block player
+        for col in range(7):
+            if board[0][col] == '⚫':  # Column not full
+                # Try placing player piece
+                temp_board = [row[:] for row in board]
+                if self.drop_piece(temp_board, col, player_piece):
+                    if self.check_winner(temp_board, player_piece):
+                        return col
+        
+        # Otherwise, prefer center columns
+        center_columns = [3, 2, 4, 1, 5, 0, 6]
+        for col in center_columns:
+            if board[0][col] == '⚫':
+                return col
+        
+        return None
+    
+    def _hard_ai_move(self, board, ai_piece, player_piece):
+        """Hard AI - uses minimax algorithm with depth 4"""
+        best_col = None
+        best_score = float('-inf')
+        
+        for col in range(7):
+            if board[0][col] == '⚫':  # Column not full
+                temp_board = [row[:] for row in board]
+                if self.drop_piece(temp_board, col, ai_piece):
+                    score = self._minimax(temp_board, 4, False, ai_piece, player_piece, float('-inf'), float('inf'))
+                    if score > best_score:
+                        best_score = score
+                        best_col = col
+        
+        return best_col
+    
+    def _minimax(self, board, depth, is_maximizing, ai_piece, player_piece, alpha, beta):
+        """Minimax algorithm with alpha-beta pruning"""
+        # Check terminal states
+        if self.check_winner(board, ai_piece):
+            return 100 + depth  # AI wins (prefer quicker wins)
+        if self.check_winner(board, player_piece):
+            return -100 - depth  # Player wins (prefer slower losses)
+        if self.is_board_full(board) or depth == 0:
+            return self._evaluate_board(board, ai_piece, player_piece)
+        
+        if is_maximizing:  # AI's turn
+            max_eval = float('-inf')
+            for col in range(7):
+                if board[0][col] == '⚫':
+                    temp_board = [row[:] for row in board]
+                    if self.drop_piece(temp_board, col, ai_piece):
+                        eval_score = self._minimax(temp_board, depth - 1, False, ai_piece, player_piece, alpha, beta)
+                        max_eval = max(max_eval, eval_score)
+                        alpha = max(alpha, eval_score)
+                        if beta <= alpha:
+                            break  # Alpha-beta pruning
+            return max_eval
+        else:  # Player's turn
+            min_eval = float('inf')
+            for col in range(7):
+                if board[0][col] == '⚫':
+                    temp_board = [row[:] for row in board]
+                    if self.drop_piece(temp_board, col, player_piece):
+                        eval_score = self._minimax(temp_board, depth - 1, True, ai_piece, player_piece, alpha, beta)
+                        min_eval = min(min_eval, eval_score)
+                        beta = min(beta, eval_score)
+                        if beta <= alpha:
+                            break  # Alpha-beta pruning
+            return min_eval
+    
+    def _evaluate_board(self, board, ai_piece, player_piece):
+        """Evaluate board position for minimax"""
+        score = 0
+        
+        # Check all possible 4-in-a-row positions
+        for row in range(6):
+            for col in range(7):
+                # Horizontal
+                if col <= 3:
+                    window = [board[row][col + i] for i in range(4)]
+                    score += self._evaluate_window(window, ai_piece, player_piece)
+                
+                # Vertical
+                if row <= 2:
+                    window = [board[row + i][col] for i in range(4)]
+                    score += self._evaluate_window(window, ai_piece, player_piece)
+                
+                # Diagonal (positive slope)
+                if row <= 2 and col <= 3:
+                    window = [board[row + i][col + i] for i in range(4)]
+                    score += self._evaluate_window(window, ai_piece, player_piece)
+                
+                # Diagonal (negative slope)
+                if row >= 3 and col <= 3:
+                    window = [board[row - i][col + i] for i in range(4)]
+                    score += self._evaluate_window(window, ai_piece, player_piece)
+        
+        return score
+    
+    def _evaluate_window(self, window, ai_piece, player_piece):
+        """Evaluate a 4-piece window"""
+        score = 0
+        ai_count = window.count(ai_piece)
+        player_count = window.count(player_piece)
+        empty_count = window.count('⚫')
+        
+        if ai_count == 4:
+            score += 100
+        elif ai_count == 3 and empty_count == 1:
+            score += 10
+        elif ai_count == 2 and empty_count == 2:
+            score += 2
+        
+        if player_count == 3 and empty_count == 1:
+            score -= 80
+        elif player_count == 2 and empty_count == 2:
+            score -= 2
+        
+        return score
+    
     @commands.hybrid_command(name="connect4", with_app_command=True)
-    async def start_connect4(self, ctx, opponent: discord.Member):
-        """Start a Connect 4 game with another player"""
-        if opponent.bot:
-            await ctx.send("❌ You can't play against a bot!")
-            return
+    async def start_connect4(self, ctx, player1: discord.Member = None, player2: discord.Member = None, difficulty: str = "normal"):
+        """Start a Connect 4 game against another player or AI
         
-        if opponent.id == ctx.author.id:
-            await ctx.send("❌ You can't play against yourself!")
-            return
-        
+        Args:
+            player1: First player (defaults to command user)
+            player2: Second player (leave empty for AI, or specify a player)
+            difficulty: AI difficulty level (easy, normal, hard) - only used when playing against AI
+        """
         channel_id = str(ctx.channel.id)
         
         # Check if there's already a game in this channel
@@ -163,30 +307,79 @@ class Connect4(commands.Cog):
             await ctx.send("❌ There's already a Connect 4 game in this channel!")
             return
         
-        # Create new game
+        # Default player1 to the user who used the command
+        player1 = player1 or ctx.author
+        is_ai_game = player2 is None
+        
+        # Determine player2
+        player2 = player2 if not is_ai_game else BOT_NAME
+        
+        # Validate players
+        if not is_ai_game:
+            if player2.bot:
+                await ctx.send(f"❌ You can't play against a bot! Leave player2 empty to play against {BOT_NAME}.")
+                return
+            
+            if player1.id == player2.id:
+                await ctx.send("❌ Players can't be the same person!")
+                return
+        
+        # Create new gamez
         board = self.create_board()
         current_time = time.time()
-        game_data = {
-            "board": board,
-            "player1": ctx.author.id,
-            "player2": opponent.id,
-            "current_turn": ctx.author.id,
-            "player1_piece": "🔴",
-            "player2_piece": "🟡",
-            "channel_id": ctx.channel.id,
-            "start_time": current_time,
-            "last_move": current_time,
-            "game_message_id": None  # Will store the message ID to edit
-        }
         
-        self.active_games[channel_id] = game_data
-        save_data(self.scores, self.active_games)
+        if is_ai_game:
+            # Bot Game
+            difficulty = difficulty.lower()
+            if difficulty not in ["easy", "normal", "hard"]:
+                await ctx.send("❌ Invalid difficulty! Choose: easy, normal, or hard")
+                return
+            
+            game_data = {
+                "board": board,
+                "player1": player1.id,
+                "player2": BOT_NAME,  # Bot player
+                "current_turn": player1.id,
+                "player1_piece": "🔴",
+                "player2_piece": "🟡",
+                "channel_id": ctx.channel.id,
+                "start_time": current_time,
+                "last_move": current_time,
+                "game_message_id": None,
+                "is_ai_game": True,
+                "ai_difficulty": difficulty
+            }
+            
+            difficulty_emojis = {"easy": "😊", "normal": "🤔", "hard": "😈"}
+            embed = discord.Embed(
+                title=f"🔴🤖 Connect 4 Game Started Against {BOT_NAME}! 🤖🟡",
+                description=f"**{player1.display_name}** 🔴 vs **{BOT_NAME} ({difficulty.title()})** 🟡 {difficulty_emojis.get(difficulty, '🤖')}\n\n{player1.mention}'s turn!",
+                color=discord.Color.blue()
+            )
+            embed.set_footer(text=f"Connect 4 against {BOT_NAME} ({difficulty.title()}) • First to 4 in a row wins! • 10min timeout")
+        else:
+            # Player vs Player Game
+            game_data = {
+                "board": board,
+                "player1": player1.id,
+                "player2": player2.id,
+                "current_turn": player1.id,
+                "player1_piece": "🔴",
+                "player2_piece": "🟡",
+                "channel_id": ctx.channel.id,
+                "start_time": current_time,
+                "last_move": current_time,
+                "game_message_id": None
+            }
+            
+            embed = discord.Embed(
+                title="🔴🟡 Connect 4 Game Started! 🟡🔴",
+                description=f"**{player1.display_name}** 🔴 vs **{player2.display_name}** 🟡\n\n{player1.mention}'s turn!",
+                color=discord.Color.blue()
+            )
+            embed.set_footer(text="Connect 4 • First to 4 in a row wins! • 10min timeout")
         
-        embed = discord.Embed(
-            title="🔴🟡 Connect 4 Game Started! 🟡🔴",
-            description=f"**{ctx.author.display_name}** 🔴 vs **{opponent.display_name}** 🟡\n\n{ctx.author.mention}'s turn!",
-            color=discord.Color.blue()
-        )
+        # Common embed fields
         embed.add_field(
             name="Game Board",
             value=self.display_board(board),
@@ -198,10 +391,15 @@ class Connect4(commands.Cog):
             inline=False
         )
         embed.set_thumbnail(url=EMBED_THUMBNAIL)
-        embed.set_footer(text="Connect 4 • First to 4 in a row wins! • 10min timeout")
+        
+        self.active_games[channel_id] = game_data
+        save_data(self.scores, self.active_games)
         
         # Send initial message and store its ID for editing
-        game_message = await ctx.send(embed=embed)
+        if is_ai_game:
+            game_message = await ctx.send(embed=embed)
+        else:
+            game_message = await ctx.send(f"{player1.mention} vs {player2.mention}", embed=embed)
         game_data["game_message_id"] = game_message.id
         save_data(self.scores, self.active_games)
     
@@ -241,6 +439,12 @@ class Connect4(commands.Cog):
             await message.channel.send("❌ That column is full! Choose another column.")
             return
         
+        # Delete the user's move message to keep chat clean
+        try:
+            await message.delete()
+        except (discord.Forbidden, discord.NotFound):
+            pass  # Bot doesn't have permission or message already deleted
+        
         # Update last move time
         game["last_move"] = time.time()
         
@@ -262,11 +466,19 @@ class Connect4(commands.Cog):
             )
             embed.set_thumbnail(url=message.author.display_avatar.url)
             
+            # Edit the original message instead of sending new one
+            try:
+                if game.get("game_message_id"):
+                    game_message = await message.channel.fetch_message(game["game_message_id"])
+                    await game_message.edit(embed=embed)
+                else:
+                    await message.channel.send(embed=embed)
+            except discord.NotFound:
+                await message.channel.send(embed=embed)
+            
             # Clean up game
             del self.active_games[channel_id]
             save_data(self.scores, self.active_games)
-            
-            await message.channel.send(embed=embed)
             return
         
         # Check for tie
@@ -282,13 +494,132 @@ class Connect4(commands.Cog):
                 inline=False
             )
             
+            # Edit the original message instead of sending new one
+            try:
+                if game.get("game_message_id"):
+                    game_message = await message.channel.fetch_message(game["game_message_id"])
+                    await game_message.edit(embed=embed)
+                else:
+                    await message.channel.send(embed=embed)
+            except discord.NotFound:
+                await message.channel.send(embed=embed)
+            
             # Clean up game
             del self.active_games[channel_id]
             save_data(self.scores, self.active_games)
-            
-            await message.channel.send(embed=embed)
             return
         
+        # Handle Bot turn if this is a bot game
+        if game.get("is_ai_game") and game["player2"] == BOT_NAME:
+            # Switch to Bot turn
+            game["current_turn"] = BOT_NAME
+            save_data(self.scores, self.active_games)
+            
+            # Bot makes its move
+            await asyncio.sleep(1)  # Brief delay for realism
+            ai_move = self.get_ai_move(game["board"], game["ai_difficulty"], game["player2_piece"], game["player1_piece"])
+            
+            if ai_move is not None:
+                # Bot drops piece
+                self.drop_piece(game["board"], ai_move, game["player2_piece"])
+                game["last_move"] = time.time()
+                
+                # Check if Bot wins
+                if self.check_winner(game["board"], game["player2_piece"]):
+                    embed = discord.Embed(
+                        title=f"🤖 {BOT_NAME} WINS! 🤖",
+                        description=f"**{BOT_NAME} ({game['ai_difficulty'].title()})** wins with {game['player2_piece']}!",
+                        color=discord.Color.red()
+                    )
+                    embed.add_field(
+                        name="Final Board",
+                        value=self.display_board(game["board"]),
+                        inline=False
+                    )
+                    
+                    # Edit the original message instead of sending new one
+                    try:
+                        if game.get("game_message_id"):
+                            game_message = await message.channel.fetch_message(game["game_message_id"])
+                            await game_message.edit(embed=embed)
+                        else:
+                            await message.channel.send(embed=embed)
+                    except discord.NotFound:
+                        await message.channel.send(embed=embed)
+                    
+                    # Clean up game
+                    del self.active_games[channel_id]
+                    save_data(self.scores, self.active_games)
+                    return
+                
+                # Check for tie after Bot move
+                if self.is_board_full(game["board"]):
+                    embed = discord.Embed(
+                        title="🤝 It's a Tie!",
+                        description="The board is full! Nobody wins this round.",
+                        color=discord.Color.orange()
+                    )
+                    embed.add_field(
+                        name="Final Board",
+                        value=self.display_board(game["board"]),
+                        inline=False
+                    )
+                    
+                    # Edit the original message instead of sending new one
+                    try:
+                        if game.get("game_message_id"):
+                            game_message = await message.channel.fetch_message(game["game_message_id"])
+                            await game_message.edit(embed=embed)
+                        else:
+                            await message.channel.send(embed=embed)
+                    except discord.NotFound:
+                        await message.channel.send(embed=embed)
+                    
+                    # Clean up game
+                    del self.active_games[channel_id]
+                    save_data(self.scores, self.active_games)
+                    return
+                
+                # Switch back to player
+                game["current_turn"] = game["player1"]
+                save_data(self.scores, self.active_games)
+                
+                # Update embed with Bot move
+                embed = discord.Embed(
+                    title=f"🔴🤖 Connect 4 Game Started Against {BOT_NAME} 🤖🟡",
+                    description=f"**{BOT_NAME} placed in column {ai_move + 1}!**\n\n**{message.author.display_name}'s** turn! 🔴",
+                    color=discord.Color.blue()
+                )
+                embed.add_field(
+                    name="Game Board",
+                    value=self.display_board(game["board"]),
+                    inline=False
+                )
+                embed.add_field(
+                    name="Next Move",
+                    value="Type a number (1-7) to drop your piece!",
+                    inline=False
+                )
+                embed.set_thumbnail(url=EMBED_THUMBNAIL)
+                embed.set_footer(text=f"Connect 4 against {BOT_NAME} ({game['ai_difficulty'].title()}) • First to 4 in a row wins! • 10min timeout")
+                
+                # Edit the original message
+                try:
+                    if game.get("game_message_id"):
+                        game_message = await message.channel.fetch_message(game["game_message_id"])
+                        await game_message.edit(embed=embed)
+                    else:
+                        new_message = await message.channel.send(embed=embed)
+                        game["game_message_id"] = new_message.id
+                        save_data(self.scores, self.active_games)
+                except discord.NotFound:
+                    new_message = await message.channel.send(embed=embed)
+                    game["game_message_id"] = new_message.id
+                    save_data(self.scores, self.active_games)
+            
+            return
+        
+        # Regular player vs player game continues here
         # Switch turns
         game["current_turn"] = game["player2"] if game["current_turn"] == game["player1"] else game["player1"]
         next_player = self.bot.get_user(game["current_turn"])
