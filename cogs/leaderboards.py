@@ -61,8 +61,7 @@ class Leaderboards(commands.Cog):
                 medal = MEDALS[idx-1] if idx <= 3 else ""
                 user_id = entry.get("user_id")
                 mention = self.user_mention(user_id)
-                username = user_map.get(str(user_id), entry.get("username", "Unknown"))
-                memory_text += f"{medal} {mention} ({username})\nTime: **{entry.get('time_display', '--:--')}** (`{entry.get('best_time', 0):.2f}`s)\nDate: {entry.get('date', '-')}\n\n"
+                memory_text += f"{medal} {mention}\nTime: **{entry.get('time_display', '--:--')}** (`{entry.get('best_time', 0):.2f}`s)\nDate: {entry.get('date', '-')}\n\n"
         else:
             memory_text = "No scores yet."
 
@@ -74,8 +73,7 @@ class Leaderboards(commands.Cog):
                 medal = MEDALS[idx-1] if idx <= 3 else ""
                 user_id = entry.get("user_id")
                 mention = self.user_mention(user_id)
-                username = user_map.get(str(user_id), entry.get("username", "Unknown"))
-                sequence_text += f"{medal} {mention} ({username})\nRound: **{entry.get('max_round', 0)}** | Tiles: **{entry.get('tiles_memorised', 0)}**\nDate: {entry.get('date', '-')}\n\n"
+                sequence_text += f"{medal} {mention}\nRound: **{entry.get('max_round', 0)}** | Tiles: **{entry.get('tiles_memorised', 0)}**\nDate: {entry.get('date', '-')}\n\n"
         else:
             sequence_text = "No scores yet."
 
@@ -93,8 +91,7 @@ class Leaderboards(commands.Cog):
                     medal = MEDALS[idx-1] if idx <= 3 else ""
                     user_id = entry.get("user_id")
                     mention = self.user_mention(user_id)
-                    username = user_map.get(str(user_id), entry.get("username", "Unknown"))
-                    wordle_text += f"{medal} {mention} ({username})\nStreak: **{entry.get('max_streak', 0)}**\nDate: {entry.get('date', '-')}\n\n"
+                    wordle_text += f"{medal} {mention}\nStreak: **{entry.get('max_streak', 0)}**\nDate: {entry.get('date', '-')}\n\n"
             else:
                 wordle_text = "No streaks yet."
         else:
@@ -120,12 +117,11 @@ class Leaderboards(commands.Cog):
                 # Sort by wins (descending)
                 score_list.sort(key=lambda x: x["wins"], reverse=True)
                 
-                for idx, entry in enumerate(score_list[:10], 1):
+                for idx, entry in enumerate(score_list[:3], 1):  # Only show top 3
                     medal = MEDALS[idx-1] if idx <= 3 else ""
                     user_id = entry.get("user_id")
                     mention = self.user_mention(user_id)
-                    username = entry.get("username", "Unknown")
-                    number_guesser_text += f"{medal} {mention} ({username})\nWins: **{entry.get('wins', 0)}**\n\n"
+                    number_guesser_text += f"{medal} {mention}\nWins: **{entry.get('wins', 0)}**\n\n"
             else:
                 number_guesser_text = "No wins yet."
         else:
