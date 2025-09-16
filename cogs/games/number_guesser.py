@@ -5,7 +5,7 @@ import os
 import random
 import asyncio
 
-GAME_DATA_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../game_files/number_guesser.json")
+GAME_DATA_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "game_files/number_guesser.json")
 GUESS_CHANNEL_ID = 1130051976667865095  # Channel where guess embeds are sent
 
 def load_scores():
@@ -46,8 +46,8 @@ class GuessNumber(commands.Cog):
     @tasks.loop(minutes=1)  # Check every minute
     async def random_game_drop(self):
         """Randomly start a number guessing game"""
-        # Only start if no active game
-        if self.active_games:
+        # Only start if no active game in the guess channel
+        if GUESS_CHANNEL_ID in self.active_games:
             return
             
         # 1% chance every minute (roughly 1 game per 1.5-2 hours on average)
@@ -61,15 +61,8 @@ class GuessNumber(commands.Cog):
 
     async def start_random_game(self):
         """Start a random number guessing game"""
-        # Random range variations
-        ranges = [
-            (1, 50),
-            (1, 100),
-            (1, 200),
-            (10, 99),
-            (100, 999)
-        ]
-        min_num, max_num = random.choice(ranges)
+        # Fixed range for random drops
+        min_num, max_num = 1, 1000
         
         secret_number = random.randint(min_num, max_num)
         game_data = {
@@ -103,9 +96,10 @@ class GuessNumber(commands.Cog):
             await guess_channel.send(embed=embed)
 
     @commands.hybrid_command(name="guess_number", with_app_command=True)
-    async def start_game(self, ctx, min_num: int = 1, max_num: int = 100):
+    async def start_game(self, ctx, min_num: int = 1, max_num: int = 1000):
         """Start a guess the number game"""
-        if self.active_games:  # Only allow one game at a time
+        # Check if there's already an active game in the guess channel (where all games are played)
+        if GUESS_CHANNEL_ID in self.active_games:
             await ctx.send("❌ A game is already active!")
             return
 
@@ -120,9 +114,9 @@ class GuessNumber(commands.Cog):
             "max_range": max_num,
             "attempts": 0,
             "starter": ctx.author.id,
-            "channel_id": ctx.channel.id
+            "channel_id": GUESS_CHANNEL_ID  # Always use the guess channel
         }
-        self.active_games[ctx.channel.id] = game_data
+        self.active_games[GUESS_CHANNEL_ID] = game_data
         
         # Save game state
         save_data(self.scores, game_data)
@@ -154,13 +148,12 @@ class GuessNumber(commands.Cog):
         if message.channel.id != GUESS_CHANNEL_ID:
             return
             
-        # Check if there's an active game
-        if not self.active_games:
+        # Check if there's an active game in the guess channel
+        if GUESS_CHANNEL_ID not in self.active_games:
             return
             
-        # Get the active game
-        game_channel_id = list(self.active_games.keys())[0]
-        game = self.active_games[game_channel_id]
+        # Get the active game from the guess channel
+        game = self.active_games[GUESS_CHANNEL_ID]
         content = message.content.strip()
 
         # Check if the message is a number
@@ -195,7 +188,7 @@ class GuessNumber(commands.Cog):
                 embed.set_thumbnail(url=message.author.display_avatar.url)
                 await message.channel.send(embed=embed)
                 
-                del self.active_games[game_channel_id]
+                del self.active_games[GUESS_CHANNEL_ID]
                 return
             
             elif guess < game["secret_number"]:
@@ -219,11 +212,11 @@ class GuessNumber(commands.Cog):
     @commands.hybrid_command(name="stop_number_game", with_app_command=True)
     async def stop_game(self, ctx):
         """Stop the current number guessing game"""
-        if ctx.channel.id not in self.active_games:
-            await ctx.send("❌ No active game in this channel!")
+        if GUESS_CHANNEL_ID not in self.active_games:
+            await ctx.send("❌ No active game!")
             return
 
-        game = self.active_games[ctx.channel.id]
+        game = self.active_games[GUESS_CHANNEL_ID]
         if ctx.author.id != game["starter"] and not ctx.author.guild_permissions.manage_messages:
             await ctx.send("❌ Only the game starter or moderators can stop the game!")
             return
@@ -237,7 +230,7 @@ class GuessNumber(commands.Cog):
             color=discord.Color.red()
         )
         await ctx.send(embed=embed)
-        del self.active_games[ctx.channel.id]
+        del self.active_games[GUESS_CHANNEL_ID]
 
     @commands.hybrid_command(name="number_scores", with_app_command=True)
     async def show_scores(self, ctx):
