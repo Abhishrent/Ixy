@@ -7,7 +7,7 @@ import re
 import json
 from typing import List, Dict, Any
 from datetime import datetime, timedelta
-from .knowledge_base import get_system_prompt
+from utils.knowledge_base import get_system_prompt
 
 # Path to store token usage data
 TOKEN_DATA_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../bot_memory/api_tokens.json")
