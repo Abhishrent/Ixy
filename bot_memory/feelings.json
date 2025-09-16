@@ -1,5 +1,5 @@
 {
-  "mood": "happy",
+  "mood": "sad",
   "members": {
     "1003987908744708176": {
       "name": "Abhishrent",
@@ -47,7 +47,7 @@
     },
     "758266841876922438": {
       "name": "nilinili",
-      "friendship": 6,
+      "friendship": -8,
       "favorite": false,
       "gifts": [
         "🌸"
