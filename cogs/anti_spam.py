@@ -37,7 +37,7 @@ class AntiSpam(commands.Cog):
             'duplicate_limit': 3,  # Max duplicate messages
             'mention_limit': 5,   # Max mentions per message
             'mass_mention_limit': 2,  # Max mentions per time window
-            'mute_duration': 86400,  # Mute duration in seconds (1 day)
+            'mute_duration': 3600,  # Mute duration in seconds (1 day)
             'warning_threshold': 3,  # Warnings before action
             'cross_channel_limit': 3,  # Max channels user can post in during time window
             'global_message_limit': 8,  # Max messages across all channels in time window
@@ -172,7 +172,40 @@ class AntiSpam(commands.Cog):
             
         if self.is_exempt(message.author, message.channel):
             return
+#---------------------------------------------------------------------------------------------------------------------
+        # Skip anti-spam for bot commands (messages starting with bot prefix)
+        if message.content.startswith(('/', 'ixy ', 'Ixy ', '!', '?', '.', '-')):
+            return
             
+        # Skip anti-spam for single digit numbers (game moves for Connect 4, etc.)
+        if message.content.strip().isdigit() and len(message.content.strip()) <= 2:
+            return
+            
+        # Skip anti-spam for common game commands/responses
+        game_patterns = [
+            r'^\d+$',  # Single numbers for game moves
+            r'^[1-7]$',  # Connect 4 column numbers
+            r'^[a-h][1-8]$',  # Chess notation style
+            r'^(rock|paper|scissors|r|p|s)$',  # Rock paper scissors
+            r'^(yes|no|y|n)$',  # Yes/no responses
+        ]
+        
+        content_lower = message.content.lower().strip()
+        for pattern in game_patterns:
+            if re.match(pattern, content_lower):
+                return
+          
+        # Check if user is in an active game (TicTacToe or Connect4)
+        for cog_name in ['TicTacToeGame', 'Connect4']:
+            cog = self.bot.get_cog(cog_name)
+            if cog:
+                # Check TicTacToe games
+                if hasattr(cog, 'games') and message.channel.id in cog.games:
+                    return
+                # Check Connect4 games  
+                if hasattr(cog, 'active_games') and str(message.channel.id) in cog.active_games:
+                    return
+#---------------------------------------------------------------------------------------------------------------------
         user_id = message.author.id
         timestamp = time.time()
         
