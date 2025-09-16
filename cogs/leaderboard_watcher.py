@@ -88,8 +88,9 @@ class LeaderboardWatcher(commands.Cog):
                 "username": "Unknown",  # Will be populated by the system
                 "wins": wins
             })
-        # Sort by wins (descending)
+        # Sort by wins (descending) and keep only top 3
         number_guesser.sort(key=lambda x: x["wins"], reverse=True)
+        number_guesser = number_guesser[:3]
 
         # Prepare current state
         curr_state = {
