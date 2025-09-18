@@ -38,14 +38,14 @@ class Info(commands.Cog):
         # Create buttons for different social media links
         button_linkedin = Button(label="LinkedIn", style=discord.ButtonStyle.link, url="https://www.linkedin.com/company/mbmc-ideax/")
         button_instagram = Button(label="Instagram", style=discord.ButtonStyle.link, url="https://www.instagram.com/mbmc_ideax/")
-        button_x = Button(label="X", style=discord.ButtonStyle.link, url="https://x.com/mbmc_ideax")
         button_facebook = Button(label="Facebook", style=discord.ButtonStyle.link, url="https://www.facebook.com/mbmcideax/")
+        button_x = Button(label="X", style=discord.ButtonStyle.link, url="https://x.com/mbmc_ideax")
         button_discord = Button(label="Discord", style=discord.ButtonStyle.link, url="https://discord.gg/FSFsaCVMqf")
 
         embed = discord.Embed(
-            title="Follow us on Social Media!",
-            description="Check out our profile on the following platforms:",
-            color=discord.Color.blue()
+            title="Connect with MBM IdeaX",
+            description="Follow us on our official platforms using the buttons below!",
+            color=discord.Color.teal()
         )
         embed.set_thumbnail(url=f"{EMBED_THUMBNAIL}")
 
@@ -53,8 +53,8 @@ class Info(commands.Cog):
         view = View()
         view.add_item(button_linkedin)
         view.add_item(button_instagram)
-        view.add_item(button_x)
         view.add_item(button_facebook)
+        view.add_item(button_x)
         view.add_item(button_discord)
 
         # Send the embed with the buttons
