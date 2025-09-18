@@ -1,0 +1,79 @@
+{
+  "overview": {
+    "title": "MBM IdeaX 2025: Overview",
+    "description": "MBM IdeaX 2025 is the third iteration of the flagship hackathon by the MBMC IT Club, bringing together creative minds to develop impactful solutions using cutting-edge tech. This year, the event focuses on sustainable, industry-aligned projects leveraging AI, blockchain, and decentralized systems. The event aims to foster innovation, collaboration, and entrepreneurship in Nepal's tech ecosystem.",
+    "color": "blue",
+    "fields": [
+      {
+        "name": "Mission",
+        "value": "Drive positive change through financially viable, innovative solutions.",
+        "inline": false
+      },
+      {
+        "name": "Who Can Join?",
+        "value": "Students, tech enthusiasts, and interdisciplinary innovators.",
+        "inline": false
+      }
+    ]
+  },
+  "themes": {
+    "title": "Event Themes",
+    "description": "Explore the official themes for MBM IdeaX 2025:",
+    "color": "green",
+    "fields": [
+      {
+        "name": "1. Travel and Tourism",
+        "value": "Innovations for travel planning, sustainable tourism, and virtual experiences.",
+        "inline": false
+      },
+      {
+        "name": "2. Healthcare and Accessibility",
+        "value": "Solutions for telemedicine, assistive technologies, and health monitoring.",
+        "inline": false
+      },
+      {
+        "name": "3. Fin-tech",
+        "value": "Projects in mobile payments, financial literacy, and blockchain finance.",
+        "inline": false
+      },
+      {
+        "name": "4. Agro-tech",
+        "value": "Precision farming, smart irrigation, and agricultural drones.",
+        "inline": false
+      },
+      {
+        "name": "5. Cultural Preservation",
+        "value": "Tech for preserving, promoting, and sharing cultural heritage.",
+        "inline": false
+      },
+      {
+        "name": "6. Open Category",
+        "value": "Hybrid, experimental, or cross-disciplinary projects.",
+        "inline": false
+      },
+      {
+        "name": "Note on AI",
+        "value": "AI can be integrated into any theme for enhanced impact.",
+        "inline": false
+      }
+    ]
+  },
+  "timeline": {
+    "title": "Event Timeline",
+    "description": "MBM IdeaX 2025 features a multi-stage program with workshops, registrations, and hackathon rounds.\n\n📍 **ML Workshop:** Jul 21 to Aug 1\n📍 **IdeaX Registration Opens:** Jul 21\n📍 **Internal Ideathon Registration:** Aug 10 to Aug 26\n📍 **Internal Ideathon:** Aug 29\n📍 **IdeaX Registration Closes:** ~~Sep 16~~ Oct 4\n📍 **IdeaX Online Round:** After Dashain - Dates to be announced\n📍 **IdeaX Final Hackathon:** To be Announced\n\n",
+    "color": "orange",
+    "fields": [
+      {
+        "name": "Final Dates",
+        "value": "All dates to be coordinated with academic calendars. Stay tuned for updates!",
+        "inline": false
+      }
+    ]
+  },
+  "socials": {
+    "title": "Connect with MBM IdeaX",
+    "description": "Follow us on our official platforms using the buttons below!",
+    "color": "teal",
+    "fields": []
+  }
+}

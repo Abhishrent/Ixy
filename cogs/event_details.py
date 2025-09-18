@@ -9,6 +9,7 @@ class EventDetailsSelect(discord.ui.Select):
             discord.SelectOption(label="Overview", description="General event overview", emoji="📋"),
             discord.SelectOption(label="Themes", description="See all event themes", emoji="🎯"),
             discord.SelectOption(label="Timeline", description="Event schedule & timing", emoji="🗓️"),
+            discord.SelectOption(label="Socials", description="Official links & contacts", emoji="🌐"),
         ]
         super().__init__(
             placeholder="Select event info to view...",
@@ -23,18 +24,30 @@ class EventDetailsSelect(discord.ui.Select):
 
         if value == "Overview":
             embed = EventEmbeds.get_overview_embed()
+            view = EventDetailsView()
         elif value == "Themes":
             embed = EventEmbeds.get_themes_embed()
+            view = EventDetailsView()
         elif value == "Timeline":
             embed = EventEmbeds.get_timeline_embed()
+            view = EventDetailsView()
+        elif value == "Socials":
+            embed = EventEmbeds.get_socials_embed()
+            view = EventDetailsView()
+            view.add_item(discord.ui.Button(label="LinkedIn", style=discord.ButtonStyle.link, url="https://www.linkedin.com/company/mbmc-ideax/"))
+            view.add_item(discord.ui.Button(label="Instagram", style=discord.ButtonStyle.link, url="https://www.instagram.com/mbmc_ideax/"))
+            view.add_item(discord.ui.Button(label="Facebook", style=discord.ButtonStyle.link, url="https://www.facebook.com/mbmcideax/"))
+            view.add_item(discord.ui.Button(label="X", style=discord.ButtonStyle.link, url="https://x.com/mbmc_ideax"))
+            view.add_item(discord.ui.Button(label="Discord", style=discord.ButtonStyle.link, url="https://discord.gg/FSFsaCVMqf"))
         else:
             embed = discord.Embed(
                 title="Unknown Selection",
                 description="Please select a valid option.",
                 color=discord.Color.red()
             )
+            view = EventDetailsView()
 
-        await interaction.response.edit_message(embed=embed, view=self.view)
+        await interaction.response.edit_message(embed=embed, view=view)
 
 class EventDetailsView(discord.ui.View):
     def __init__(self):
