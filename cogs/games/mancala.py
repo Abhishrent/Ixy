@@ -421,7 +421,12 @@ R6 ->  |     {board[6]}        |     {board[5]}      |  <- R6
         )
 
         if ai_move is None:
-            await channel.send("❌ AI has no valid moves available!")
+            embed = discord.Embed(
+                title="❌ AI Error",
+                description="AI has no valid moves available!",
+                color=discord.Color.red()
+            )
+            await channel.send(embed=embed)
             return
 
         # Make the AI move
@@ -434,7 +439,12 @@ R6 ->  |     {board[6]}        |     {board[5]}      |  <- R6
         )
 
         if result[0] is None:
-            await channel.send("❌ AI move failed!")
+            embed = discord.Embed(
+                title="❌ AI Move Failed",
+                description="AI move failed!",
+                color=discord.Color.red()
+            )
+            await channel.send(embed=embed)
             return
 
         new_board, new_p1_store, new_p2_store, extra_turn, game_over, winner = result
@@ -495,7 +505,12 @@ R6 ->  |     {board[6]}        |     {board[5]}      |  <- R6
         channel_id = str(ctx.channel.id)
         
         if channel_id in self.active_games:
-            await ctx.send("❌ There's already a Mancala game in this channel!")
+            embed = discord.Embed(
+                title="❌ Game Already Active",
+                description="There's already a Mancala game in this channel!",
+                color=discord.Color.red()
+            )
+            await ctx.send(embed=embed)
             return
         
         player1 = player1 or ctx.author
@@ -505,11 +520,21 @@ R6 ->  |     {board[6]}        |     {board[5]}      |  <- R6
         
         if not is_ai_game:
             if player2.bot:
-                await ctx.send(f"❌ You can't play against a bot! Leave player2 empty to play against {BOT_NAME}.")
+                embed = discord.Embed(
+                    title="❌ Invalid Player",
+                    description=f"You can't play against a bot! Leave player2 empty to play against {BOT_NAME}.",
+                    color=discord.Color.red()
+                )
+                await ctx.send(embed=embed)
                 return
             
             if player1.id == player2.id:
-                await ctx.send("❌ Players can't be the same person!")
+                embed = discord.Embed(
+                    title="❌ Same Player Error",
+                    description="Players can't be the same person!",
+                    color=discord.Color.red()
+                )
+                await ctx.send(embed=embed)
                 return
         
         board = self.create_board()
@@ -600,24 +625,65 @@ R6 ->  |     {board[6]}        |     {board[5]}      |  <- R6
         pit_number = int(content)
         
         if pit_number < 1 or pit_number > 6:
-            await message.channel.send("❌ Please choose a pit between 1 and 6!")
+            embed = discord.Embed(
+                title="❌ Invalid Pit Number",
+                description="Please choose a pit between 1 and 6!",
+                color=discord.Color.red()
+            )
+            error_msg = await message.channel.send(embed=embed)
+            # Delete error message after 3 seconds
+            await asyncio.sleep(3)
+            try:
+                await error_msg.delete()
+            except (discord.Forbidden, discord.NotFound):
+                pass
             return
         
         # Convert to board index
         if game["current_turn"] == 1:
             pit_index = pit_number - 1  # Player 1 uses pits 0-5
             if pit_index < 0 or pit_index > 5:
-                await message.channel.send("❌ Please choose a pit between 1 and 6!")
+                embed = discord.Embed(
+                    title="❌ Invalid Pit Range",
+                    description="Please choose a pit between 1 and 6!",
+                    color=discord.Color.red()
+                )
+                error_msg = await message.channel.send(embed=embed)
+                await asyncio.sleep(3)
+                try:
+                    await error_msg.delete()
+                except (discord.Forbidden, discord.NotFound):
+                    pass
                 return
         else:
             pit_index = pit_number + 5   # Player 2 uses pits 6-11
             if pit_index < 6 or pit_index > 11:
-                await message.channel.send("❌ Please choose a pit between 1 and 6!")
+                embed = discord.Embed(
+                    title="❌ Invalid Pit Range",
+                    description="Please choose a pit between 1 and 6!",
+                    color=discord.Color.red()
+                )
+                error_msg = await message.channel.send(embed=embed)
+                await asyncio.sleep(3)
+                try:
+                    await error_msg.delete()
+                except (discord.Forbidden, discord.NotFound):
+                    pass
                 return
         
         # Check if pit has stones
         if game["board"][pit_index] == 0:
-            await message.channel.send("❌ That pit is empty! Choose a pit with stones.")
+            embed = discord.Embed(
+                title="❌ Empty Pit",
+                description="That pit is empty! Choose a pit with stones.",
+                color=discord.Color.red()
+            )
+            error_msg = await message.channel.send(embed=embed)
+            await asyncio.sleep(3)
+            try:
+                await error_msg.delete()
+            except (discord.Forbidden, discord.NotFound):
+                pass
             return
         
         # Make the move
@@ -630,7 +696,17 @@ R6 ->  |     {board[6]}        |     {board[5]}      |  <- R6
         )
         
         if result[0] is None:
-            await message.channel.send("❌ Invalid move! That pit is empty or not on your side.")
+            embed = discord.Embed(
+                title="❌ Invalid Move",
+                description="That pit is empty or not on your side.",
+                color=discord.Color.red()
+            )
+            error_msg = await message.channel.send(embed=embed)
+            await asyncio.sleep(3)
+            try:
+                await error_msg.delete()
+            except (discord.Forbidden, discord.NotFound):
+                pass
             return
         
         new_board, new_p1_store, new_p2_store, extra_turn, game_over, winner = result
@@ -700,15 +776,33 @@ R6 ->  |     {board[6]}        |     {board[5]}      |  <- R6
         channel_id = str(ctx.channel.id)
         
         if channel_id not in self.active_games:
-            await ctx.send("❌ No active Mancala game in this channel!")
+            embed = discord.Embed(
+                title="❌ No Active Game",
+                description="No active Mancala game in this channel!",
+                color=discord.Color.red()
+            )
+            await ctx.send(embed=embed)
             return
         
         game = self.active_games[channel_id]
         
         if (ctx.author.id not in [game["player1"], game["player2"]] and 
             not ctx.author.guild_permissions.manage_messages):
-            await ctx.send("❌ Only the players or moderators can stop the game!")
+            embed = discord.Embed(
+                title="❌ Permission Denied",
+                description="Only the players or moderators can stop the game!",
+                color=discord.Color.red()
+            )
+            await ctx.send(embed=embed)
             return
+        
+        # Send immediate confirmation
+        confirm_embed = discord.Embed(
+            title="🛑 Game Stopped",
+            description="Mancala game stopped!",
+            color=discord.Color.orange()
+        )
+        await ctx.send(embed=confirm_embed)
         
         await self.update_game_embed(
             ctx.channel, game,
@@ -724,7 +818,13 @@ R6 ->  |     {board[6]}        |     {board[5]}      |  <- R6
     async def show_mancala_scores(self, ctx):
         """Show Mancala leaderboard"""
         if not self.scores:
-            await ctx.send("No Mancala scores yet!")
+            embed = discord.Embed(
+                title="🏆 Mancala Leaderboard",
+                description="No Mancala scores yet! Play a game to start the leaderboard.",
+                color=discord.Color.gold()
+            )
+            embed.set_thumbnail(url=EMBED_THUMBNAIL)
+            await ctx.send(embed=embed)
             return
         
         sorted_scores = sorted(self.scores.items(), key=lambda x: -x[1])[:10]
