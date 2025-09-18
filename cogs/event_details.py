@@ -9,6 +9,10 @@ class EventDetailsSelect(discord.ui.Select):
             discord.SelectOption(label="Overview", description="General event overview", emoji="📋"),
             discord.SelectOption(label="Themes", description="See all event themes", emoji="🎯"),
             discord.SelectOption(label="Timeline", description="Event schedule & timing", emoji="🗓️"),
+            discord.SelectOption(label="Event Format", description="Competition format & rounds", emoji="🏆"),
+            discord.SelectOption(label="Prize Pool", description="Cash prizes & rewards", emoji="💰"),
+            discord.SelectOption(label="Participation Details", description="Teams, accommodation & perks", emoji="🧑‍🤝‍🧑"),
+            discord.SelectOption(label="Organizing Team", description="Meet the team behind IdeaX", emoji="👥"),
             discord.SelectOption(label="Socials", description="Official links & contacts", emoji="🌐"),
         ]
         super().__init__(
@@ -30,6 +34,18 @@ class EventDetailsSelect(discord.ui.Select):
             view = EventDetailsView()
         elif value == "Timeline":
             embed = EventEmbeds.get_timeline_embed()
+            view = EventDetailsView()
+        elif value == "Event Format":
+            embed = EventEmbeds.get_event_format_embed()
+            view = EventDetailsView()
+        elif value == "Prize Pool":
+            embed = EventEmbeds.get_prize_pool_embed()
+            view = EventDetailsView()
+        elif value == "Participation Details":
+            embed = EventEmbeds.get_participation_details_embed()
+            view = EventDetailsView()
+        elif value == "Organizing Team":
+            embed = EventEmbeds.get_organizing_team_embed()
             view = EventDetailsView()
         elif value == "Socials":
             embed = EventEmbeds.get_socials_embed()
