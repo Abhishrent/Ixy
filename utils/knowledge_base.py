@@ -6,71 +6,132 @@ Contains event details and context information used by various AI integrations
 import json
 import os
 
+def _load_event_config():
+    """Load event configuration from JSON file"""
+    try:
+        config_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "config", "event_config.json")
+        with open(config_path, 'r', encoding='utf-8') as file:
+            return json.load(file)
+    except (FileNotFoundError, json.JSONDecodeError, Exception):
+        # Return empty dict if file doesn't exist or has invalid format
+        return {}
+
 class EventContext:
     """Store event details for AI context"""
     
     @staticmethod
     def get_overview() -> str:
-        return """
-        MBM IdeaX 2025 is the third iteration of the flagship hackathon by the MBMC IT Club, 
-        bringing together creative minds to develop impactful solutions using cutting-edge tech. 
-        This year, the event focuses on sustainable, industry-aligned projects leveraging AI, blockchain, and decentralized systems.
-        The event aims to foster innovation, collaboration, and entrepreneurship in Nepal's tech ecosystem.
+        """Get overview from event config file"""
+        config = _load_event_config()
+        overview = config.get("overview", {})
         
-        Mission: Drive positive change through financially viable, innovative solutions.
-        Who Can Join: Students, tech enthusiasts, and interdisciplinary innovators.
-        """
+        if not overview:
+            return "Event overview not available."
+        
+        # Get description
+        description = overview.get("description", "")
+        result = [description] if description else []
+        
+        # Add all fields dynamically
+        fields = overview.get("fields", [])
+        if fields:
+            result.append("")  # Empty line separator
+            for field in fields:
+                name = field.get("name", "")
+                value = field.get("value", "")
+                if name and value:
+                    result.append(f"{name}: {value}")
+        
+        return "\n".join(result)
 
     @staticmethod
     def get_themes() -> str:
-        return """
-        Event Themes for MBM IdeaX 2025:
+        """Get themes from event config file"""
+        config = _load_event_config()
+        themes = config.get("themes", {})
         
-        1. Travel and Tourism: Innovations for travel planning, sustainable tourism, and virtual experiences.
-        2. Healthcare and Accessibility: Solutions for telemedicine, assistive technologies, and health monitoring.
-        3. Fin-tech: Projects in mobile payments, financial literacy, and blockchain finance.
-        4. Agro-tech: Precision farming, smart irrigation, and agricultural drones.
-        5. Cultural Preservation: Tech for preserving, promoting, and sharing cultural heritage.
-        6. Open Category: Hybrid, experimental, or cross-disciplinary projects.
+        if not themes:
+            return "Event themes not available."
         
-        Note on AI: AI can be integrated into any theme for enhanced impact.
-        """
+        # Get description
+        description = themes.get("description", "")
+        result = [description] if description else []
+        
+        # Add all fields dynamically
+        fields = themes.get("fields", [])
+        if fields:
+            result.append("")  # Empty line separator
+            for field in fields:
+                name = field.get("name", "")
+                value = field.get("value", "")
+                if name and value:
+                    result.append(f"{name}: {value}")
+        
+        return "\n".join(result)
 
     @staticmethod
     def get_timeline() -> str:
-        return """
-        MBM IdeaX 2025 features a multi-stage program with workshops, registrations, and hackathon rounds.
+        """Get timeline from event config file"""
+        config = _load_event_config()
+        timeline = config.get("timeline", {})
         
-        - ML Workshop: July 21 to August 1
-        - IdeaX Registration Opens: July 21
-        - Internal Ideathon Registration: August 10 to August 26
-        - Internal Ideathon: August 29
-        - IdeaX Registration Closes: September 16
-        - IdeaX Online Round: September 19 to 21
-        - IdeaX Final Hackathon: October 31, November 1, November 2
+        if not timeline:
+            return "Timeline not available."
         
-        The event is scheduled for October/November 2025, immediately after Tihar and Chhath holidays.
+        # Get description and clean it up
+        description = timeline.get("description", "")
+        clean_description = description.replace("**", "").replace("\n\n", "\n").strip()
         
-        Why this timing:
-        - Maximized participation (no academic conflicts)
-        - Festive spirit & positive atmosphere
-        - Stress-free, creative environment
-        """
+        result = [clean_description] if clean_description else []
+        
+        # Add all fields dynamically
+        fields = timeline.get("fields", [])
+        if fields:
+            result.append("")  # Empty line separator
+            for field in fields:
+                name = field.get("name", "")
+                value = field.get("value", "")
+                if name and value:
+                    result.append(f"{name}: {value}")
+        
+        return "\n".join(result)
 
     @staticmethod
     def get_event_format() -> str:
+        """Get event format - dynamically load from config if available, otherwise use static fallback"""
+        config = _load_event_config()
+        
+        # Check if event_format exists in config
+        event_format = config.get("event_format", {})
+        if event_format:
+            description = event_format.get("description", "")
+            result = [description] if description else []
+            
+            # Add all fields dynamically
+            fields = event_format.get("fields", [])
+            if fields:
+                result.append("")  # Empty line separator
+                for field in fields:
+                    name = field.get("name", "")
+                    value = field.get("value", "")
+                    if name and value:
+                        result.append(f"{name}: {value}")
+            
+            return "\n".join(result)
+        
+        # Fallback to static information if not in config
         return """
         IdeaX 2025 Event Format:
         
-        Online Round (September 11-16):
+        Online Round:
         - Teams showcase their initial ideas and concepts
         - Participants present what they intend to build during the main hackathon
         - Preliminary evaluation of proposals by judges
         - Selected teams advance to the final hackathon round i.e the onsite round
         - This round helps teams refine their concepts before the main event
         
-        Final Hackathon (October 31-November 2):
-        - 3-day intensive building and development phase
+        Final Hackathon:
+        - Multi-day intensive building and development phase
         - Teams implement their proposed solutions
         - Mentoring sessions with industry experts
         - Final presentations and judging
@@ -79,6 +140,28 @@ class EventContext:
 
     @staticmethod
     def get_participation_details() -> str:
+        """Get participation details - dynamically load from config if available, otherwise use static fallback"""
+        config = _load_event_config()
+        
+        # Check if participation_details exists in config
+        participation = config.get("participation_details", {})
+        if participation:
+            description = participation.get("description", "")
+            result = [description] if description else []
+            
+            # Add all fields dynamically
+            fields = participation.get("fields", [])
+            if fields:
+                result.append("")  # Empty line separator
+                for field in fields:
+                    name = field.get("name", "")
+                    value = field.get("value", "")
+                    if name and value:
+                        result.append(f"{name}: {value}")
+            
+            return "\n".join(result)
+        
+        # Fallback to static information if not in config
         return """
         Prize Pool and Team Requirements:
         
@@ -102,6 +185,28 @@ class EventContext:
 
     @staticmethod
     def get_organizing_team() -> str:
+        """Get organizing team - dynamically load from config if available, otherwise use static fallback"""
+        config = _load_event_config()
+        
+        # Check if organizing_team exists in config
+        organizing_team = config.get("organizing_team", {})
+        if organizing_team:
+            description = organizing_team.get("description", "")
+            result = [description] if description else []
+            
+            # Add all fields dynamically
+            fields = organizing_team.get("fields", [])
+            if fields:
+                result.append("")  # Empty line separator
+                for field in fields:
+                    name = field.get("name", "")
+                    value = field.get("value", "")
+                    if name and value:
+                        result.append(f"{name}: {value}")
+            
+            return "\n".join(result)
+        
+        # Fallback to static information if not in config
         return """
         Organizing Team for MBM IdeaX 2025:
         
@@ -117,6 +222,56 @@ class EventContext:
         - Lead: Firoj Paudel
         - Ixy-Development: Abhishrent Khatri
         """
+
+    @staticmethod
+    def get_socials() -> str:
+        """Get social media information dynamically from config"""
+        config = _load_event_config()
+        socials = config.get("socials", {})
+        
+        if not socials:
+            return "Social media information not available."
+        
+        # Get description
+        description = socials.get("description", "")
+        result = [description] if description else []
+        
+        # Add all fields dynamically
+        fields = socials.get("fields", [])
+        if fields:
+            result.append("")  # Empty line separator
+            for field in fields:
+                name = field.get("name", "")
+                value = field.get("value", "")
+                if name and value:
+                    result.append(f"{name}: {value}")
+        
+        return "\n".join(result)
+
+    @staticmethod
+    def get_custom_section(section_name: str) -> str:
+        """Get any custom section from config file dynamically"""
+        config = _load_event_config()
+        section = config.get(section_name, {})
+        
+        if not section:
+            return f"{section_name.replace('_', ' ').title()} information not available."
+        
+        # Get description
+        description = section.get("description", "")
+        result = [description] if description else []
+        
+        # Add all fields dynamically
+        fields = section.get("fields", [])
+        if fields:
+            result.append("")  # Empty line separator
+            for field in fields:
+                name = field.get("name", "")
+                value = field.get("value", "")
+                if name and value:
+                    result.append(f"{name}: {value}")
+        
+        return "\n".join(result)
 
     @staticmethod
     def get_backstory() -> str:
@@ -174,26 +329,45 @@ class EventContext:
 
     @staticmethod
     def get_full_context() -> str:
-        """Return all event information as context for AI"""
-        return f"""
-        {EventContext.get_overview()}
+        """Return all event information as context for AI - completely dynamic"""
+        config = _load_event_config()
         
-        {EventContext.get_themes()}
+        if not config:
+            return "Event configuration not available."
         
-        {EventContext.get_timeline()}
+        result = []
         
-        {EventContext.get_event_format()}
+        # Dynamically process all sections in the config
+        for section_name, section_data in config.items():
+            if isinstance(section_data, dict):
+                # Get section title or use section name as fallback
+                section_title = section_data.get("title", section_name.replace("_", " ").title())
+                result.append(f"\n{section_title}:")
+                
+                # Get description
+                description = section_data.get("description", "")
+                if description:
+                    # Clean up description (remove markdown formatting)
+                    clean_description = description.replace("**", "").replace("\n\n", "\n").strip()
+                    result.append(clean_description)
+                
+                # Get all fields dynamically
+                fields = section_data.get("fields", [])
+                if fields:
+                    for field in fields:
+                        name = field.get("name", "")
+                        value = field.get("value", "")
+                        if name and value:
+                            result.append(f"{name}: {value}")
         
-        {EventContext.get_participation_details()}
+        # Add static information that's not in config
+        result.append("\nTeam Availability Information:")
+        result.append(EventContext.get_team_availability_info().strip())
+        result.append(EventContext.get_team_availability())
+        result.append("\nBackstory:")
+        result.append(EventContext.get_backstory().strip())
         
-        {EventContext.get_organizing_team()}
-        
-        {EventContext.get_team_availability_info()}
-        
-        {EventContext.get_team_availability()}
-        
-        {EventContext.get_backstory()}
-        """
+        return "\n".join(result)
 
 def get_system_prompt() -> str:
     """Generate a system prompt that includes event details"""
