@@ -70,6 +70,124 @@
       }
     ]
   },
+  "event_format": {
+    "title": "Event Format",
+    "description": "MBM IdeaX 2025 follows a multi-stage competition format designed to identify and nurture the best innovative solutions.",
+    "color": "purple",
+    "fields": [
+      {
+        "name": "Online Round",
+        "value": "• Teams showcase their initial ideas and concepts\n• Participants present what they intend to build during the main hackathon\n• Preliminary evaluation of proposals by judges\n• Selected teams advance to the final hackathon round",
+        "inline": false
+      },
+      {
+        "name": "Final Hackathon",
+        "value": "• Multi-day intensive building and development phase\n• Teams implement their proposed solutions\n• Mentoring sessions with industry experts\n• Final presentations and judging\n• Winners announced at the closing ceremony",
+        "inline": false
+      }
+    ]
+  },
+  "prize_pool": {
+    "title": "Prize Pool",
+    "description": "Exciting cash prizes and rewards await the winners of MBM IdeaX 2025!",
+    "color": "gold",
+    "fields": [
+      {
+        "name": "Total Prize Pool",
+        "value": "NPR 1,11,111",
+        "inline": false
+      },
+      {
+        "name": "Grand Winner Prize",
+        "value": "NPR 50,000",
+        "inline": false
+      },
+      {
+        "name": "Theme Winners Prize",
+        "value": "NPR 10,000 per theme",
+        "inline": false
+      }
+    ]
+  },
+  "participation_details": {
+    "title": "Participation Details",
+    "description": "Everything you need to know about participating in MBM IdeaX 2025.",
+    "color": "blue",
+    "fields": [
+      {
+        "name": "Team Requirements",
+        "value": "Minimum 2 members per team, Maximum 4 per team\nIf you don't have a team, use the /find-team command to connect with other participants",
+        "inline": false
+      },
+      {
+        "name": "Accommodation",
+        "value": "All accommodation for the final event is fully managed by the Organizing Committee. Participants will be provided sleeping arrangements within the campus itself.",
+        "inline": false
+      },
+      {
+        "name": "Additional Perks",
+        "value": "All participants receive stickers and swag items. Fun games organized both physically and on Discord. Exciting gifts and vouchers through competitions.",
+        "inline": false
+      }
+    ]
+  },
+  "organizing_team": {
+    "title": "Organizing Team",
+    "description": "Meet the dedicated team behind MBM IdeaX 2025.",
+    "color": "red",
+    "fields": [
+      {
+        "name": "Lead",
+        "value": "• Firoj Paudel",
+        "inline": false
+      },
+      {
+        "name": "General Manager",
+        "value": "• Famous Dhungana",
+        "inline": false
+      },
+      {
+        "name": "Development",
+        "value": "• Abhishrent Khatri (Bot)\n• Loozah Shrestha (Website)",
+        "inline": false
+      },
+      {
+        "name": "Technical",
+        "value": "• Famous Dhungana\n• Vishal Shrestha\n• Roshan Ghimire",
+        "inline": false
+      },
+      {
+        "name": "Design",
+        "value": "• Loozah Shrestha\n• Rabin Khanal",
+        "inline": false
+      },
+      {
+        "name": "Outreach",
+        "value": "• Nilima Shrestha\n• Dilasha Kharel\n• Sudikshya Khadka",
+        "inline": false
+      },
+      {
+        "name": "Media",
+        "value": "• Vishal Shrestha\n• Krijal Paneru",
+        "inline": false
+      },
+      {
+        "name": "Content",
+        "value": "• Sachita Bhandari\n• Aashika K.C.",
+        "inline": false
+      },
+      {
+        "name": "Sponsorship",
+        "value": "• Reeju Pandit",
+        "inline": false
+      },
+      {
+        "name": "Logistics",
+        "value": "• Miraj Bhattarai\n• Bibek Parajuli\n• Sneha Subedi",
+        "inline": false
+      }
+    ]
+  },
   "socials": {
     "title": "Connect with MBM IdeaX",
     "description": "Follow us on our official platforms using the buttons below!",

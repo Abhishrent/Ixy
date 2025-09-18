@@ -113,6 +113,94 @@ class EventEmbeds:
                 "description": "Follow us on our official platforms using the buttons below!",
                 "color": "teal",
                 "fields": []
+            },
+            "event_format": {
+                "title": "Event Format",
+                "description": "Details about the format of MBM IdeaX 2025.",
+                "color": "purple",
+                "fields": [
+                    {
+                        "name": "Hackathon Format",
+                        "value": "The hackathon will be conducted in multiple rounds, including an online preliminary round and an on-site final round.",
+                        "inline": False
+                    },
+                    {
+                        "name": "Workshops",
+                        "value": "Participants will have access to workshops on relevant topics, including AI, blockchain, and more.",
+                        "inline": False
+                    },
+                    {
+                        "name": "Mentorship",
+                        "value": "Teams will be assigned mentors from the industry to guide them through the hackathon.",
+                        "inline": False
+                    }
+                ]
+            },
+            "prize_pool": {
+                "title": "Prize Pool",
+                "description": "Information about the prizes for MBM IdeaX 2025.",
+                "color": "gold",
+                "fields": [
+                    {
+                        "name": "Total Prize Money",
+                        "value": "NPR 1,000,000",
+                        "inline": False
+                    },
+                    {
+                        "name": "Winners",
+                        "value": "Cash prizes and exclusive opportunities for the top teams.",
+                        "inline": False
+                    },
+                    {
+                        "name": "All Participants",
+                        "value": "E-certificates and goodies for all participants.",
+                        "inline": False
+                    }
+                ]
+            },
+            "participation_details": {
+                "title": "Participation Details",
+                "description": "How to participate in MBM IdeaX 2025.",
+                "color": "blue",
+                "fields": [
+                    {
+                        "name": "Eligibility",
+                        "value": "Open to all students and tech enthusiasts. No prior experience required.",
+                        "inline": False
+                    },
+                    {
+                        "name": "Team Size",
+                        "value": "Teams of 1 to 4 members. Solo participants can also register.",
+                        "inline": False
+                    },
+                    {
+                        "name": "Registration Fee",
+                        "value": "NPR 2,500 per team. Includes access to all workshops and events.",
+                        "inline": False
+                    }
+                ]
+            },
+            "organizing_team": {
+                "title": "Organizing Team",
+                "description": "Meet the team behind MBM IdeaX 2025.",
+                "color": "green",
+                "fields": [
+                    {
+                        "name": "Advisors",
+                        "value": "Prof. John Doe, Dr. Jane Smith",
+                        "inline": True
+                    },
+                    {
+                        "name": "Core Team",
+                        "value": "Alice, Bob, Charlie, Dana",
+                        "inline": True
+                    },
+                    {
+                        "name": "Volunteers",
+                        "value": "Join us as a volunteer! Sign up on our website.",
+                        "inline": False
+                    }
+                ]
             }
         }
     
@@ -176,3 +264,19 @@ class EventEmbeds:
     @staticmethod
     def get_socials_embed(include_banner=False):
         return EventEmbeds._build_embed("socials", include_banner)
+    
+    @staticmethod
+    def get_event_format_embed(include_banner=False):
+        return EventEmbeds._build_embed("event_format", include_banner)
+
+    @staticmethod
+    def get_prize_pool_embed(include_banner=False):
+        return EventEmbeds._build_embed("prize_pool", include_banner)
+
+    @staticmethod
+    def get_participation_details_embed(include_banner=False):
+        return EventEmbeds._build_embed("participation_details", include_banner)
+
+    @staticmethod
+    def get_organizing_team_embed(include_banner=False):
+        return EventEmbeds._build_embed("organizing_team", include_banner)
