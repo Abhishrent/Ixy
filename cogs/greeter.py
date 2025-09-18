@@ -51,11 +51,10 @@ class WelcomeDetailsSelect(discord.ui.Select):
         elif value == "Socials":
             embed = EventEmbeds.get_socials_embed(include_banner=True)
             view = WelcomeDetailsView()
-            view.add_item(discord.ui.Button(label="LinkedIn", style=discord.ButtonStyle.link, url="https://www.linkedin.com/company/mbmc-ideax/"))
-            view.add_item(discord.ui.Button(label="Instagram", style=discord.ButtonStyle.link, url="https://www.instagram.com/mbmc_ideax/"))
-            view.add_item(discord.ui.Button(label="Facebook", style=discord.ButtonStyle.link, url="https://www.facebook.com/mbmcideax/"))
-            view.add_item(discord.ui.Button(label="X", style=discord.ButtonStyle.link, url="https://x.com/mbmc_ideax"))
-            view.add_item(discord.ui.Button(label="Discord", style=discord.ButtonStyle.link, url="https://discord.gg/FSFsaCVMqf"))
+            view.add_item(discord.ui.Button(label="LinkedIn", style=discord.ButtonStyle.link, url=LINKEDIN_URL))
+            view.add_item(discord.ui.Button(label="Instagram", style=discord.ButtonStyle.link, url=INSTAGRAM_URL))
+            view.add_item(discord.ui.Button(label="Facebook", style=discord.ButtonStyle.link, url=FACEBOOK_URL))
+            view.add_item(discord.ui.Button(label="X", style=discord.ButtonStyle.link, url=X_URL))
         else:
             embed = discord.Embed(
                 title="Unknown Selection",

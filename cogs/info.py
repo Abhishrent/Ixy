@@ -36,11 +36,10 @@ class Info(commands.Cog):
     @commands.hybrid_command('socials', description="Check out our social media links.")
     async def social_media(self, ctx):
         # Create buttons for different social media links
-        button_linkedin = Button(label="LinkedIn", style=discord.ButtonStyle.link, url="https://www.linkedin.com/company/mbmc-ideax/")
-        button_instagram = Button(label="Instagram", style=discord.ButtonStyle.link, url="https://www.instagram.com/mbmc_ideax/")
-        button_facebook = Button(label="Facebook", style=discord.ButtonStyle.link, url="https://www.facebook.com/mbmcideax/")
-        button_x = Button(label="X", style=discord.ButtonStyle.link, url="https://x.com/mbmc_ideax")
-        button_discord = Button(label="Discord", style=discord.ButtonStyle.link, url="https://discord.gg/FSFsaCVMqf")
+        button_linkedin = Button(label="LinkedIn", style=discord.ButtonStyle.link, url=LINKEDIN_URL)
+        button_instagram = Button(label="Instagram", style=discord.ButtonStyle.link, url=INSTAGRAM_URL)
+        button_facebook = Button(label="Facebook", style=discord.ButtonStyle.link, url=FACEBOOK_URL)
+        button_x = Button(label="X", style=discord.ButtonStyle.link, url=X_URL)
 
         embed = discord.Embed(
             title="Connect with MBM IdeaX",
@@ -55,7 +54,6 @@ class Info(commands.Cog):
         view.add_item(button_instagram)
         view.add_item(button_facebook)
         view.add_item(button_x)
-        view.add_item(button_discord)
 
         # Send the embed with the buttons
         await ctx.send(embed=embed, view=view)

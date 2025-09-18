@@ -11,13 +11,8 @@ SPECIAL_DATES = {
     (8, 10): "Internal Ideathon Reg. Starts",
     (8, 26): "Internal Ideathon Reg. Closes",
     (8, 29): "Internal Ideathon",
-    (9, 16): "IdeaX Registration Closes",
-    (9, 19): "IdeaX Online Round Day 1",
-    (9, 20): "IdeaX Online Round Day 2",
-    (9, 21): "IdeaX Online Round Day 3",
-    (10, 31): "IdeaX Final Hackathon Day 1",
-    (11, 1): "IdeaX Final Hackathon Day 2",
-    (11, 2): "IdeaX Final Hackathon Day 3",
+    (10, 4): "IdeaX Registration Closes",
+    # Note: Online Round and Final Hackathon dates TBA as per event_config.json
 }
 
 # Discord Channel IDs
@@ -61,7 +56,7 @@ FOLDER_ID = '1EuFkB3s6shYxc58_D8yloe2OBNENimh_'
 
 # Embed Assets
 # URLs for images used in embeds
-EMBED_THUMBNAIL = 'https://cdn.discordapp.com/attachments/1303620918454779914/1303621095571591218/ideax_logo_white.png?ex=672c6b41&is=672b19c1&hm=e5bd4447cf9d51d30d06710962d1cc50ac64ff82e0ab851e6be2672504033e64&'
+EMBED_THUMBNAIL = 'https://cdn.discordapp.com/attachments/1389639157743354028/1416341103967473707/Untitled_design3.gif?ex=68c67df1&is=68c52c71&hm=6f4e1f9dad734335383329b25aa46d7710677007496ec4b438d23dda20b43ad3&'
 EMBED_FOOTER = 'https://media.discordapp.net/attachments/1389639157743354028/1403646085729353830/X.png?ex=68984ec9&is=6896fd49&hm=dd85c5218e8d8de7aca71e922fb3dcd865810b359a1b33fbdd56ce404d334aeb&=&format=webp&quality=lossless'
 EMBED_IMAGE = 'https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExbGk1c243M2x2b2k2djZpdnZtOWMzemk2djAxdHYyZHlpdDZkMXBxOSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3Otqo8qv0LkmdUDe7w/giphy.gif'
 WELCOME_BANNER = 'https://cdn.discordapp.com/attachments/1389639157743354028/1389643291519352943/1FDFD219-97F4-406A-ADFE-35F3D3E637EE_3.gif?ex=68655dab&is=68640c2b&hm=6a45634601be318f32b87e50c3ca8c868149ebc40da0225376f00ee270c59ef5&'
@@ -87,3 +82,9 @@ BOT_TOKEN = '***REMOVED***'
 # BOT_TOKEN = os.environ.get("BOT_TOKEN")
 # if not BOT_TOKEN:
 #     raise ValueError("BOT_TOKEN environment variable not found")
+
+# Social Links
+LINKEDIN_URL = 'https://www.linkedin.com/company/mbmc-ideax/'
+INSTAGRAM_URL = 'https://www.instagram.com/mbm_ideax/'
+FACEBOOK_URL = 'https://www.facebook.com/mbmcideax/'
+X_URL = 'https://x.com/mbmc_ideax'
