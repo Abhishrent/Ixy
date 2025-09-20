@@ -45,9 +45,9 @@ questions = [
         "incorrect_answers": ["Jack", "Mike", "Joey"]
     },
     {
-        "question": "What is Rachel's sister's name who dates Chandler?",
-        "correct_answer": "Jill",
-        "incorrect_answers": ["Amy", "Emma", "Sarah"]
+        "question": "What is Rachel's sister's name who dates Ross?",
+        "correct_answer": "Amy",
+        "incorrect_answers": ["Jill", "Emma", "Sarah"]
     },
     {
         "question": "Where do Ross and Rachel get drunk and accidentally get married?",
@@ -335,8 +335,8 @@ questions = [
     },
     {
         "question": "What does Rachel do after leaving her job at Ralph Lauren?",
-        "correct_answer": "Becomes a Waitress",
-        "incorrect_answers": ["Retail Manager", "Fashion Designer", "Personal Shopper"]
+        "correct_answer": "Works at Louis Vuitton",
+        "incorrect_answers": ["Becomes a Waitress", "Fashion Designer", "Personal Shopper"]
     },
     {
         "question": "What is Joey's job before becoming an actor?",
