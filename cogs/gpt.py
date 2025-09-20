@@ -145,10 +145,23 @@ class AIAssistant:
         # self.system_prompt = get_system_prompt()
         self.context_window = []  # Store recent conversation history
         self.max_context_messages = 10  # Maximum number of messages to keep in context
+        # NEW: Track event config file for real-time updates / context reset
+        self._event_config_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "config", "event_config.json")
+        self._last_config_mtime = self._get_config_mtime()
+    
+    def _get_config_mtime(self):
+        try:
+            return os.path.getmtime(self._event_config_path)
+        except OSError:
+            return None
     
     @property
     def system_prompt(self):
-        """Always fetch the latest system prompt (event config) at call time."""
+        """Always fetch the latest system prompt; reset context if config changed."""
+        current_mtime = self._get_config_mtime()
+        if current_mtime and current_mtime != self._last_config_mtime:
+            self.context_window.clear()
+            self._last_config_mtime = current_mtime
         return get_system_prompt()
     
     def _setup_client(self):
