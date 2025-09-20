@@ -5,7 +5,7 @@ import asyncio
 from openai import OpenAI
 import re
 import json
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Literal
 from datetime import datetime, timedelta
 from utils.knowledge_base import get_system_prompt
 
@@ -229,7 +229,8 @@ class TicketAIAssistant(commands.Cog):
         self.conversation_timeout = 180  # Consider conversation ended after 3 minutes of inactivity
         self.organizing_committee_role_id = 1130051976189722680  # The organizing committee role ID
         self.mod_role_names = ["mod", "moderator", "staff", "admin", "support"]  # Role names that indicate moderators
-    
+        self.enabled = True  # NEW: Global toggle for AI responses
+
     def get_assistant(self, channel_id: int) -> AIAssistant:
         """Get or create an AI assistant for a channel"""
         if channel_id not in self.assistants:
@@ -312,9 +313,51 @@ class TicketAIAssistant(commands.Cog):
         # If no staff is active, respond normally
         return True
     
+    # Remove group-based ai_assist commands and revert to single command with a choice parameter
+    def _ai_status_embed(self):
+        color = 0x2ECC71 if self.enabled else 0xE74C3C
+        return discord.Embed(title="AI Assistant Status", description=f"{'🟢 Enabled' if self.enabled else '🔴 Disabled'}", color=color)
+
+    @commands.hybrid_command(name="ai_assist", aliases=["toggleai", "aistatus"], description="Enable, disable, or view AI assistant status.")
+    @commands.has_permissions(administrator=True)
+    async def ai_assist(self, ctx: commands.Context, action: Literal["on", "off", "status"] = "status"):
+        """Toggle or view AI assistant status.
+        action choices: on | off | status"""
+        if action == "status":
+            await ctx.reply(embed=self._ai_status_embed())
+            return
+        if action == "on":
+            if self.enabled:
+                embed = discord.Embed(title="AI Assistant", description="Already enabled ✅", color=0x2ECC71)
+            else:
+                self.enabled = True
+                embed = discord.Embed(title="AI Assistant", description="Enabled ✅", color=0x2ECC71)
+            await ctx.reply(embed=embed)
+            return
+        if action == "off":
+            if not self.enabled:
+                embed = discord.Embed(title="AI Assistant", description="Already disabled ⛔", color=0xE74C3C)
+            else:
+                self.enabled = False
+                embed = discord.Embed(title="AI Assistant", description="Disabled ⛔", color=0xE74C3C)
+            await ctx.reply(embed=embed)
+            return
+
+    @ai_assist.error
+    async def ai_assist_error(self, ctx: commands.Context, error):
+        if isinstance(error, commands.MissingPermissions):
+            embed = discord.Embed(title="AI Assistant Error", description="You need administrator permissions to use this command.", color=0xE74C3C)
+        else:
+            embed = discord.Embed(title="AI Assistant Error", description="Error processing command.", color=0xE74C3C)
+        await ctx.reply(embed=embed)
+
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message):
         """Monitor messages in ticket channels and respond, and reply to bot mentions in public channels"""
+        # Skip if globally disabled
+        if not getattr(self, 'enabled', True):
+            return
+
         # Ignore bot messages to prevent loops
         if message.author.bot:
             return
