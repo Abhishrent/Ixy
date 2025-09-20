@@ -36,10 +36,24 @@ class AIAssistant:
         self.usage_data = self.load_usage_data()
         self.max_retries = 3  # Maximum retries per model
         self.retry_delay = 2  # Delay in seconds between retries
+        # NEW: Track event config file for real-time updates / context reset
+        self._event_config_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "config", "event_config.json")
+        self._last_config_mtime = self._get_config_mtime()
+    
+    def _get_config_mtime(self):
+        try:
+            return os.path.getmtime(self._event_config_path)
+        except OSError:
+            return None
     
     @property
     def system_prompt(self):
-        """Always fetch the latest system prompt (event config) at call time."""
+        """Always fetch latest system prompt. If config changed, reset rolling context."""
+        current_mtime = self._get_config_mtime()
+        if current_mtime and current_mtime != self._last_config_mtime:
+            # Config updated on disk: clear previous dialogue to avoid stale answers
+            self.context_window.clear()
+            self._last_config_mtime = current_mtime
         return get_system_prompt()
     
     def load_usage_data(self) -> Dict[str, Any]:
