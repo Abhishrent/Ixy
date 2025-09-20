@@ -29,12 +29,18 @@ class AIAssistant:
             "mistralai/mistral-small-3.2-24b-instruct:free"
         ]
         
-        self.system_prompt = get_system_prompt()
+        # REMOVE cached system prompt to allow real-time refresh
+        # self.system_prompt = get_system_prompt()
         self.context_window = []  # Store recent conversation history
         self.max_context_messages = 10  # Maximum number of messages to keep in context
         self.usage_data = self.load_usage_data()
         self.max_retries = 3  # Maximum retries per model
         self.retry_delay = 2  # Delay in seconds between retries
+    
+    @property
+    def system_prompt(self):
+        """Always fetch the latest system prompt (event config) at call time."""
+        return get_system_prompt()
     
     def load_usage_data(self) -> Dict[str, Any]:
         """Load usage data from file or create if doesn't exist"""
@@ -110,7 +116,7 @@ class AIAssistant:
                 try:
                     print(f"Trying model: {model} (attempt {retry+1}/{self.max_retries})")
                     
-                    # Prepare messages with system prompt and context window
+                    # Prepare messages with system prompt and context window (system prompt fetched fresh)
                     messages = [{"role": "system", "content": self.system_prompt}]
                     messages.extend(self.context_window)
                     messages.append({"role": "user", "content": query})
