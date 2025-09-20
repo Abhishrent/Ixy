@@ -426,7 +426,7 @@ class TeamPairing(commands.Cog):
 
         # Always attach paginator view, even if there's only one page (buttons will be disabled)
         view = MembersPaginator(embeds, interaction.user.id)
-        await interaction.response.send_message(embed=embeds[0], view=view, ephemeral=True)
+        await interaction.response.send_message(embed=embeds[0], view=view)
 
 async def setup(bot):
     await bot.add_cog(TeamPairing(bot))
