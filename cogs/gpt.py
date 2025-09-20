@@ -141,9 +141,15 @@ class AIAssistant:
         self._setup_client()
         
         self.model = "gpt-4o"
-        self.system_prompt = get_system_prompt()
+        # REMOVE cached system prompt; will fetch dynamically via property
+        # self.system_prompt = get_system_prompt()
         self.context_window = []  # Store recent conversation history
         self.max_context_messages = 10  # Maximum number of messages to keep in context
+    
+    @property
+    def system_prompt(self):
+        """Always fetch the latest system prompt (event config) at call time."""
+        return get_system_prompt()
     
     def _setup_client(self):
         """Set up the OpenAI client with the current token"""
@@ -188,7 +194,7 @@ class AIAssistant:
                 self.update_context("assistant", ai_response)
                 
                 return ai_response
-                
+            
             except Exception as e:
                 error_msg = str(e).lower()
                 
