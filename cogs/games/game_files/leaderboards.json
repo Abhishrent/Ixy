@@ -1,6 +1,13 @@
 {
   "memory": [
     {
+      "best_time": 133.90528440475464,
+      "user_id": 758266841876922438,
+      "username": "nekonya0151",
+      "date": "2025-09-13",
+      "time_display": "02:13"
+    },
+    {
       "best_time": 368.5291223526001,
       "user_id": 1003987908744708176,
       "username": "abhishrent",
@@ -9,6 +16,13 @@
     }
   ],
   "sequence": [
+    {
+      "max_round": 13,
+      "tiles_memorised": 11,
+      "user_id": 758266841876922438,
+      "username": "nekonya0151",
+      "date": "2025-09-15"
+    },
     {
       "max_round": 9,
       "tiles_memorised": 2,
@@ -35,6 +49,23 @@
       "user_id": 934820587572953118,
       "username": "grishrana",
       "date": "2025-08-21"
+    }
+  ],
+  "number_guesser": [
+    {
+      "user_id": "758266841876922438",
+      "username": "Unknown",
+      "wins": 29
+    },
+    {
+      "user_id": "542227412671397899",
+      "username": "Unknown",
+      "wins": 18
+    },
+    {
+      "user_id": "1020287053533020191",
+      "username": "Unknown",
+      "wins": 13
     }
   ]
 }
