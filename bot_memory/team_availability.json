@@ -18,5 +18,15 @@
     "additional_info": "None",
     "timestamp": "2025-08-26T21:37:53.299349",
     "active": true
+  },
+  {
+    "user_id": 773561273542508544,
+    "username": "anjalbhattarai79",
+    "skills": "java, python, html,css, sql,git,tensorflow,scikit-learn,langchain,fastapi,docker,n8n",
+    "experience": "Beginner",
+    "looking_for": "backend,api integration and ai engineering",
+    "additional_info": "None",
+    "timestamp": "2025-09-20T20:17:29.018585",
+    "active": true
   }
 ]
