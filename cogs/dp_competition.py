@@ -36,31 +36,48 @@ class ParticipantPages(discord.ui.View):
         self.update_buttons()
 
     def update_buttons(self):
-        self.clear_items()
-        if len(self.pages) > 1:
-            self.add_item(discord.ui.Button(label="Previous", style=discord.ButtonStyle.secondary, custom_id="prev"))
-            self.add_item(discord.ui.Button(label=f"Page {self.current+1}/{len(self.pages)}", style=discord.ButtonStyle.gray, disabled=True))
-            self.add_item(discord.ui.Button(label="Next", style=discord.ButtonStyle.secondary, custom_id="next"))
+        """Update button states and labels based on current page"""
+        # Update button states
+        self.prev.disabled = (self.current == 0)
+        self.next.disabled = (self.current >= len(self.pages) - 1)
+        
+        # Update page indicator
+        self.page_indicator.label = f"Page {self.current + 1}/{len(self.pages)}"
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         return True
 
-    @discord.ui.button(label="Previous", style=discord.ButtonStyle.secondary, custom_id="prev", row=0)
+    @discord.ui.button(label="Previous", style=discord.ButtonStyle.secondary, row=0)
     async def prev(self, interaction: discord.Interaction, button: discord.ui.Button):
         if self.current > 0:
             self.current -= 1
-            await self.update_message(interaction)
+            self.update_buttons()
+            embed = self.pages[self.current]
+            await interaction.response.edit_message(embed=embed, view=self)
 
-    @discord.ui.button(label="Next", style=discord.ButtonStyle.secondary, custom_id="next", row=0)
+    @discord.ui.button(label="Page 1/1", style=discord.ButtonStyle.gray, disabled=True, row=0)
+    async def page_indicator(self, interaction: discord.Interaction, button: discord.ui.Button):
+        # This button is just for display, defer the interaction
+        await interaction.response.defer()
+
+    @discord.ui.button(label="Next", style=discord.ButtonStyle.secondary, row=0)
     async def next(self, interaction: discord.Interaction, button: discord.ui.Button):
         if self.current < len(self.pages) - 1:
             self.current += 1
-            await self.update_message(interaction)
+            self.update_buttons()
+            embed = self.pages[self.current]
+            await interaction.response.edit_message(embed=embed, view=self)
 
-    async def update_message(self, interaction):
-        embed = self.pages[self.current]
-        await interaction.response.edit_message(embed=embed, view=self)
-        self.update_buttons()
+    async def on_timeout(self):
+        # Disable all buttons on timeout
+        for item in self.children:
+            if isinstance(item, discord.ui.Button):
+                item.disabled = True
+        if self.message:
+            try:
+                await self.message.edit(view=self)
+            except discord.NotFound:
+                pass  # Message was deleted
 
 class DPCompetition(commands.Cog):
     def __init__(self, bot):
@@ -129,15 +146,20 @@ class DPCompetition(commands.Cog):
     async def get_or_create_embed_message(self, channel):
         pages = self.create_participant_pages()
         view = ParticipantPages(pages)
+        view.message = None  # Will be set after message creation
+        
         if self.data.get("embed_id"):
             try:
                 message = await channel.fetch_message(self.data["embed_id"])
+                view.message = message
                 await message.edit(embed=pages[0], view=view)
                 self.embed_message = message
                 return message
             except discord.NotFound:
                 pass
+        
         message = await channel.send(embed=pages[0], view=view)
+        view.message = message
         self.embed_message = message
         self.data["embed_id"] = message.id
         save_competition(self.data)
@@ -377,6 +399,18 @@ class DPCompetition(commands.Cog):
         embed.add_field(name="Ends at", value=end_time, inline=False)
         
         await ctx.send(embed=embed, ephemeral=True)
+
+    @commands.hybrid_command(name="test_participant_pagination", with_app_command=True)
+    @commands.has_permissions(manage_messages=True)
+    async def test_participant_pagination(self, ctx):
+        """Test participant embed pagination with 120 fake names"""
+        self.data["participants"] = [
+            {"user_id": str(i), "name": f"TestUser{i}"} for i in range(1, 121)
+        ]
+        save_competition(self.data)
+        channel = self.bot.get_channel(COMPETITION_CHANNEL_ID)
+        await self.update_embed(channel)
+        await ctx.send("✅ Test participant pagination complete! Check the competition channel.", ephemeral=True)
 
 async def setup(bot):
     await bot.add_cog(DPCompetition(bot))
