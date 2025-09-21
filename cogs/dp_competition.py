@@ -28,7 +28,7 @@ def save_competition(data):
         json.dump(data, f, indent=2)
 
 class ParticipantPages(discord.ui.View):
-    def __init__(self, pages, timeout=120):
+    def __init__(self, pages, timeout=None):
         super().__init__(timeout=timeout)
         self.pages = pages
         self.current = 0
@@ -171,6 +171,43 @@ class DPCompetition(commands.Cog):
         except Exception as e:
             print(f"Error updating competition embed: {e}")
 
+    async def clear_forum_threads(self, ctx):
+        """Clear all existing threads in the forum channel"""
+        forum = self.bot.get_channel(FORUM_CHANNEL_ID)
+        if not forum:
+            print(f"Error: Forum channel {FORUM_CHANNEL_ID} not found")
+            return
+        
+        deleted_count = 0
+        try:
+            # Get all active threads
+            active_threads = forum.threads
+            for thread in active_threads:
+                try:
+                    await thread.delete()
+                    deleted_count += 1
+                    print(f"Deleted active thread: {thread.name}")
+                except Exception as e:
+                    print(f"Error deleting active thread {thread.name}: {e}")
+            
+            # Get archived threads (if any)
+            try:
+                async for thread in forum.archived_threads():
+                    try:
+                        await thread.delete()
+                        deleted_count += 1
+                        print(f"Deleted archived thread: {thread.name}")
+                    except Exception as e:
+                        print(f"Error deleting archived thread {thread.name}: {e}")
+            except Exception as e:
+                print(f"Error fetching archived threads: {e}")
+                
+        except Exception as e:
+            print(f"Error clearing forum threads: {e}")
+        
+        print(f"Cleared {deleted_count} threads from forum channel")
+        return deleted_count
+
     @commands.hybrid_command(name="start_dp_competition", with_app_command=True)
     @commands.has_permissions(manage_messages=True)
     async def start_dp_competition(self, ctx, duration_minutes: int):
@@ -178,6 +215,13 @@ class DPCompetition(commands.Cog):
         if self.data.get("active"):
             await ctx.send("❌ A competition is already running.", ephemeral=True)
             return
+        
+        # Send initial response
+        await ctx.send("🔄 Starting DP competition and clearing previous entries...", ephemeral=True)
+        
+        # Clear all existing forum threads
+        deleted_count = await self.clear_forum_threads(ctx)
+        
         end_time = (datetime.utcnow() + timedelta(minutes=duration_minutes)).strftime("%Y-%m-%d %H:%M UTC")
         self.data = {
             "active": True,
@@ -192,7 +236,13 @@ class DPCompetition(commands.Cog):
         channel = self.bot.get_channel(COMPETITION_CHANNEL_ID)
         await self.update_embed(channel)
         self.start_competition_task()
-        await ctx.send(f"✅ DP competition started for {duration_minutes} minutes!", ephemeral=True)
+        
+        # Send final confirmation
+        try:
+            await ctx.followup.send(f"✅ DP competition started for {duration_minutes} minutes!\n🗑️ Cleared {deleted_count} previous forum entries.", ephemeral=True)
+        except Exception:
+            # Fallback if followup fails
+            await ctx.send(f"✅ DP competition started for {duration_minutes} minutes!\n🗑️ Cleared {deleted_count} previous forum entries.", ephemeral=True)
 
     def start_competition_task(self):
         if self.competition_task:
@@ -399,6 +449,19 @@ class DPCompetition(commands.Cog):
         embed.add_field(name="Ends at", value=end_time, inline=False)
         
         await ctx.send(embed=embed, ephemeral=True)
+
+    @commands.hybrid_command(name="clear_forum_entries", with_app_command=True)
+    @commands.has_permissions(manage_messages=True)
+    async def clear_forum_entries_manual(self, ctx):
+        """Manually clear all forum entries (threads)"""
+        await ctx.send("🔄 Clearing all forum entries...", ephemeral=True)
+        
+        deleted_count = await self.clear_forum_threads(ctx)
+        
+        try:
+            await ctx.followup.send(f"✅ Cleared {deleted_count} forum entries!", ephemeral=True)
+        except Exception:
+            await ctx.send(f"✅ Cleared {deleted_count} forum entries!", ephemeral=True)
 
     @commands.hybrid_command(name="test_participant_pagination", with_app_command=True)
     @commands.has_permissions(manage_messages=True)
