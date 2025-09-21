@@ -27,6 +27,41 @@ def save_competition(data):
     with open(COMPETITION_FILE, "w") as f:
         json.dump(data, f, indent=2)
 
+class ParticipantPages(discord.ui.View):
+    def __init__(self, pages, timeout=120):
+        super().__init__(timeout=timeout)
+        self.pages = pages
+        self.current = 0
+        self.message = None
+        self.update_buttons()
+
+    def update_buttons(self):
+        self.clear_items()
+        if len(self.pages) > 1:
+            self.add_item(discord.ui.Button(label="Previous", style=discord.ButtonStyle.secondary, custom_id="prev"))
+            self.add_item(discord.ui.Button(label=f"Page {self.current+1}/{len(self.pages)}", style=discord.ButtonStyle.gray, disabled=True))
+            self.add_item(discord.ui.Button(label="Next", style=discord.ButtonStyle.secondary, custom_id="next"))
+
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        return True
+
+    @discord.ui.button(label="Previous", style=discord.ButtonStyle.secondary, custom_id="prev", row=0)
+    async def prev(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if self.current > 0:
+            self.current -= 1
+            await self.update_message(interaction)
+
+    @discord.ui.button(label="Next", style=discord.ButtonStyle.secondary, custom_id="next", row=0)
+    async def next(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if self.current < len(self.pages) - 1:
+            self.current += 1
+            await self.update_message(interaction)
+
+    async def update_message(self, interaction):
+        embed = self.pages[self.current]
+        await interaction.response.edit_message(embed=embed, view=self)
+        self.update_buttons()
+
 class DPCompetition(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -55,16 +90,54 @@ class DPCompetition(commands.Cog):
         embed.timestamp = discord.utils.utcnow()
         return embed
 
+    def create_participant_pages(self):
+        participants = self.data.get("participants", [])
+        names = [p["name"] for p in participants]
+        pages = []
+        max_chars = 1024
+        page_size = 40  # Adjust for average name length
+        for i in range(0, len(names), page_size):
+            chunk = names[i:i+page_size]
+            field_value = "\n".join(chunk)
+            embed = discord.Embed(
+                title="🏆 Best DP Competition",
+                description="React by sending any message to join!",
+                color=discord.Color.gold()
+            )
+            embed.set_thumbnail(url=EMBED_THUMBNAIL)
+            embed.add_field(name="Participants", value=field_value, inline=False)
+            if self.data.get("end_time"):
+                end_time = self.data["end_time"]
+                embed.set_footer(text=f"Competition ends at: {end_time}")
+            embed.timestamp = discord.utils.utcnow()
+            pages.append(embed)
+        if not pages:
+            embed = discord.Embed(
+                title="🏆 Best DP Competition",
+                description="React by sending any message to join!",
+                color=discord.Color.gold()
+            )
+            embed.set_thumbnail(url=EMBED_THUMBNAIL)
+            embed.add_field(name="Participants", value="No entries yet.", inline=False)
+            if self.data.get("end_time"):
+                end_time = self.data["end_time"]
+                embed.set_footer(text=f"Competition ends at: {end_time}")
+            embed.timestamp = discord.utils.utcnow()
+            pages = [embed]
+        return pages
+
     async def get_or_create_embed_message(self, channel):
+        pages = self.create_participant_pages()
+        view = ParticipantPages(pages)
         if self.data.get("embed_id"):
             try:
                 message = await channel.fetch_message(self.data["embed_id"])
+                await message.edit(embed=pages[0], view=view)
                 self.embed_message = message
                 return message
             except discord.NotFound:
                 pass
-        embed = self.create_embed()
-        message = await channel.send(embed=embed)
+        message = await channel.send(embed=pages[0], view=view)
         self.embed_message = message
         self.data["embed_id"] = message.id
         save_competition(self.data)
@@ -72,9 +145,7 @@ class DPCompetition(commands.Cog):
 
     async def update_embed(self, channel):
         try:
-            embed_message = await self.get_or_create_embed_message(channel)
-            new_embed = self.create_embed()
-            await embed_message.edit(embed=new_embed)
+            await self.get_or_create_embed_message(channel)
         except Exception as e:
             print(f"Error updating competition embed: {e}")
 
