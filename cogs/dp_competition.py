@@ -90,7 +90,7 @@ class DPCompetition(commands.Cog):
 
     def create_embed(self):
         embed = discord.Embed(
-            title="🏆 Best DP Competition",
+            title="🏆 Best pp flex Competition",
             description="React by sending any message to join!",
             color=discord.Color.gold()
         )
@@ -117,7 +117,7 @@ class DPCompetition(commands.Cog):
             chunk = names[i:i+page_size]
             field_value = "\n".join(chunk)
             embed = discord.Embed(
-                title="🏆 Best DP Competition",
+                title="🏆 Best pp flex Competition",
                 description="React by sending any message to join!",
                 color=discord.Color.gold()
             )
@@ -130,7 +130,7 @@ class DPCompetition(commands.Cog):
             pages.append(embed)
         if not pages:
             embed = discord.Embed(
-                title="🏆 Best DP Competition",
+                title="🏆 Best pp flex Competition",
                 description="React by sending any message to join!",
                 color=discord.Color.gold()
             )
@@ -217,7 +217,7 @@ class DPCompetition(commands.Cog):
             return
         
         # Send initial response
-        await ctx.send("🔄 Starting DP competition and clearing previous entries...", ephemeral=True)
+        await ctx.send("🔄 Starting PP competition and clearing previous entries...", ephemeral=True)
         
         # Clear all existing forum threads
         deleted_count = await self.clear_forum_threads(ctx)
@@ -242,7 +242,7 @@ class DPCompetition(commands.Cog):
             await ctx.followup.send(f"✅ DP competition started for {duration_minutes} minutes!\n🗑️ Cleared {deleted_count} previous forum entries.", ephemeral=True)
         except Exception:
             # Fallback if followup fails
-            await ctx.send(f"✅ DP competition started for {duration_minutes} minutes!\n🗑️ Cleared {deleted_count} previous forum entries.", ephemeral=True)
+            await ctx.send(f"✅ PP competition started for {duration_minutes} minutes!\n🗑️ Cleared {deleted_count} previous forum entries.", ephemeral=True)
 
     def start_competition_task(self):
         if self.competition_task:
@@ -309,13 +309,13 @@ class DPCompetition(commands.Cog):
         results.sort(key=lambda x: x[1], reverse=True)
         
         embed = discord.Embed(
-            title="🏆 DP Competition Ended!",
+            title="🏆 pp flex Competition Ended!",
             description="",
             color=discord.Color.gold()
         )
         
         if winner and max_votes > 0:
-            embed.add_field(name="Winner", value=f"🎉 {winner} with {max_votes} votes!", inline=False)
+            embed.add_field(name="Winner", value=f"🎉 {winner}'s pp flex wins with {max_votes} votes!", inline=False)
         else:
             embed.add_field(name="Winner", value="No winner (no votes received).", inline=False)
         
@@ -360,7 +360,7 @@ class DPCompetition(commands.Cog):
         
         # Create forum thread
         forum = self.bot.get_channel(FORUM_CHANNEL_ID)
-        thread_title = f"{message.author.display_name}'s DP"
+        thread_title = f"{message.author.display_name}'s pp flex"
         
         # Get user avatar URL with proper fallback
         avatar_url = None
@@ -461,18 +461,6 @@ class DPCompetition(commands.Cog):
             await ctx.followup.send(f"✅ Cleared {deleted_count} forum entries!", ephemeral=True)
         except Exception:
             await ctx.send(f"✅ Cleared {deleted_count} forum entries!", ephemeral=True)
-
-    @commands.hybrid_command(name="test_participant_pagination", with_app_command=True)
-    @commands.has_permissions(manage_messages=True)
-    async def test_participant_pagination(self, ctx):
-        """Test participant embed pagination with 120 fake names"""
-        self.data["participants"] = [
-            {"user_id": str(i), "name": f"TestUser{i}"} for i in range(1, 121)
-        ]
-        save_competition(self.data)
-        channel = self.bot.get_channel(COMPETITION_CHANNEL_ID)
-        await self.update_embed(channel)
-        await ctx.send("✅ Test participant pagination complete! Check the competition channel.", ephemeral=True)
 
 async def setup(bot):
     await bot.add_cog(DPCompetition(bot))
