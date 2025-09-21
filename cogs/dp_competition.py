@@ -307,11 +307,10 @@ class DPCompetition(commands.Cog):
         
         # Sort results by votes (highest first)
         results.sort(key=lambda x: x[1], reverse=True)
-        result_text = "\n".join([f"{name}: {votes} votes" for name, votes in results])
         
         embed = discord.Embed(
             title="🏆 DP Competition Ended!",
-            description=result_text if result_text else "No participants",
+            description="",
             color=discord.Color.gold()
         )
         
