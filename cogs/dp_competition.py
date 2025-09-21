@@ -90,6 +90,7 @@ class DPCompetition(commands.Cog):
             "active": True,
             "participants": [],
             "forum_threads": {},
+            "forum_messages": {},  # Store message IDs for voting
             "embed_id": None,
             "end_time": end_time,
             "end_timestamp": (datetime.utcnow() + timedelta(minutes=duration_minutes)).timestamp()
@@ -121,35 +122,62 @@ class DPCompetition(commands.Cog):
         channel = self.bot.get_channel(COMPETITION_CHANNEL_ID)
         forum = self.bot.get_channel(FORUM_CHANNEL_ID)
         participants = self.data.get("participants", [])
-        threads = self.data.get("forum_threads", {})
+        forum_messages = self.data.get("forum_messages", {})
+        
         winner = None
         max_votes = -1
         results = []
+        
         for p in participants:
-            thread_id = threads.get(str(p["user_id"]))
+            message_id = forum_messages.get(str(p["user_id"]))
             votes = 0
-            if thread_id:
+            if message_id:
                 try:
-                    thread = await forum.fetch_message(thread_id)
-                    reaction = discord.utils.get(thread.reactions, emoji=VOTE_EMOJI)
-                    if reaction:
-                        votes = reaction.count - 1  # exclude bot's own reaction
-                except Exception:
-                    pass
+                    # First try to get the thread
+                    thread_id = self.data.get("forum_threads", {}).get(str(p["user_id"]))
+                    if thread_id:
+                        thread = forum.get_thread(thread_id)
+                        if not thread:
+                            thread = await forum.fetch_channel(thread_id)
+                        
+                        if thread:
+                            # Get the message with reactions from the thread
+                            message = await thread.fetch_message(message_id)
+                            reaction = discord.utils.get(message.reactions, emoji=VOTE_EMOJI)
+                            if reaction:
+                                votes = reaction.count - 1  # exclude bot's own reaction
+                except Exception as e:
+                    print(f"Error fetching votes for {p['name']}: {e}")
+                    # Fallback: try to fetch directly from forum channel
+                    try:
+                        message = await forum.fetch_message(message_id)
+                        reaction = discord.utils.get(message.reactions, emoji=VOTE_EMOJI)
+                        if reaction:
+                            votes = reaction.count - 1
+                    except Exception as e2:
+                        print(f"Fallback failed for {p['name']}: {e2}")
+            
             results.append((p["name"], votes))
             if votes > max_votes:
                 winner = p["name"]
                 max_votes = votes
+        
+        # Sort results by votes (highest first)
+        results.sort(key=lambda x: x[1], reverse=True)
         result_text = "\n".join([f"{name}: {votes} votes" for name, votes in results])
+        
         embed = discord.Embed(
             title="🏆 DP Competition Ended!",
-            description=result_text,
+            description=result_text if result_text else "No participants",
             color=discord.Color.gold()
         )
-        if winner:
+        
+        if winner and max_votes > 0:
             embed.add_field(name="Winner", value=f"🎉 {winner} with {max_votes} votes!", inline=False)
         else:
-            embed.add_field(name="Winner", value="No winner.", inline=False)
+            embed.add_field(name="Winner", value="No winner (no votes received).", inline=False)
+        
+        embed.set_thumbnail(url=EMBED_THUMBNAIL)
         await channel.send(embed=embed)
         await self.update_embed(channel)
 
@@ -157,15 +185,19 @@ class DPCompetition(commands.Cog):
     async def on_message(self, message):
         # Debug: print message info
         print(f"on_message: author={message.author}, channel={message.channel.id}, content={message.content}")
+        
         if not self.data.get("active"):
             print("Competition not active.")
             return
+            
         if message.author.bot:
             print("Message from bot, ignoring.")
             return
+            
         if message.channel.id != COMPETITION_CHANNEL_ID:
             print(f"Wrong channel: {message.channel.id}")
             return
+        
         # Check if already joined
         for p in self.data.get("participants", []):
             if p["user_id"] == str(message.author.id):
@@ -175,6 +207,7 @@ class DPCompetition(commands.Cog):
                 except Exception as e:
                     print(f"Error deleting message: {e}")
                 return
+        
         # Add participant
         print(f"Adding participant: {message.author.display_name}")
         participant = {
@@ -182,32 +215,55 @@ class DPCompetition(commands.Cog):
             "name": message.author.display_name
         }
         self.data["participants"].append(participant)
-        save_competition(self.data)
-        # Create forum thread (forum channel uses threads, not just messages)
+        
+        # Create forum thread
         forum = self.bot.get_channel(FORUM_CHANNEL_ID)
         thread_title = f"{message.author.display_name}'s DP"
-        avatar_url = message.author.display_avatar.url if hasattr(message.author, "display_avatar") else message.author.avatar_url
+        
+        # Get user avatar URL with proper fallback
+        avatar_url = None
+        if hasattr(message.author, "display_avatar"):
+            avatar_url = message.author.display_avatar.url
+        elif hasattr(message.author, "avatar") and message.author.avatar:
+            avatar_url = message.author.avatar.url
+        else:
+            avatar_url = message.author.default_avatar.url
+        
         embed = discord.Embed(title=thread_title, color=discord.Color.blue())
         embed.set_image(url=avatar_url)
+        
         thread = None
         thread_message = None
+        
         try:
+            # Create thread in forum channel
             thread, thread_message = await forum.create_thread(
                 name=thread_title,
                 content=f"**Vote with {VOTE_EMOJI}!**",
                 embed=embed
             )
+            
+            # Add the voting reaction
             await thread_message.add_reaction(VOTE_EMOJI)
+            
+            # Store both thread ID and message ID
             self.data["forum_threads"][str(message.author.id)] = thread.id
-            print(f"Forum thread created for {message.author.display_name}.")
+            self.data["forum_messages"][str(message.author.id)] = thread_message.id
+            
+            print(f"Forum thread created for {message.author.display_name} (Thread: {thread.id}, Message: {thread_message.id})")
+            
         except Exception as e:
             print(f"Error creating forum thread: {e}")
+            # If thread creation fails, still add the participant but without voting capability
+        
         save_competition(self.data)
+        
         # Delete user message
         try:
             await message.delete()
         except Exception as e:
             print(f"Error deleting message: {e}")
+        
         # Update embed
         channel = self.bot.get_channel(COMPETITION_CHANNEL_ID)
         await self.update_embed(channel)
@@ -219,6 +275,37 @@ class DPCompetition(commands.Cog):
         channel = self.bot.get_channel(COMPETITION_CHANNEL_ID)
         if channel:
             await self.get_or_create_embed_message(channel)
+
+    @commands.hybrid_command(name="end_dp_competition", with_app_command=True)
+    @commands.has_permissions(manage_messages=True)
+    async def end_dp_competition_manual(self, ctx):
+        """Manually end the current DP competition"""
+        if not self.data.get("active"):
+            await ctx.send("❌ No competition is currently running.", ephemeral=True)
+            return
+        
+        await self.end_competition()
+        await ctx.send("✅ Competition ended manually!", ephemeral=True)
+
+    @commands.hybrid_command(name="competition_status", with_app_command=True)
+    async def competition_status(self, ctx):
+        """Check the status of the current competition"""
+        if not self.data.get("active"):
+            await ctx.send("❌ No competition is currently running.", ephemeral=True)
+            return
+        
+        participants_count = len(self.data.get("participants", []))
+        end_time = self.data.get("end_time", "Unknown")
+        
+        embed = discord.Embed(
+            title="🏆 Competition Status",
+            color=discord.Color.blue()
+        )
+        embed.add_field(name="Status", value="Active ✅", inline=True)
+        embed.add_field(name="Participants", value=str(participants_count), inline=True)
+        embed.add_field(name="Ends at", value=end_time, inline=False)
+        
+        await ctx.send(embed=embed, ephemeral=True)
 
 async def setup(bot):
     await bot.add_cog(DPCompetition(bot))
