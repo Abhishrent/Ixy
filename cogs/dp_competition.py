@@ -90,7 +90,7 @@ class DPCompetition(commands.Cog):
 
     def create_embed(self):
         embed = discord.Embed(
-            title="🏆 Best pp flex Competition",
+            title="🏆 Best PP Competition",
             description="React by sending any message to join!",
             color=discord.Color.gold()
         )
@@ -117,7 +117,7 @@ class DPCompetition(commands.Cog):
             chunk = names[i:i+page_size]
             field_value = "\n".join(chunk)
             embed = discord.Embed(
-                title="🏆 Best pp flex Competition",
+                title="🏆 Best PP Competition",
                 description="React by sending any message to join!",
                 color=discord.Color.gold()
             )
@@ -130,7 +130,7 @@ class DPCompetition(commands.Cog):
             pages.append(embed)
         if not pages:
             embed = discord.Embed(
-                title="🏆 Best pp flex Competition",
+                title="🏆 Best PP Competition",
                 description="React by sending any message to join!",
                 color=discord.Color.gold()
             )
@@ -309,13 +309,13 @@ class DPCompetition(commands.Cog):
         results.sort(key=lambda x: x[1], reverse=True)
         
         embed = discord.Embed(
-            title="🏆 pp flex Competition Ended!",
+            title="🏆 PP Competition Ended!",
             description="",
             color=discord.Color.gold()
         )
         
         if winner and max_votes > 0:
-            embed.add_field(name="Winner", value=f"🎉 {winner}'s pp flex wins with {max_votes} votes!", inline=False)
+            embed.add_field(name="Winner", value=f"🎉 {winner}'s pp wins with {max_votes} votes!", inline=False)
         else:
             embed.add_field(name="Winner", value="No winner (no votes received).", inline=False)
         
@@ -360,7 +360,7 @@ class DPCompetition(commands.Cog):
         
         # Create forum thread
         forum = self.bot.get_channel(FORUM_CHANNEL_ID)
-        thread_title = f"{message.author.display_name}'s pp flex"
+        thread_title = f"{message.author.display_name}'s pp"
         
         # Get user avatar URL with proper fallback
         avatar_url = None
