@@ -11,7 +11,7 @@ SPECIAL_DATES = {
     (8, 10): "Internal Ideathon Reg. Starts",
     (8, 26): "Internal Ideathon Reg. Closes",
     (8, 29): "Internal Ideathon",
-    (10, 4): "IdeaX Registration Closes",
+    (9, 29): "IdeaX Registration Closes",
     # Note: Online Round and Final Hackathon dates TBA as per event_config.json
 }
 
