@@ -11,6 +11,7 @@ FORUM_CHANNEL_ID = 1418965668937601066  # Replace with your forum channel ID
 BOT_MEMORY_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../bot_memory")
 COMPETITION_FILE = os.path.join(BOT_MEMORY_DIR, "dp_competition.json")
 VOTE_EMOJI = "🏆"
+ROLE_MENTION = "<@&1406096504850223276>"
 
 # Helper functions for persistence
 def load_competition():
@@ -221,8 +222,9 @@ class DPCompetition(commands.Cog):
         
         # Clear all existing forum threads
         deleted_count = await self.clear_forum_threads(ctx)
-        
-        end_time = (datetime.utcnow() + timedelta(minutes=duration_minutes)).strftime("%Y-%m-%d %H:%M UTC")
+        # Nepal time is UTC+5:45
+        nepal_offset = timedelta(hours=5, minutes=45)
+        end_time = (datetime.utcnow() + nepal_offset + timedelta(minutes=duration_minutes)).strftime("%Y-%m-%d %H:%M Nepal Time")
         self.data = {
             "active": True,
             "participants": [],
@@ -320,7 +322,8 @@ class DPCompetition(commands.Cog):
             embed.add_field(name="Winner", value="No winner (no votes received).", inline=False)
         
         embed.set_thumbnail(url=EMBED_THUMBNAIL)
-        await channel.send(embed=embed)
+        role_mention = ROLE_MENTION
+        await channel.send(content=role_mention, embed=embed)
         await self.update_embed(channel)
 
     @commands.Cog.listener()
