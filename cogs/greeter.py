@@ -12,7 +12,7 @@ class WelcomeDetailsSelect(discord.ui.Select):
             discord.SelectOption(label="Timeline", description="Event schedule & timing", emoji="🗓️"),
             discord.SelectOption(label="Event Format", description="Competition format & rounds", emoji="🏆"),
             discord.SelectOption(label="Prize Pool", description="Cash prizes & rewards", emoji="💰"),
-            discord.SelectOption(label="Participation Details", description="Teams, accommodation & perks", emoji="�"),
+            discord.SelectOption(label="Participation Details", description="Teams, accommodation & perks", emoji="🛏️"),
             discord.SelectOption(label="Organizing Team", description="Meet the team behind IdeaX", emoji="👥"),
             discord.SelectOption(label="Socials", description="Official links & contacts", emoji="🌐"),
         ]
