@@ -139,7 +139,23 @@ class BugReportTracker(commands.Cog):
             self.data["reports"] = self.data["reports"][-100:]
         
         save_bug_reports(self.data)
-        
+
+        # DM the user confirming bug registration
+        try:
+            status_text = {
+                "open": "🟡 Open"
+            }
+            embed = discord.Embed(
+                title="Bug Report Received",
+                color=discord.Color.green()
+            )
+            embed.add_field(name="Bug ID", value=str(bug_id), inline=True)
+            embed.add_field(name="Status", value=status_text["open"], inline=True)
+            embed.add_field(name="Details", value="Your bug report has been received and will be reviewed by the team.", inline=False)
+            await message.author.send(embed=embed)
+        except Exception as e:
+            print(f"Failed to DM user {message.author.id}: {e}")
+
         # Delete the user's message
         try:
             await message.delete()
@@ -147,7 +163,7 @@ class BugReportTracker(commands.Cog):
             pass  # Bot doesn't have permission to delete messages
         except discord.NotFound:
             pass  # Message already deleted
-        
+
         # Update the embed
         await self.update_embed(message.channel)
 
@@ -214,7 +230,7 @@ class BugReportTracker(commands.Cog):
 
     @commands.hybrid_command(name="bug_status", with_app_command=True)
     @commands.has_permissions(manage_messages=True)
-    async def update_bug_status(self, ctx, bug_id: int, status: str):
+    async def update_bug_status(self, ctx, bug_id: int, status: str, developer_message: str = None):
         """Update the status of a bug report (Admin only)
         
         Args:
@@ -234,6 +250,35 @@ class BugReportTracker(commands.Cog):
                 old_status = report.get("status", "open")
                 report["status"] = status.lower()
                 bug_found = True
+                
+                # DM the user who reported the bug
+                user_id = report.get("user_id")
+                try:
+                    user = await self.bot.fetch_user(int(user_id))
+                    status_text = {
+                        "open": "🟡 Open",
+                        "review": "🔍 Under Review",
+                        "fixed": "✅ Fixed",
+                        "closed": "❌ Closed"
+                    }
+                    status_expl = {
+                        "open": "Your reported bug is now open and will be reviewed soon.",
+                        "review": "Your reported bug is under review by the team.",
+                        "fixed": "Your reported bug has been marked as fixed.",
+                        "closed": "Your reported bug has been closed."
+                    }
+                    embed = discord.Embed(
+                        title="Your Bug Report Status Updated",
+                        color=discord.Color.orange()
+                    )
+                    embed.add_field(name="Bug ID", value=str(bug_id), inline=True)
+                    embed.add_field(name="New Status", value=status_text.get(status.lower(), status), inline=True)
+                    embed.add_field(name="Details", value=status_expl.get(status.lower(), "Status updated."), inline=False)
+                    if developer_message:
+                        embed.add_field(name="Message from Developer", value=developer_message, inline=False)
+                    await user.send(embed=embed)
+                except Exception as e:
+                    print(f"Failed to DM user {user_id}: {e}")
                 break
         
         if not bug_found:
