@@ -138,52 +138,52 @@
     "fields": [
       {
         "name": "Lead",
-        "value": "• Firoj Paudel",
+        "value": "• Firoj Paudel <@872224382825689108>",
         "inline": false
       },
       {
         "name": "General Manager",
-        "value": "• Famous Dhungana",
+        "value": "• Famous Dhungana <@1020287053533020191>",
         "inline": false
       },
       {
         "name": "Development",
-        "value": "• Abhishrent Khatri (Bot)\n• Loozah Shrestha (Website)",
+        "value": "• Abhishrent Khatri (Bot) <@1003987908744708176>\n• Loozah Shrestha (Website) <@767698158465187841>",
         "inline": false
       },
       {
         "name": "Technical",
-        "value": "• Famous Dhungana\n• Vishal Shrestha\n• Roshan Ghimire",
+        "value": "• Famous Dhungana <@1020287053533020191>\n• Vishal Shrestha <@815578181884444692>\n• Roshan Ghimire <@1347946061477707837>",
         "inline": false
       },
       {
         "name": "Design",
-        "value": "• Loozah Shrestha\n• Rabin Khanal",
+        "value": "• Loozah Shrestha <@767698158465187841>\n• Rabin Khanal <@881491553271554120>",
         "inline": false
       },
       {
         "name": "Outreach",
-        "value": "• Nilima Shrestha\n• Dilasha Kharel\n• Sudikshya Khadka",
+        "value": "• Nilima Shrestha <@758266841876922438>\n• Dilasha Kharel <@1388130275422245007>\n• Sudikshya Khadka <@1390376051061952629>",
         "inline": false
       },
       {
         "name": "Media",
-        "value": "• Vishal Shrestha\n• Krijal Paneru",
+        "value": "• Vishal Shrestha <@815578181884444692>\n• Krijal Paneru <@910691684562653254>",
         "inline": false
       },
       {
         "name": "Content",
-        "value": "• Sachita Bhandari\n• Aashika K.C.",
+        "value": "• Sachita Bhandari <@936588636479184966>\n• Aashika K.C. <@1388804863202164739>",
         "inline": false
       },
       {
         "name": "Sponsorship",
-        "value": "• Reeju Pandit",
+        "value": "• Reeju Pandit <@843687159264313364>",
         "inline": false
       },
       {
         "name": "Logistics",
-        "value": "• Miraj Bhattarai\n• Bibek Parajuli\n• Sneha Subedi",
+        "value": "• Miraj Bhattarai <@752811396391239691>\n• Bibek Parajuli <@1387313643531534488>\n• Sneha Subedi <@1388848670404771850>",
         "inline": false
       }
     ]
