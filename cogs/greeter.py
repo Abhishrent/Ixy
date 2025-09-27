@@ -151,9 +151,12 @@ class Welcome(commands.Cog):
             chosen_message = random.choice(welcome_messages)
             embed = discord.Embed(
                 title=chosen_message,
+                description=f"Welcome to **MBM IdeaX 2025** {member.mention}!",
                 color=discord.Color.blue()
             )
             embed.set_image(url=f'{WELCOME_GRAPHICS}')
+            # Set the user's avatar as the embed thumbnail
+            embed.set_thumbnail(url=member.avatar.url if member.avatar else member.default_avatar.url)
             # current member count
             embed.set_footer(text=f"Member-count: {member.guild.member_count}", icon_url=EMBED_FOOTER)
             #embed.set_thumbnail(url=member.avatar.url if member.avatar else member.default_avatar.url)
