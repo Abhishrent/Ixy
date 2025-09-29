@@ -12,6 +12,7 @@ SPECIAL_DATES = {
     (8, 26): "Internal Ideathon Reg. Closes",
     (8, 29): "Internal Ideathon",
     (9, 29): "IdeaX Registration Closes",
+    (10, 11): "Online Round Begins"
     # Note: Online Round and Final Hackathon dates TBA as per event_config.json
 }
 
@@ -20,7 +21,7 @@ SPECIAL_DATES = {
 
 # General Channels
 WELCOME_CHANNEL_ID = 1130051976667865090  # Channel for welcoming new members (Used in cogs/greeter.py)
-GENERAL_CHANNEL_ID = 1295939872581750839  # General discussion channel (Used in main.py)
+GENERAL_CHANNEL_ID = 1130051976835641387 # General discussion channel (Used in main.py)
 HELP_CHANNEL_ID = 1388896467594510437  # Channel for help and support (Used in cogs/help.py)
 
 # Moderation and Logs
