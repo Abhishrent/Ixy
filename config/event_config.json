@@ -60,7 +60,7 @@
   },
   "timeline": {
     "title": "Event Timeline",
-    "description": "MBM IdeaX 2025 features a multi-stage program with workshops, registrations, and hackathon rounds.\n\n📍 **ML Workshop:** Jul 21 to Aug 1\n📍 **IdeaX Registration Opens:** Jul 21\n📍 **Internal Ideathon Registration:** Aug 10 to Aug 26\n📍 **Internal Ideathon:** Aug 29\n📍 **IdeaX Registration Closes:** ~~Sep 16~~ Sep 29\n📍 **IdeaX Online Round:** After Dashain - Dates to be announced\n📍 **IdeaX Final Hackathon:** To be Announced\n\n",
+    "description": "MBM IdeaX 2025 features a multi-stage program with workshops, registrations, and hackathon rounds.\n\n📍 **ML Workshop:** Jul 21 to Aug 1\n📍 **IdeaX Registration Opens:** Jul 21\n📍 **Internal Ideathon Registration:** Aug 10 to Aug 26\n📍 **Internal Ideathon:** Aug 29\n📍 **IdeaX Registration Closes:** ~~Sep 16~~ Sep 29\n📍 **IdeaX Online Round:** Oct 11 onwards\n📍 **IdeaX Final Hackathon:** To be Announced\n\n",
     "color": "orange",
     "fields": [
       {
@@ -83,6 +83,11 @@
       {
         "name": "Final Hackathon",
         "value": "• Multi-day intensive building and development phase\n• Teams implement their proposed solutions\n• Mentoring sessions with industry experts\n• Final presentations and judging\n• Winners announced at the closing ceremony",
+        "inline": false
+      },
+      {
+        "name": "Submission Process",
+        "value": "Judges will review projects through an online meeting presentation for the online round. For the onsite round, final projects will be judged in person.",
         "inline": false
       }
     ]
@@ -127,6 +132,11 @@
       {
         "name": "Additional Perks",
         "value": "All participants receive stickers and swag items. Fun games organized both physically and on Discord. Exciting gifts and vouchers through competitions.",
+        "inline": false
+      },
+      {
+        "name": "Registration Check",
+        "value": "Use the `/check_registration` command and provide your email to see if you are registered.",
         "inline": false
       }
     ]
