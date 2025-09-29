@@ -238,6 +238,8 @@ class AIAssistant:
 class TicketAIAssistant(commands.Cog):
     """Cog to provide AI assistance in ticket channels and reply-on-mention in public channels"""
     
+    DISABLED_CHANNELS_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../bot_memory/disabled_ticket_channels.json")
+
     def __init__(self, bot):
         self.bot = bot
         self.assistants = {}  # Store AI assistants per channel
@@ -249,6 +251,30 @@ class TicketAIAssistant(commands.Cog):
         self.organizing_committee_role_id = 1130051976189722680  # The organizing committee role ID
         self.mod_role_names = ["mod", "moderator", "staff", "admin", "support"]  # Role names that indicate moderators
         self.enabled = True  # NEW: Global toggle for AI responses
+        self.disabled_ticket_channels = self._load_disabled_channels()
+
+    def _load_disabled_channels(self):
+        try:
+            with open(self.DISABLED_CHANNELS_PATH, 'r') as f:
+                return set(json.load(f))
+        except Exception:
+            return set()
+
+    def _save_disabled_channels(self):
+        os.makedirs(os.path.dirname(self.DISABLED_CHANNELS_PATH), exist_ok=True)
+        with open(self.DISABLED_CHANNELS_PATH, 'w') as f:
+            json.dump(list(self.disabled_ticket_channels), f)
+
+    def disable_ai_for_channel(self, channel_id: int):
+        self.disabled_ticket_channels.add(channel_id)
+        self._save_disabled_channels()
+
+    def enable_ai_for_channel(self, channel_id: int):
+        self.disabled_ticket_channels.discard(channel_id)
+        self._save_disabled_channels()
+
+    def is_ai_disabled_for_channel(self, channel_id: int) -> bool:
+        return channel_id in self.disabled_ticket_channels
 
     def get_assistant(self, channel_id: int) -> AIAssistant:
         """Get or create an AI assistant for a channel"""
@@ -298,7 +324,10 @@ class TicketAIAssistant(commands.Cog):
         self.last_activity[channel_id] = current_time
     
     def should_ai_respond(self, channel_id: int, message: discord.Message) -> bool:
-        """Determine if the AI should respond to this message"""
+        # Check if AI is disabled for this ticket channel
+        if self.ticket_pattern.match(message.channel.name) and self.is_ai_disabled_for_channel(channel_id):
+            return False
+        
         # AI responds when:
         # 1. Message is directed at the bot (mentions or clear questions)
         # 2. No active staff conversation is happening
@@ -333,32 +362,60 @@ class TicketAIAssistant(commands.Cog):
         return True
     
     # Remove group-based ai_assist commands and revert to single command with a choice parameter
-    def _ai_status_embed(self):
-        color = 0x2ECC71 if self.enabled else 0xE74C3C
-        return discord.Embed(title="AI Assistant Status", description=f"{'🟢 Enabled' if self.enabled else '🔴 Disabled'}", color=color)
+    def _ai_status_embed(self, ctx):
+        if self.ticket_pattern.match(ctx.channel.name):
+            # Per-channel status
+            channel_id = ctx.channel.id
+            enabled = not self.is_ai_disabled_for_channel(channel_id)
+            color = 0x2ECC71 if enabled else 0xE74C3C
+            desc = f"{'🟢 Enabled' if enabled else '🔴 Disabled'} for this ticket channel"
+        else:
+            # Global status
+            color = 0x2ECC71 if self.enabled else 0xE74C3C
+            desc = f"{'🟢 Enabled' if self.enabled else '🔴 Disabled'} (server-wide)"
+        return discord.Embed(title="AI Assistant Status", description=desc, color=color)
 
-    @commands.hybrid_command(name="ai_assist", aliases=["toggleai", "aistatus"], description="Enable, disable, or view AI assistant status.")
+    @commands.hybrid_command(
+        name="ai_assist",
+        aliases=["toggleai", "aistatus"],
+        description="Enable, disable, or view AI assistant status (global or per ticket channel)."
+    )
     @commands.has_permissions(administrator=True)
     async def ai_assist(self, ctx: commands.Context, action: Literal["on", "off", "status"] = "status"):
-        """Toggle or view AI assistant status.
-        action choices: on | off | status"""
+        """Enable, disable, or view AI assistant status. In ticket channels, affects only that channel. Else, affects server-wide."""
+        in_ticket = self.ticket_pattern.match(ctx.channel.name)
+        channel_id = ctx.channel.id
         if action == "status":
-            await ctx.reply(embed=self._ai_status_embed())
+            await ctx.reply(embed=self._ai_status_embed(ctx))
             return
         if action == "on":
-            if self.enabled:
-                embed = discord.Embed(title="AI Assistant", description="Already enabled ✅", color=0x2ECC71)
+            if in_ticket:
+                if not self.is_ai_disabled_for_channel(channel_id):
+                    embed = discord.Embed(title="AI Assistant", description="Already enabled for this ticket channel ✅", color=0x2ECC71)
+                else:
+                    self.enable_ai_for_channel(channel_id)
+                    embed = discord.Embed(title="AI Assistant", description="Enabled for this ticket channel ✅", color=0x2ECC71)
             else:
-                self.enabled = True
-                embed = discord.Embed(title="AI Assistant", description="Enabled ✅", color=0x2ECC71)
+                if self.enabled:
+                    embed = discord.Embed(title="AI Assistant", description="Already enabled server-wide ✅", color=0x2ECC71)
+                else:
+                    self.enabled = True
+                    embed = discord.Embed(title="AI Assistant", description="Enabled server-wide ✅", color=0x2ECC71)
             await ctx.reply(embed=embed)
             return
         if action == "off":
-            if not self.enabled:
-                embed = discord.Embed(title="AI Assistant", description="Already disabled ⛔", color=0xE74C3C)
+            if in_ticket:
+                if self.is_ai_disabled_for_channel(channel_id):
+                    embed = discord.Embed(title="AI Assistant", description="Already disabled for this ticket channel ⛔", color=0xE74C3C)
+                else:
+                    self.disable_ai_for_channel(channel_id)
+                    embed = discord.Embed(title="AI Assistant", description="Disabled for this ticket channel ⛔", color=0xE74C3C)
             else:
-                self.enabled = False
-                embed = discord.Embed(title="AI Assistant", description="Disabled ⛔", color=0xE74C3C)
+                if not self.enabled:
+                    embed = discord.Embed(title="AI Assistant", description="Already disabled server-wide ⛔", color=0xE74C3C)
+                else:
+                    self.enabled = False
+                    embed = discord.Embed(title="AI Assistant", description="Disabled server-wide ⛔", color=0xE74C3C)
             await ctx.reply(embed=embed)
             return
 
@@ -441,12 +498,15 @@ class TicketAIAssistant(commands.Cog):
         """Clean up assistant when a ticket channel is deleted"""
         if channel.id in self.assistants:
             del self.assistants[channel.id]
-        
         # Clean up conversation tracking data
         if channel.id in self.ongoing_conversations:
             del self.ongoing_conversations[channel.id]
         if channel.id in self.last_activity:
             del self.last_activity[channel.id]
+        # Clean up disabled channel tracking
+        if channel.id in self.disabled_ticket_channels:
+            self.disabled_ticket_channels.discard(channel.id)
+            self._save_disabled_channels()
 
 async def setup(bot):
     await bot.add_cog(TicketAIAssistant(bot))
