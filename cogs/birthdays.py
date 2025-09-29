@@ -4,10 +4,11 @@ import os
 import json
 from datetime import datetime, timedelta
 import pytz
-
+from config import BOT_NAME
 from config import GENERAL_CHANNEL_ID
 
 BIRTHDAYS_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../bot_memory/birthdays.json")
+GIF_URL = "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExYjEwaXMzcWd1YTR0eGY2NHdpMXpsdTUwZ2htbGk5dXR1eHc4aHR5OCZlcD12MV9naWZzX3NlYXJjaCZjdD1n/IQF90tVlBIByw/giphy.gif"
 
 # Helper to load and save birthdays
 
@@ -51,6 +52,25 @@ class BirthdaysCog(commands.Cog):
         else:
             await ctx.reply(f"Your birthday has been registered as {date}! 🎂", ephemeral=True)
 
+    @commands.hybrid_command(name="remove_birthday", description="Remove your or another user's registered birthday.")
+    async def remove_birthday(self, ctx, user: discord.Member = None):
+        """Remove your or another user's registered birthday."""
+        target_user = user or ctx.author
+        user_id = str(target_user.id)
+        # Only allow removing another user's birthday if the invoker is an admin
+        if user and user != ctx.author and not ctx.author.guild_permissions.administrator:
+            await ctx.reply("You need to be an administrator to remove another user's birthday.", ephemeral=True)
+            return
+        if user_id in self.birthdays:
+            del self.birthdays[user_id]
+            save_birthdays(self.birthdays)
+            if user and user != ctx.author:
+                await ctx.reply(f"Birthday for {target_user.mention} has been removed.", ephemeral=True)
+            else:
+                await ctx.reply("Your birthday has been removed.", ephemeral=True)
+        else:
+            await ctx.reply("No birthday found to remove.", ephemeral=True)
+
     @tasks.loop(minutes=1)
     async def birthday_wisher(self):
         await self.bot.wait_until_ready()
@@ -70,22 +90,26 @@ class BirthdaysCog(commands.Cog):
                     if user:
                         try:
                             dm_embed = discord.Embed(
-                                title="🎉 Happy Birthday! 🎂",
-                                description=f"{user.mention}\nWishing you a fantastic year ahead from everyone at MBM IdeaX!",
-                                color=discord.Color.magenta()
+                                title=f"🎉 Happy Birthday, {user.display_name}! 🎂",
+                                description=f"Wishing you a fantastic year ahead from everyone at MBM IdeaX!",
+                                color=discord.Color.gold()
                             )
-                            dm_embed.set_footer(text="MBM IdeaX Birthday Bot")
+                            dm_embed.set_footer(text=f"-{BOT_NAME}")
+                            dm_embed.set_thumbnail(url=user.display_avatar.url)
+                            dm_embed.set_image(url=GIF_URL)
                             await user.send(embed=dm_embed)
                         except Exception:
                             pass
                     # Wish in general channel with an embed and mention in content
                     if channel:
                         public_embed = discord.Embed(
-                            title="🎉 Birthday Alert!",
-                            description="Everyone, please wish a very happy birthday! 🥳🎂",
+                            title="🎉 Today is a special day!",
+                            description=f"Everyone, please wish {user.mention if user else f'<@{user_id}>'} a very happy birthday! 🥳🎂",
                             color=discord.Color.gold()
                         )
-                        public_embed.set_footer(text="MBM IdeaX Birthday Bot")
+                        public_embed.set_footer(text=f"-{BOT_NAME}")
+                        public_embed.set_thumbnail(url=user.display_avatar.url if user else discord.Embed.Empty)
+                        public_embed.set_image(url=GIF_URL)
                         await channel.send(content=f"{user.mention if user else f'<@{user_id}>'}", embed=public_embed)
                     self._wished_today.add(user_id)
             except Exception:
@@ -94,34 +118,6 @@ class BirthdaysCog(commands.Cog):
     @birthday_wisher.before_loop
     async def before_birthday_wisher(self):
         await self.bot.wait_until_ready()
-
-    @commands.hybrid_command(name="test_birthday_wish", description="Test the birthday wish for a user in the testing channel.")
-    async def test_birthday_wish(self, ctx, user: discord.Member = None):
-        """Test the birthday wish for a user in the testing channel."""
-        test_channel_id = 1389821241304551434
-        test_channel = self.bot.get_channel(test_channel_id)
-        target_user = user or ctx.author
-        # DM embed
-        dm_embed = discord.Embed(
-            title="🎉 Happy Birthday! 🎂",
-            description=f"{target_user.mention}\nWishing you a fantastic year ahead from everyone at MBM IdeaX!",
-            color=discord.Color.magenta()
-        )
-        dm_embed.set_footer(text="MBM IdeaX Birthday Bot (Test)")
-        try:
-            await target_user.send(embed=dm_embed)
-        except Exception:
-            await ctx.reply("Could not DM the user.", ephemeral=True)
-        # Channel embed
-        if test_channel:
-            public_embed = discord.Embed(
-                title="🎉 Birthday Alert! (Test)",
-                description="Everyone, please wish a very happy birthday! 🥳🎂",
-                color=discord.Color.gold()
-            )
-            public_embed.set_footer(text="MBM IdeaX Birthday Bot (Test)")
-            await test_channel.send(content=f"{target_user.mention}", embed=public_embed)
-        await ctx.reply("Test birthday wish sent!", ephemeral=True)
 
 async def setup(bot):
     await bot.add_cog(BirthdaysCog(bot))
