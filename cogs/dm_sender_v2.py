@@ -151,10 +151,14 @@ class DMSenderCog(commands.Cog):
             )
             preview_embed.set_thumbnail(url=EMBED_THUMBNAIL)
 
+            # Prepare attachment lists
+            embed_image_url = None
+            attachments_to_send = []
+
             # Handle image attachments
             if message.attachments:
                 for attachment in message.attachments:
-                    if attachment.content_type and attachment.content_type.startswith("image/"):
+                    if attachment.content_type and attachment.content_type.startswith("image/") and embed_image_url is None:
                         # show this while the image is being uploaded to the dedicated storage channel
                         notifier_embed = discord.Embed(
                             title="Building Preview",
@@ -168,16 +172,25 @@ class DMSenderCog(commands.Cog):
                         if upload_channel:
                             uploaded_msg = await upload_channel.send(file=await attachment.to_file())
                             if uploaded_msg.attachments:
-                                preview_embed.set_image(url=uploaded_msg.attachments[0].url)
+                                embed_image_url = uploaded_msg.attachments[0].url
+                                preview_embed.set_image(url=embed_image_url)
 
                         # Delete notifier message
                         await notifier_msg.delete()
-                        break
-
+                        # Only first image is used for embed
+                    else:
+                        attachments_to_send.append(attachment)
             # Show preview first
+
+            # Prepare preview content with attachment filenames
+            preview_content = None
+            if attachments_to_send:
+                filenames = [attachment.filename for attachment in attachments_to_send]
+                preview_content = "Attachments:\n```\n" + "\n".join(filenames) + "\n```"
+
             preview_view = ConfirmView(message.author)
             preview_msg = await message.channel.send(
-                "Preview of the DM to be sent. Click **Confirm** to select roles, **Cancel** to abort.",
+                preview_content if preview_content else None,
                 embed=preview_embed,
                 view=preview_view
             )
@@ -318,10 +331,9 @@ class DMSenderCog(commands.Cog):
                 for attempt in range(max_retries):
                     try:
                         await user.send(embed=preview_embed)
-                        # Send non-image attachments if any
-                        for attachment in message.attachments:
-                            if not (attachment.content_type and attachment.content_type.startswith("image/")):
-                                await user.send(file=await attachment.to_file())
+                        # Send non-image attachments (files)
+                        for attachment in attachments_to_send:
+                            await user.send(file=await attachment.to_file())
                         # Mark as sent in user_data (progress tracking)
                         entry = user_data_dict.get(user.id)
                         if entry:
