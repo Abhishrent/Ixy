@@ -4,6 +4,7 @@ import json
 import os
 import asyncio
 from config import EMBED_THUMBNAIL
+import discord.errors  # Add this import for exception handling
 
 DM_CHANNEL_ID = 1406952218543788063
 IMAGE_UPLOAD_CHANNEL_ID = 1410834897584783380
@@ -342,9 +343,12 @@ class DMSenderCog(commands.Cog):
                             with open(SERVER_USER_JSON, 'w') as f:
                                 json.dump(list(user_data_dict.values()), f, indent=2)
                         return None  # Success
-                    except Exception:
+                    except discord.errors.Forbidden:
+                        # DMs are disabled or bot is blocked
+                        return (getattr(user, 'mention', str(user)), "DMs Disabled")
+                    except Exception as e:
                         if attempt == max_retries - 1:
-                            return getattr(user, 'mention', str(user))
+                            return (getattr(user, 'mention', str(user)), f"Error: {type(e).__name__}")
                 return None
 
             # Process users in batches
@@ -386,9 +390,13 @@ class DMSenderCog(commands.Cog):
                 view=None
             )
             if failed_users:
+                # Show reason for each failed user
+                failed_desc = "\n".join(
+                    f"{user} - {reason}" for user, reason in failed_users
+                )
                 failed_embed = discord.Embed(
                     title="Some Users Could Not Be DMed",
-                    description="\n".join(failed_users),
+                    description=failed_desc,
                     color=discord.Color.red()
                 )
                 await message.channel.send(embed=failed_embed)
