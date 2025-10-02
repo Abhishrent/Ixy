@@ -104,6 +104,29 @@ class RoleSelectView(discord.ui.View):
         await interaction.response.defer()
         self.stop()
 
+class DMProgressView(discord.ui.View):
+    def __init__(self, author, sent_count, total_count, timeout=60):
+        super().__init__(timeout=timeout)
+        self.author = author
+        self.value = None
+        self.sent_count = sent_count
+        self.total_count = total_count
+
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        return interaction.user.id == self.author.id
+
+    @discord.ui.button(label="Continue", style=discord.ButtonStyle.success)
+    async def continue_btn(self, interaction: discord.Interaction, button: discord.ui.Button):
+        self.value = "continue"
+        await interaction.response.defer()
+        self.stop()
+
+    @discord.ui.button(label="New", style=discord.ButtonStyle.danger)
+    async def new_btn(self, interaction: discord.Interaction, button: discord.ui.Button):
+        self.value = "new"
+        await interaction.response.defer()
+        self.stop()
+
 class DMSenderCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -275,18 +298,71 @@ class DMSenderCog(commands.Cog):
             # Collect users in selected roles who are in allowed_users
             selected_roles = [role for role in roles_with_allowed if role.id in role_view.selected_role_ids]
             # Load user data from server_user_id.json
-            # This JSON now also tracks DM progress with a 'dm_sent' flag
             with open(SERVER_USER_JSON, 'r') as f:
                 user_data = json.load(f)
-            # Build a dict for quick lookup
             user_data_dict = {entry['user_id']: entry for entry in user_data}
+
+            # --- Interactive prompt if any users have already received DMs ---
+            already_sent_users = [entry for entry in user_data if entry.get('dm_sent', False)]
+            total_selected_users = set()
+            for role in selected_roles:
+                for member in role.members:
+                    if member.id in allowed_users:
+                        total_selected_users.add(member.id)
+            sent_count = sum(1 for entry in user_data if entry.get('dm_sent', False) and entry['user_id'] in total_selected_users)
+            total_count = len(total_selected_users)
+
+            if sent_count > 0:
+                progress_embed = discord.Embed(
+                    title="Some Users Have Already Received DMs",
+                    description=(
+                        f"{sent_count} out of {total_count} users in the selected roles have already received DMs.\n\n"
+                        "Would you like to continue sending DMs to the remaining users, or start a new DM session and DM everyone again?"
+                    ),
+                    color=discord.Color.orange()
+                )
+                progress_embed.add_field(
+                    name="Continue",
+                    value="Only DM users who have not received a DM yet from the previous DM request.",
+                    inline=False
+                )
+                progress_embed.add_field(
+                    name="New",
+                    value="Clear all DM progress and DM everyone in the selected roles.",
+                    inline=False
+                )
+                progress_view = DMProgressView(message.author, sent_count, total_count)
+                progress_msg = await message.channel.send(embed=progress_embed, view=progress_view)
+                await progress_view.wait()
+                await progress_msg.edit(view=None)
+                if progress_view.value is None:
+                    await progress_msg.edit(
+                        embed=discord.Embed(
+                            title="Timed Out",
+                            description="Timed out. DM not sent.",
+                            color=discord.Color.red()
+                        ),
+                        view=None
+                    )
+                    await message.delete()
+                    return
+                if progress_view.value == "new":
+                    # Clear all dm_sent flags for selected users
+                    for entry in user_data_dict.values():
+                        if entry['user_id'] in total_selected_users and 'dm_sent' in entry:
+                            entry.pop('dm_sent')
+                    with open(SERVER_USER_JSON, 'w') as f:
+                        json.dump(list(user_data_dict.values()), f, indent=2)
+            # --- End interactive prompt ---
+
+            # Build users_to_dm list based on user's choice
             users_to_dm = set()
             for role in selected_roles:
                 for member in role.members:
                     if member.id in allowed_users:
                         entry = user_data_dict.get(member.id)
                         # Only DM users who have not been marked as sent
-                        if entry and not entry.get('dm_sent', False):
+                        if not entry.get('dm_sent', False):
                             users_to_dm.add(member)
             users = list(users_to_dm)
             if not users:
@@ -304,9 +380,8 @@ class DMSenderCog(commands.Cog):
             # --- Progress bar code starts here ---
             total = len(users)
             progress_bar_length = 10
-            sent_count = 0
             # Count already sent (for progress bar)
-            sent_count = sum(1 for entry in user_data if entry.get('dm_sent', False))
+            sent_count = sum(1 for entry in user_data if entry.get('dm_sent', False) and entry['user_id'] in total_selected_users)
 
             def make_progress_bar(done, total, bar_len=10):
                 filled = int(bar_len * done / total) if total else 0
