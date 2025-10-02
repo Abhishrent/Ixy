@@ -13,12 +13,33 @@ SERVER_USER_JSON = os.path.join(os.path.dirname(__file__), '../bot_memory/server
 def ensure_and_update_server_user_json(guild):
     """Ensure the server_user_id.json exists and is up-to-date with current guild members."""
     os.makedirs(os.path.dirname(SERVER_USER_JSON), exist_ok=True)
+    
+    # Load existing data if file exists
+    existing_data = {}
+    if os.path.exists(SERVER_USER_JSON):
+        try:
+            with open(SERVER_USER_JSON, 'r') as f:
+                existing_entries = json.load(f)
+                existing_data = {entry['user_id']: entry for entry in existing_entries}
+        except (json.JSONDecodeError, KeyError):
+            # If file is corrupted, start fresh
+            existing_data = {}
+    
+    # Update with current guild members, preserving existing data
     user_data = []
     for member in guild.members:
-        user_data.append({
-            "user_id": member.id,
-            "display_name": member.display_name
-        })
+        if member.id in existing_data:
+            # Preserve existing entry, update display_name
+            entry = existing_data[member.id].copy()
+            entry['display_name'] = member.display_name
+        else:
+            # Create new entry
+            entry = {
+                "user_id": member.id,
+                "display_name": member.display_name
+            }
+        user_data.append(entry)
+    
     with open(SERVER_USER_JSON, "w") as f:
         json.dump(user_data, f, indent=2)
 
@@ -353,6 +374,10 @@ class DMSenderCog(commands.Cog):
                             entry.pop('dm_sent')
                     with open(SERVER_USER_JSON, 'w') as f:
                         json.dump(list(user_data_dict.values()), f, indent=2)
+                # Store reference to delete later
+                progress_msg_to_delete = progress_msg
+            else:
+                progress_msg_to_delete = None
             # --- End interactive prompt ---
 
             # Build users_to_dm list based on user's choice
@@ -451,6 +476,11 @@ class DMSenderCog(commands.Cog):
                     entry.pop('dm_sent')
             with open(SERVER_USER_JSON, 'w') as f:
                 json.dump(list(user_data_dict.values()), f, indent=2)
+            
+            # Delete the progress message if it exists
+            if progress_msg_to_delete:
+                await progress_msg_to_delete.delete()
+            
             await preview_msg.edit(
                 content=None,  # Clear the message content
                 embed=discord.Embed(
