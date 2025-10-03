@@ -69,9 +69,18 @@ class AnnouncementCog(commands.Cog):
                         break
 
             # Show confirmation with a preview before sending announcement (using buttons)
+            preview_content = None
+            if message.attachments:
+                filenames = [
+                    attachment.filename for attachment in message.attachments
+                    if not (attachment.content_type and attachment.content_type.startswith("image/") and embed.image and embed.image.url)
+                ]
+                if filenames:
+                    preview_content = "Attachments:\n```\n" + "\n".join(filenames) + "\n```"
+
             view = ConfirmView(message.author)
             preview_msg = await message.channel.send(
-                "Preview of the announcement. Click **Confirm** to send, **Cancel** to abort.",
+                preview_content if preview_content else None,
                 embed=embed,
                 view=view
             )
