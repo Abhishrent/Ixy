@@ -109,6 +109,11 @@ class AnnouncementCog(commands.Cog):
                         
                         content = " ".join(pings) if pings else None
                         await output_channel.send(content=content, embed=embed)
+                        
+                        # Send non-image attachments if any
+                        for attachment in message.attachments:
+                            if not (attachment.content_type and attachment.content_type.startswith("image/")):
+                                await output_channel.send(file=await attachment.to_file())
                     except Exception:
                         pass
                 await preview_msg.edit(
