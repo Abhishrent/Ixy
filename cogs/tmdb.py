@@ -46,7 +46,6 @@ class TMDB(commands.Cog):
                 poster_url = f"https://image.tmdb.org/t/p/w500{poster_path}" if poster_path else None
                 backdrop_path = movie.get("backdrop_path")
                 backdrop_url = f"https://image.tmdb.org/t/p/w1280{backdrop_path}" if backdrop_path else None
-                is_adult = "Yes" if movie.get("adult", False) else "No"
 
                 embed = discord.Embed(
                     title=title,
@@ -58,7 +57,6 @@ class TMDB(commands.Cog):
                 embed.add_field(name="Number of Ratings", value=vote_count, inline=True)
                 embed.add_field(name="Popularity", value=popularity, inline=True)
                 embed.add_field(name="Language", value=language, inline=True)
-                embed.add_field(name="18+ Movie", value=is_adult, inline=True)
                 if poster_url:
                     embed.set_thumbnail(url=poster_url)
                 if backdrop_url:
@@ -162,7 +160,6 @@ class TMDB(commands.Cog):
                         poster_url = f"https://image.tmdb.org/t/p/w500{poster_path}" if poster_path else None
                         backdrop_path = movie.get("backdrop_path")
                         backdrop_url = f"https://image.tmdb.org/t/p/w1280{backdrop_path}" if backdrop_path else None
-                        is_adult = "Yes" if movie.get("adult", False) else "No"
 
                         embed = discord.Embed(
                             title=title,
@@ -174,7 +171,6 @@ class TMDB(commands.Cog):
                         embed.add_field(name="Number of Ratings", value=vote_count, inline=True)
                         embed.add_field(name="Popularity", value=popularity, inline=True)
                         embed.add_field(name="Language", value=language, inline=True)
-                        embed.add_field(name="18+ Movie", value=is_adult, inline=True)
                         if poster_url:
                             embed.set_thumbnail(url=poster_url)
                         if backdrop_url:
