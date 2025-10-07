@@ -183,18 +183,23 @@ class DMSenderCog(commands.Cog):
                 await message.delete()
                 return
 
-            # Split first line as title, rest as description
-            lines = message.content.split('\n', 1)
-            title = lines[0].strip() if lines else ""
-            description = lines[1].strip() if len(lines) > 1 else ""
+            # Check if there's only attachments without text
+            attachments_only = message.attachments and not message.content.strip()
 
-            # Preview embed (blue)
-            preview_embed = discord.Embed(
-                title=title,
-                description=description,
-                color=discord.Color.blue()
-            )
-            preview_embed.set_thumbnail(url=EMBED_THUMBNAIL)
+            # Split first line as title, rest as description
+            preview_embed = None
+            if not attachments_only:
+                lines = message.content.split('\n', 1)
+                title = lines[0].strip() if lines else ""
+                description = lines[1].strip() if len(lines) > 1 else ""
+
+                # Preview embed (blue)
+                preview_embed = discord.Embed(
+                    title=title,
+                    description=description,
+                    color=discord.Color.blue()
+                )
+                preview_embed.set_thumbnail(url=EMBED_THUMBNAIL)
 
             # Prepare attachment lists
             embed_image_url = None
@@ -203,7 +208,7 @@ class DMSenderCog(commands.Cog):
             # Handle image attachments
             if message.attachments:
                 for attachment in message.attachments:
-                    if attachment.content_type and attachment.content_type.startswith("image/") and embed_image_url is None:
+                    if not attachments_only and attachment.content_type and attachment.content_type.startswith("image/") and embed_image_url is None:
                         # show this while the image is being uploaded to the dedicated storage channel
                         notifier_embed = discord.Embed(
                             title="Building Preview",
@@ -225,18 +230,24 @@ class DMSenderCog(commands.Cog):
                         # Only first image is used for embed
                     else:
                         attachments_to_send.append(attachment)
-            # Show preview first
 
             # Prepare preview content with attachment filenames
             preview_content = None
-            if attachments_to_send:
-                filenames = [attachment.filename for attachment in attachments_to_send]
-                preview_content = "Attachments:\n```\n" + "\n".join(filenames) + "\n```"
+            if message.attachments:
+                if attachments_only:
+                    # For attachments-only, show all attachment filenames
+                    filenames = [attachment.filename for attachment in message.attachments]
+                    preview_content = "Attachments to send:\n```\n" + "\n".join(filenames) + "\n```"
+                else:
+                    # For regular posts, show only non-image attachments
+                    if attachments_to_send:
+                        filenames = [attachment.filename for attachment in attachments_to_send]
+                        preview_content = "Attachments:\n```\n" + "\n".join(filenames) + "\n```"
 
             preview_view = ConfirmView(message.author)
             preview_msg = await message.channel.send(
                 preview_content if preview_content else None,
-                embed=preview_embed,
+                embed=preview_embed,  # Will be None for attachments-only mode
                 view=preview_view
             )
             await preview_view.wait()
@@ -275,7 +286,7 @@ class DMSenderCog(commands.Cog):
                 color=discord.Color.green()
             )
             role_select_embed.set_thumbnail(url=EMBED_THUMBNAIL)
-            if preview_embed.image and preview_embed.image.url:
+            if preview_embed and preview_embed.image and preview_embed.image.url:
                 role_select_embed.set_image(url=preview_embed.image.url)
             role_select_embed.add_field(
                 name="Roles",
@@ -431,10 +442,16 @@ class DMSenderCog(commands.Cog):
                 max_retries = 3
                 for attempt in range(max_retries):
                     try:
-                        await user.send(embed=preview_embed)
-                        # Send non-image attachments (files)
-                        for attachment in attachments_to_send:
-                            await user.send(file=await attachment.to_file())
+                        # For attachments-only mode, send only attachments
+                        if attachments_only:
+                            for attachment in message.attachments:
+                                await user.send(file=await attachment.to_file())
+                        else:
+                            # For regular mode, send embed and attachments
+                            await user.send(embed=preview_embed)
+                            # Send non-image attachments (files)
+                            for attachment in attachments_to_send:
+                                await user.send(file=await attachment.to_file())
                         # Mark as sent in user_data (progress tracking)
                         entry = user_data_dict.get(user.id)
                         if entry:
