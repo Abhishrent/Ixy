@@ -69,6 +69,19 @@ class Ticket(commands.Cog):
 
     @commands.hybrid_command(name='close', description="Close your open ticket")
     async def close_ticket(self, ctx, *, mod_message: str = None):
+        if mod_message:
+            # Check if the user has the "Organizing Committee" role
+            mod_role = discord.utils.get(ctx.guild.roles, name="Organizing Committee")
+            if mod_role not in ctx.author.roles:
+                embed = discord.Embed(
+                    title="Permission Denied",
+                    description="You do not have permission to add a moderator message.",
+                    color=discord.Color.red()
+                )
+                embed.set_thumbnail(url=EMBED_THUMBNAIL)
+                await ctx.send(embed=embed, ephemeral=True)
+                return
+
         if "ticket" in ctx.channel.name:
             # Get the opener's user ID from the channel topic
             opener_id = None
@@ -83,7 +96,7 @@ class Ticket(commands.Cog):
                 color=discord.Color.orange()
             )
             closing_embed.set_thumbnail(url=EMBED_THUMBNAIL)
-            closing_message = await ctx.send(embed=closing_embed)
+            closing_message = await ctx.send(embed=closing_embed, ephemeral=True)
             for i in range(5, 0, -1):
                 await asyncio.sleep(1)
                 closing_embed.description = f"This ticket will be closed in [{i}] second(s)."
@@ -97,7 +110,7 @@ class Ticket(commands.Cog):
             )
             embed.set_thumbnail(url=EMBED_THUMBNAIL)
             if mod_message:
-                embed.add_field(name="Message from the OCs", value=mod_message, inline=False)
+                embed.add_field(name="Message from the OC", value=mod_message, inline=False)
             if opener:
                 await opener.send(embed=embed)
             else:
@@ -109,7 +122,7 @@ class Ticket(commands.Cog):
                 color=discord.Color.red()
             )
             embed.set_thumbnail(url=EMBED_THUMBNAIL)
-            await ctx.send(embed=embed)
+            await ctx.send(embed=embed, ephemeral=True)
 
 async def setup(bot):
     await bot.add_cog(Ticket(bot))
