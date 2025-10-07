@@ -35,18 +35,24 @@ class AnnouncementCog(commands.Cog):
 
         # Announcement input channel: send embed to the announcement output channel
         if message.channel.id == ANNOUNCE_INPUT_CHANNEL_ID:
-            # Split first line as title, rest as description
-            lines = message.content.split('\n', 1)
-            title = lines[0].strip() if lines else ""
-            description = lines[1].strip() if len(lines) > 1 else ""
-            embed = discord.Embed(
-                title=title,
-                description=description,
-                color=discord.Color.blue()
-            )
-            embed.set_thumbnail(url=EMBED_THUMBNAIL)
-            # Attachments as images
-            if message.attachments:
+            # Check if there's only attachments without text
+            attachments_only = message.attachments and not message.content.strip()
+            
+            embed = None
+            if not attachments_only:
+                # Split first line as title, rest as description
+                lines = message.content.split('\n', 1)
+                title = lines[0].strip() if lines else ""
+                description = lines[1].strip() if len(lines) > 1 else ""
+                embed = discord.Embed(
+                    title=title,
+                    description=description,
+                    color=discord.Color.blue()
+                )
+                embed.set_thumbnail(url=EMBED_THUMBNAIL)
+                
+            # Attachments as images (only process for embed if not attachments_only)
+            if message.attachments and not attachments_only:
                 for attachment in message.attachments:
                     if attachment.content_type and attachment.content_type.startswith("image/"):
                         # Notify about image upload
@@ -71,17 +77,23 @@ class AnnouncementCog(commands.Cog):
             # Show confirmation with a preview before sending announcement (using buttons)
             preview_content = None
             if message.attachments:
-                filenames = [
-                    attachment.filename for attachment in message.attachments
-                    if not (attachment.content_type and attachment.content_type.startswith("image/") and embed.image and embed.image.url)
-                ]
-                if filenames:
-                    preview_content = "Attachments:\n```\n" + "\n".join(filenames) + "\n```"
+                if attachments_only:
+                    # For attachments-only, show all attachment filenames
+                    filenames = [attachment.filename for attachment in message.attachments]
+                    preview_content = "Attachments to send:\n```\n" + "\n".join(filenames) + "\n```"
+                else:
+                    # For regular posts, show only non-image attachments
+                    filenames = [
+                        attachment.filename for attachment in message.attachments
+                        if not (attachment.content_type and attachment.content_type.startswith("image/") and embed.image and embed.image.url)
+                    ]
+                    if filenames:
+                        preview_content = "Attachments:\n```\n" + "\n".join(filenames) + "\n```"
 
             view = ConfirmView(message.author)
             preview_msg = await message.channel.send(
                 preview_content if preview_content else None,
-                embed=embed,
+                embed=embed,  # Will be None for attachments-only mode
                 view=view
             )
             await view.wait()
@@ -102,7 +114,9 @@ class AnnouncementCog(commands.Cog):
                 # Store non-image attachments before deleting the message
                 attachment_files = []
                 for attachment in message.attachments:
-                    if not (attachment.content_type and attachment.content_type.startswith("image/")):
+                    # In attachments-only mode, save all attachments
+                    # In regular mode, save only non-image attachments
+                    if attachments_only or not (attachment.content_type and attachment.content_type.startswith("image/")):
                         attachment_files.append(await attachment.to_file())
                 
                 # Collect mentions for users and roles
@@ -125,11 +139,15 @@ class AnnouncementCog(commands.Cog):
                 if output_channel:
                     try:
                         content = " ".join(pings) if pings else None
-                        await output_channel.send(content=content, embed=embed)
                         
-                        # Send non-image attachments if any
-                        if attachment_files:
-                            await output_channel.send(files=attachment_files)
+                        # For attachments-only mode, just send the files without any embed
+                        if attachments_only:
+                            await output_channel.send(content=content, files=attachment_files)
+                        else:
+                            # For regular mode, send the embed and then any non-image attachments
+                            await output_channel.send(content=content, embed=embed)
+                            if attachment_files:
+                                await output_channel.send(files=attachment_files)
                     except Exception:
                         pass
                 await preview_msg.edit(
