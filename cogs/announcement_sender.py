@@ -99,30 +99,37 @@ class AnnouncementCog(commands.Cog):
                 return
 
             if view.value:
+                # Store non-image attachments before deleting the message
+                attachment_files = []
+                for attachment in message.attachments:
+                    if not (attachment.content_type and attachment.content_type.startswith("image/")):
+                        attachment_files.append(await attachment.to_file())
+                
+                # Collect mentions for users and roles
+                pings = []
+                if message.mentions:
+                    pings.extend(user.mention for user in message.mentions)
+                if message.role_mentions:
+                    pings.extend(role.mention for role in message.role_mentions)
+                
+                # Check for @everyone and @here mentions
+                if "@everyone" in message.content:
+                    pings.append("@everyone")
+                if "@here" in message.content:
+                    pings.append("@here")
+                
+                # Now delete the original message
                 await message.delete()
+                
                 output_channel = message.guild.get_channel(ANNOUNCE_OUTPUT_CHANNEL_ID)
                 if output_channel:
                     try:
-                        # Collect mentions for users and roles
-                        pings = []
-                        if message.mentions:
-                            pings.extend(user.mention for user in message.mentions)
-                        if message.role_mentions:
-                            pings.extend(role.mention for role in message.role_mentions)
-                        
-                        # Check for @everyone and @here mentions
-                        if "@everyone" in message.content:
-                            pings.append("@everyone")
-                        if "@here" in message.content:
-                            pings.append("@here")
-                        
                         content = " ".join(pings) if pings else None
                         await output_channel.send(content=content, embed=embed)
                         
                         # Send non-image attachments if any
-                        for attachment in message.attachments:
-                            if not (attachment.content_type and attachment.content_type.startswith("image/")):
-                                await output_channel.send(file=await attachment.to_file())
+                        if attachment_files:
+                            await output_channel.send(files=attachment_files)
                     except Exception:
                         pass
                 await preview_msg.edit(
