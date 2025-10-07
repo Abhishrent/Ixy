@@ -68,7 +68,7 @@ class Ticket(commands.Cog):
         )
 
     @commands.hybrid_command(name='close', description="Close your open ticket")
-    async def close_ticket(self, ctx):
+    async def close_ticket(self, ctx, *, mod_message: str = None):
         if "ticket" in ctx.channel.name:
             # Get the opener's user ID from the channel topic
             opener_id = None
@@ -96,6 +96,8 @@ class Ticket(commands.Cog):
                 color=discord.Color.red()
             )
             embed.set_thumbnail(url=EMBED_THUMBNAIL)
+            if mod_message:
+                embed.add_field(name="Message from the OCs", value=mod_message, inline=False)
             if opener:
                 await opener.send(embed=embed)
             else:
