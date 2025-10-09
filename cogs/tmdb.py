@@ -9,8 +9,14 @@ class TMDB(commands.Cog):
         self.api_token = "Bearer ***REMOVED***"
         self.base_url = "https://api.themoviedb.org/3"
 
-    @commands.hybrid_command(name="search_movie", description="Search for a movie by title.")
-    async def search_movie(self, ctx, *, movie_title: str):
+    @commands.hybrid_group(name="movie", description="Movie-related commands using TMDB API.")
+    async def movie(self, ctx):
+        """Movie-related commands using TMDB API."""
+        if ctx.invoked_subcommand is None:
+            await ctx.send("Please use a subcommand. Available: `search`, `recommend`")
+
+    @movie.command(name="search", description="Search for a movie by title.")
+    async def search(self, ctx, *, movie_title: str):
         """Search for a movie by title."""
         url = f"{self.base_url}/search/movie"
         headers = {"Authorization": self.api_token}
@@ -19,18 +25,14 @@ class TMDB(commands.Cog):
         async with aiohttp.ClientSession() as session:
             async with session.get(url, headers=headers, params=params) as response:
                 if response.status != 200:
-                    await ctx.interaction.response.send_message(
-                        "Failed to fetch data from TMDB.", ephemeral=True
-                    )
+                    await ctx.send("Failed to fetch data from TMDB.")
                     return
 
                 data = await response.json()
                 results = data.get("results", [])
 
                 if not results:
-                    await ctx.interaction.response.send_message(
-                        "No movies found with that title.", ephemeral=True
-                    )
+                    await ctx.send("No movies found with that title.")
                     return
 
                 # Display the first result
@@ -65,8 +67,8 @@ class TMDB(commands.Cog):
                 # embed.set_footer(text="Powered by TMDB")
                 await ctx.send(embed=embed)
 
-    @commands.hybrid_command(name="recommend_movie", description="Get movie recommendations based on a movie title.")
-    async def recommend_movie(self, ctx, *, movie_title: str):
+    @movie.command(name="recommend", description="Get movie recommendations based on a movie title.")
+    async def recommend(self, ctx, *, movie_title: str):
         """Get movie recommendations based on a movie title."""
         # Search for the movie to get its ID
         search_url = f"{self.base_url}/search/movie"
@@ -76,18 +78,14 @@ class TMDB(commands.Cog):
         async with aiohttp.ClientSession() as session:
             async with session.get(search_url, headers=headers, params=search_params) as search_response:
                 if search_response.status != 200:
-                    await ctx.interaction.response.send_message(
-                        "Failed to fetch data from TMDB.", ephemeral=True
-                    )
+                    await ctx.send("Failed to fetch data from TMDB.")
                     return
 
                 search_data = await search_response.json()
                 search_results = search_data.get("results", [])
 
                 if not search_results:
-                    await ctx.interaction.response.send_message(
-                        "No movies found with that title.", ephemeral=True
-                    )
+                    await ctx.send("No movies found with that title.")
                     return
 
                 # Get the ID of the first matching movie
@@ -101,18 +99,14 @@ class TMDB(commands.Cog):
             recommend_url = f"{self.base_url}/movie/{movie_id}/recommendations"
             async with session.get(recommend_url, headers=headers) as recommend_response:
                 if recommend_response.status != 200:
-                    await ctx.interaction.response.send_message(
-                        "Failed to fetch recommendations from TMDB.", ephemeral=True
-                    )
+                    await ctx.send("Failed to fetch recommendations from TMDB.")
                     return
 
                 recommend_data = await recommend_response.json()
                 recommendations = recommend_data.get("results", [])
 
                 if not recommendations:
-                    await ctx.interaction.response.send_message(
-                        "No recommendations found for this movie.", ephemeral=True
-                    )
+                    await ctx.send("No recommendations found for this movie.")
                     return
 
                 # Create an embed with the list of recommended titles
