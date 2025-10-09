@@ -116,8 +116,14 @@ class MemoryMatchingGame(commands.Cog):
         scores = sorted(unique_scores.values(), key=lambda x: x["best_time"])[:3]
         self.save_top_scores(scores)
 
-    @commands.hybrid_command(name="memory", with_app_command=True)
-    async def start_game(self, ctx):
+    @commands.hybrid_group(name="memory", description="Memory matching game commands.")
+    async def memory(self, ctx):
+        """Memory matching game commands."""
+        if ctx.invoked_subcommand is None:
+            await ctx.send("Please use a subcommand. Available: `start`")
+
+    @memory.command(name="start", description="Start a memory matching game")
+    async def start(self, ctx):
         if ctx.channel.id in self.games:
             await ctx.send(embed=discord.Embed(
                 title="Game Already Active",

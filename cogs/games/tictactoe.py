@@ -12,8 +12,14 @@ class TicTacToeGame(commands.Cog):
         self.bot = bot
         self.games = {}
 
-    @commands.hybrid_command(name="tictactoe", aliases=["ttt"], with_app_command=True)
-    async def start_game(self, ctx: commands.Context, player1: discord.Member = None, player2: discord.Member = None):
+    @commands.hybrid_group(name="tictactoe", description="Tic-Tac-Toe game commands.")
+    async def tictactoe(self, ctx):
+        """Tic-Tac-Toe game commands."""
+        if ctx.invoked_subcommand is None:
+            await ctx.send("Please use a subcommand. Available: `start`")
+
+    @tictactoe.command(name="start", description="Start a new Tic-Tac-Toe game.")
+    async def start(self, ctx: commands.Context, player1: discord.Member = None, player2: discord.Member = None):
         """
         Start a new Tic-Tac-Toe game.
 

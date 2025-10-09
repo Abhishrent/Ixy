@@ -95,8 +95,14 @@ class GuessNumber(commands.Cog):
             embed.set_footer(text="🎲 Random game drop! Good luck!")
             await guess_channel.send(embed=embed)
 
-    @commands.hybrid_command(name="guess_number", with_app_command=True)
-    async def start_game(self, ctx, min_num: int = 1, max_num: int = 1000):
+    @commands.hybrid_group(name="number_guesser", description="Number guessing game commands.")
+    async def number_guesser(self, ctx):
+        """Number guessing game commands."""
+        if ctx.invoked_subcommand is None:
+            await ctx.send("Please use a subcommand. Available: `start`, `stop`, `scores`")
+
+    @number_guesser.command(name="start", description="Start a guess the number game")
+    async def start(self, ctx, min_num: int = 1, max_num: int = 1000):
         """Start a guess the number game"""
         # Check if there's already an active game in the guess channel (where all games are played)
         if GUESS_CHANNEL_ID in self.active_games:
@@ -209,8 +215,8 @@ class GuessNumber(commands.Cog):
                 )
                 await message.channel.send(embed=embed)
 
-    @commands.hybrid_command(name="stop_number_game", with_app_command=True)
-    async def stop_game(self, ctx):
+    @number_guesser.command(name="stop", description="Stop the current number guessing game")
+    async def stop(self, ctx):
         """Stop the current number guessing game"""
         if GUESS_CHANNEL_ID not in self.active_games:
             await ctx.send("❌ No active game!")
@@ -232,8 +238,8 @@ class GuessNumber(commands.Cog):
         await ctx.send(embed=embed)
         del self.active_games[GUESS_CHANNEL_ID]
 
-    @commands.hybrid_command(name="number_scores", with_app_command=True)
-    async def show_scores(self, ctx):
+    @number_guesser.command(name="scores", description="Show the number guessing game leaderboard")
+    async def scores(self, ctx):
         """Show the number guessing game leaderboard"""
         if not self.scores:
             await ctx.send("No scores yet!")

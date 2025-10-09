@@ -136,8 +136,14 @@ class SequenceMemoryGame(commands.Cog):
         # End the game
         await self.handle_game_end(game, interaction, f"Wrong sequence! You reached Round {game['round']}")
 
-    @commands.hybrid_command(name="sequence", with_app_command=True)
-    async def start_game(self, ctx):
+    @commands.hybrid_group(name="sequence", description="Sequence memory game commands.")
+    async def sequence(self, ctx):
+        """Sequence memory game commands."""
+        if ctx.invoked_subcommand is None:
+            await ctx.send("Please use a subcommand. Available: `start`")
+
+    @sequence.command(name="start", description="Start a new sequence memory game.")
+    async def start(self, ctx):
         """Start a new sequence memory game."""
         if ctx.channel.id in self.games:
             await ctx.send(embed=self.create_embed(
