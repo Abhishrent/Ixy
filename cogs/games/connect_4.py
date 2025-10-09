@@ -291,8 +291,14 @@ class Connect4(commands.Cog):
         
         return score
     
-    @commands.hybrid_command(name="connect4", with_app_command=True)
-    async def start_connect4(self, ctx, player1: discord.Member = None, player2: discord.Member = None, difficulty: str = "normal"):
+    @commands.hybrid_group(name="connect_4", description="Connect 4 game commands.")
+    async def connect_4(self, ctx):
+        """Connect 4 game commands."""
+        if ctx.invoked_subcommand is None:
+            await ctx.send("Please use a subcommand. Available: `start`, `stop`, `scores`")
+
+    @connect_4.command(name="start", description="Start a Connect 4 game against another player or AI")
+    async def start(self, ctx, player1: discord.Member = None, player2: discord.Member = None, difficulty: str = "normal"):
         """Start a Connect 4 game against another player or AI
         
         Args:
@@ -662,8 +668,8 @@ class Connect4(commands.Cog):
             game["game_message_id"] = new_message.id
             save_data(self.scores, self.active_games)
     
-    @commands.hybrid_command(name="stop_connect4", with_app_command=True)
-    async def stop_connect4(self, ctx):
+    @connect_4.command(name="stop", description="Stop the current Connect 4 game")
+    async def stop(self, ctx):
         """Stop the current Connect 4 game"""
         channel_id = str(ctx.channel.id)
         
@@ -695,8 +701,8 @@ class Connect4(commands.Cog):
         
         await ctx.send(embed=embed)
     
-    @commands.hybrid_command(name="connect4_scores", with_app_command=True)
-    async def show_connect4_scores(self, ctx):
+    @connect_4.command(name="scores", description="Show Connect 4 leaderboard")
+    async def scores(self, ctx):
         """Show Connect 4 leaderboard"""
         if not self.scores:
             await ctx.send("No Connect 4 scores yet!")

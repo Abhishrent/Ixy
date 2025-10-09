@@ -493,8 +493,14 @@ R6 ->  |     {board[6]}        |     {board[5]}      |  <- R6
         # Show updated board for player's turn
         await self.update_game_embed(channel, game)
     
-    @commands.hybrid_command(name="mancala", with_app_command=True)
-    async def start_mancala(self, ctx, player1: discord.Member = None, player2: discord.Member = None, difficulty: str = "normal"):
+    @commands.hybrid_group(name="mancala", description="Mancala game commands.")
+    async def mancala(self, ctx):
+        """Mancala game commands."""
+        if ctx.invoked_subcommand is None:
+            await ctx.send("Please use a subcommand. Available: `start`, `stop`, `scores`")
+
+    @mancala.command(name="start", description="Start a Mancala game against another player or AI")
+    async def start(self, ctx, player1: discord.Member = None, player2: discord.Member = None, difficulty: str = "normal"):
         """Start a Mancala game against another player or AI
         
         Args:
@@ -770,8 +776,8 @@ R6 ->  |     {board[6]}        |     {board[5]}      |  <- R6
         await self.update_game_embed(message.channel, game, description=turn_text)
         save_data(self.scores, self.active_games)
     
-    @commands.hybrid_command(name="stop_mancala", with_app_command=True)
-    async def stop_mancala(self, ctx):
+    @mancala.command(name="stop", description="Stop the current Mancala game")
+    async def stop(self, ctx):
         """Stop the current Mancala game"""
         channel_id = str(ctx.channel.id)
         
@@ -814,8 +820,8 @@ R6 ->  |     {board[6]}        |     {board[5]}      |  <- R6
         del self.active_games[channel_id]
         save_data(self.scores, self.active_games)
     
-    @commands.hybrid_command(name="mancala_scores", with_app_command=True)
-    async def show_mancala_scores(self, ctx):
+    @mancala.command(name="scores", description="Show Mancala leaderboard")
+    async def scores(self, ctx):
         """Show Mancala leaderboard"""
         if not self.scores:
             embed = discord.Embed(

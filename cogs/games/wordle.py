@@ -29,8 +29,14 @@ class WordleGame(commands.Cog):
             print(f"Error: {filename} not found!")
             return []
 
-    @commands.hybrid_command(name="wordle", with_app_command=True)
-    async def start_game(self, ctx, word: str = None, hint: str = None):
+    @commands.hybrid_group(name="wordle", description="Wordle game commands.")
+    async def wordle(self, ctx):
+        """Wordle game commands."""
+        if ctx.invoked_subcommand is None:
+            await ctx.send("Please use a subcommand. Available: `start`, `quit`")
+
+    @wordle.command(name="start", description="Start a new Wordle game")
+    async def start(self, ctx, word: str = None, hint: str = None):
         if ctx.channel.id in self.games:
             embed = discord.Embed(
                 title="Game Already Active",
@@ -109,8 +115,8 @@ class WordleGame(commands.Cog):
     async def before_check_game_timeouts(self):
         await self.bot.wait_until_ready()
 
-    @commands.hybrid_command(name="quit_wordle", with_app_command=True)
-    async def quit_game(self, ctx):
+    @wordle.command(name="quit", description="Quit the current Wordle game")
+    async def quit(self, ctx):
         if ctx.channel.id not in self.games:
             embed = discord.Embed(
                 title="No Active Game",

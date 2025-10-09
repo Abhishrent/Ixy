@@ -20,8 +20,14 @@ class FriendsTrivia(commands.Cog):
         self.questions = questions
         self.active_sessions = {}  # Tracks active game sessions per channel
 
-    @commands.command('friends')
-    async def friends_quiz(self, ctx, num_questions: int = 1):
+    @commands.hybrid_group(name="friends", description="FRIENDS trivia game commands.")
+    async def friends(self, ctx):
+        """FRIENDS trivia game commands."""
+        if ctx.invoked_subcommand is None:
+            await ctx.send("Please use a subcommand. Available: `quiz`")
+
+    @friends.command(name="quiz", description="FRIENDS Trivia game with dynamic multiplayer support.")
+    async def quiz(self, ctx, num_questions: int = 1):
         """FRIENDS Trivia game with dynamic multiplayer support."""
         # Validate number of questions
         if num_questions < 1 or num_questions > len(self.questions) or num_questions > 10:
