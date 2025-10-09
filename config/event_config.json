@@ -64,6 +64,11 @@
     "color": "orange",
     "fields": [
       {
+        "name": "Online Round Schedule",
+        "value": "The detailed schedule has been DM'd and emailed to registered participants.",
+        "inline": false
+      },
+      {
         "name": "Final Dates",
         "value": "All dates to be coordinated with academic calendars. Stay tuned for updates!",
         "inline": false
@@ -77,7 +82,7 @@
     "fields": [
       {
         "name": "Online Round",
-        "value": "• Teams showcase their initial ideas and concepts\n• Participants present what they intend to build during the main hackathon\n• Preliminary evaluation of proposals by judges\n• Selected teams advance to the final hackathon round",
+        "value": "• Teams showcase their initial ideas and concepts\n• Participants present what they intend to build during the main hackathon\n• Preliminary evaluation of proposals by judges\n• Selected teams advance to the final hackathon round\n• All team members must be present for the presentation",
         "inline": false
       },
       {
