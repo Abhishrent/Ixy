@@ -87,8 +87,7 @@ class DailyWordleGame(commands.Cog):
         previous_word = self.game_data.get("current_word")
         previous_winner = self.game_data.get("winner")
         streaks = self.game_data.get("streaks", {})
-        # Preserve top_streaks data for leaderboards
-        top_streaks = self.game_data.get("top_streaks", [])
+        top_streaks = self.game_data.get("top_streaks", [])  # Preserve top_streaks
 
         # Only process streak updates if date has changed
         if self.game_data["current_date"] != today:
@@ -104,10 +103,14 @@ class DailyWordleGame(commands.Cog):
                 "streaks": streaks.copy(),  # Use a copy to avoid modifying original
                 "top_streaks": top_streaks  # Preserve top_streaks data
             }
-            
-            # Only reset all streaks to 0 if no winner yesterday
+
+            # Only reset streaks to 0 for players who did not guess correctly yesterday
             if not (previous_winner and previous_winner.get("date") == yesterday):
-                new_game_data["streaks"] = {uid: 0 for uid in streaks}
+                for user_id in streaks:
+                    if streaks[user_id] > 0:  # Preserve streaks for active players
+                        new_game_data["streaks"][user_id] = streaks[user_id]
+                    else:
+                        new_game_data["streaks"][user_id] = 0
 
             # Update game data with new values
             self.game_data = new_game_data
@@ -303,31 +306,12 @@ class DailyWordleGame(commands.Cog):
                 pass
 
     def update_top_streaks(self, streak, user_id, username):
-        # Don't update if streak is 0 or if user_id is None
+        """Update the top streaks leaderboard."""
         if streak <= 0 or user_id is None:
             return
-            
+
         today = self.get_today_date()
-        
-        # If username is None, try to get from guild member
-        if username is None:
-            try:
-                # Try to get the username from any guild the bot is in
-                for guild in self.bot.guilds:
-                    member = guild.get_member(int(user_id))
-                    if member:
-                        username = str(member)
-                        break
-            except Exception:
-                username = f"User {user_id}"
-        
-        new_entry = {
-            "max_streak": streak,
-            "user_id": user_id,
-            "username": username,
-            "date": today
-        }
-        # Store top streaks in the same file as game data
+
         # Load the main game data file
         if os.path.exists(GAME_DATA_FILE):
             try:
@@ -340,7 +324,7 @@ class DailyWordleGame(commands.Cog):
 
         # Ensure top_streaks exists
         top_streaks = data.get("top_streaks", [])
-        
+
         # Check if user already exists in top_streaks
         user_exists = False
         for i, entry in enumerate(top_streaks):
@@ -348,13 +332,23 @@ class DailyWordleGame(commands.Cog):
                 user_exists = True
                 # Only update if the new streak is higher
                 if streak > entry["max_streak"]:
-                    top_streaks[i] = new_entry
+                    top_streaks[i] = {
+                        "max_streak": streak,
+                        "user_id": user_id,
+                        "username": username,
+                        "date": today
+                    }
                 break
-        
+
         # If user doesn't exist in top_streaks, add them
         if not user_exists:
-            top_streaks.append(new_entry)
-            
+            top_streaks.append({
+                "max_streak": streak,
+                "user_id": user_id,
+                "username": username,
+                "date": today
+            })
+
         # Sort by max_streak DESC, then most recent date
         top_streaks = sorted(top_streaks, key=lambda x: (-x["max_streak"], x["date"]))[:3]
         data["top_streaks"] = top_streaks
