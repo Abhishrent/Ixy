@@ -6,8 +6,14 @@ class Ticket(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.hybrid_command(name='open', description="Open a support ticket")
-    async def open_ticket(self, ctx):
+    @commands.hybrid_group(name='ticket', description="Ticket management commands")
+    async def ticket(self, ctx):
+        """Ticket management commands."""
+        if ctx.invoked_subcommand is None:
+            await ctx.send("Please use a subcommand. Available: `open`, `close`, `add_to_channel`")
+
+    @ticket.command(name='open', description="Open a support ticket")
+    async def open(self, ctx):
         # Define guild roles
         guild = ctx.guild
         mod_role = discord.utils.get(guild.roles, name="Organizing Committee")
@@ -67,8 +73,8 @@ class Ticket(commands.Cog):
             embed=ticket_embed
         )
 
-    @commands.hybrid_command(name='close', description="Close your open ticket")
-    async def close_ticket(self, ctx, *, mod_message: str = None):
+    @ticket.command(name='close', description="Close your open ticket")
+    async def close(self, ctx, *, mod_message: str = None):
         if mod_message:
             # Check if the user has the "Organizing Committee" role
             mod_role = discord.utils.get(ctx.guild.roles, name="Organizing Committee")
