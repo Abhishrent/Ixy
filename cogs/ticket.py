@@ -130,5 +130,96 @@ class Ticket(commands.Cog):
             embed.set_thumbnail(url=EMBED_THUMBNAIL)
             await ctx.send(embed=embed, ephemeral=True)
 
+    @ticket.command(name='add_to_channel', description="Add members to the current ticket channel")
+    async def add_to_channel(self, ctx, member1: discord.Member = None, member2: discord.Member = None, member3: discord.Member = None, member4: discord.Member = None):
+        # Check if this is a ticket channel
+        if "ticket" not in ctx.channel.name:
+            embed = discord.Embed(
+                title="Invalid Channel",
+                description="This command can only be used in a ticket channel.",
+                color=discord.Color.red()
+            )
+            embed.set_thumbnail(url=EMBED_THUMBNAIL)
+            await ctx.send(embed=embed, ephemeral=True)
+            return
+
+        # Collect provided members
+        members = [member for member in [member1, member2, member3, member4] if member is not None]
+        
+        # Check if any members were provided
+        if not members:
+            embed = discord.Embed(
+                title="No Members Specified",
+                description="Please specify at least one member to add to this ticket.",
+                color=discord.Color.orange()
+            )
+            embed.set_thumbnail(url=EMBED_THUMBNAIL)
+            await ctx.send(embed=embed, ephemeral=True)
+            return
+
+        # Get the opener's user ID from the channel topic
+        opener_id = None
+        if ctx.channel.topic and ctx.channel.topic.isdigit():
+            opener_id = int(ctx.channel.topic)
+
+        # Check permissions (only ticket opener or mods can add members)
+        mod_role = discord.utils.get(ctx.guild.roles, name="Organizing Committee")
+        is_mod = mod_role in ctx.author.roles
+        is_opener = opener_id and ctx.author.id == opener_id
+
+        if not (is_mod or is_opener):
+            embed = discord.Embed(
+                title="Permission Denied",
+                description="Only the ticket opener or moderators can add members to this ticket.",
+                color=discord.Color.red()
+            )
+            embed.set_thumbnail(url=EMBED_THUMBNAIL)
+            await ctx.send(embed=embed, ephemeral=True)
+            return
+
+        # Add members to the channel
+        added_members = []
+        already_added = []
+        
+        for member in members:
+            # Check if member already has access
+            channel_perms = ctx.channel.permissions_for(member)
+            if channel_perms.read_messages:
+                already_added.append(member)
+                continue
+                
+            # Add permissions for the member
+            await ctx.channel.set_permissions(
+                member, 
+                read_messages=True, 
+                send_messages=True
+            )
+            added_members.append(member)
+
+        # Create response embed
+        embed = discord.Embed(
+            title="Members Added to Ticket",
+            color=discord.Color.green()
+        )
+        embed.set_thumbnail(url=EMBED_THUMBNAIL)
+
+        if added_members:
+            member_mentions = ", ".join([member.mention for member in added_members])
+            embed.add_field(
+                name="Successfully Added",
+                value=member_mentions,
+                inline=False
+            )
+
+        if already_added:
+            member_mentions = ", ".join([member.mention for member in already_added])
+            embed.add_field(
+                name="Already Had Access",
+                value=member_mentions,
+                inline=False
+            )
+
+        await ctx.send(embed=embed)
+
 async def setup(bot):
     await bot.add_cog(Ticket(bot))
