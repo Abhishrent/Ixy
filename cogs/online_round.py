@@ -643,7 +643,7 @@ class OnlineRoundCog(commands.Cog):
         
         embed = discord.Embed(
             title="⏹️ Pitching Session Stopped",
-            description="The pitching session has been stopped. All teams, queue cleared, and presenter roles removed.\n\n**Preserved:** Channel and role configuration.",
+            description="The pitching session has been stopped. All teams, queue cleared.\n\n**Preserved:** Channel and presenter role ID configuration.",
             color=discord.Color.red()
         )
         embed.set_thumbnail(url=EMBED_THUMBNAIL)
