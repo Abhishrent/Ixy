@@ -5,6 +5,7 @@ from config import EMBED_THUMBNAIL
 import json
 import os
 import io
+from typing import Union
 
 class OnlineRoundCog(commands.Cog):
     def __init__(self, bot):
@@ -339,7 +340,7 @@ class OnlineRoundCog(commands.Cog):
         await ctx.send(embed=embed)
 
     @online.command(name="setup_channels", description="Set up the pitching stage and waiting room channels.")
-    async def setup_channels(self, ctx, pitching_stage: discord.VoiceChannel, waiting_room: discord.VoiceChannel):
+    async def setup_channels(self, ctx, pitching_stage: Union[discord.VoiceChannel, discord.StageChannel], waiting_room: Union[discord.VoiceChannel, discord.StageChannel]):
         interaction = ctx.interaction if hasattr(ctx, 'interaction') else ctx
         if not await self.check_permissions(interaction, "manage_channels"):
             return
@@ -523,8 +524,9 @@ class OnlineRoundCog(commands.Cog):
                     # Remove presenter role
                     if presenter_role in member.roles:
                         await member.remove_roles(presenter_role)
-                    # Move to waiting room if they're in pitching stage
-                    if waiting_room and member.voice and member.voice.channel == pitching_stage:
+                    # Move to waiting room if they're in pitching stage and both channels exist
+                    if (waiting_room and pitching_stage and member.voice and 
+                        member.voice.channel and member.voice.channel.id == pitching_stage.id):
                         try:
                             await member.move_to(waiting_room)
                         except discord.HTTPException:
@@ -549,8 +551,9 @@ class OnlineRoundCog(commands.Cog):
                 if member:
                     # Add presenter role
                     await member.add_roles(presenter_role)
-                    # Move to pitching stage if they're in waiting room
-                    if pitching_stage and member.voice and member.voice.channel == waiting_room:
+                    # Move to pitching stage if they're in waiting room and both channels exist
+                    if (pitching_stage and waiting_room and member.voice and 
+                        member.voice.channel and member.voice.channel.id == waiting_room.id):
                         try:
                             await member.move_to(pitching_stage)
                         except discord.HTTPException:
@@ -604,8 +607,9 @@ class OnlineRoundCog(commands.Cog):
                         # Remove presenter role
                         if presenter_role in member.roles:
                             await member.remove_roles(presenter_role)
-                        # Move to waiting room if they're in pitching stage
-                        if waiting_room and member.voice and member.voice.channel == pitching_stage:
+                        # Move to waiting room if they're in pitching stage and both channels exist
+                        if (waiting_room and pitching_stage and member.voice and 
+                            member.voice.channel and member.voice.channel.id == pitching_stage.id):
                             try:
                                 await member.move_to(waiting_room)
                             except discord.HTTPException:
