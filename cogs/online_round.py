@@ -147,7 +147,7 @@ class OnlineRoundCog(commands.Cog):
     @online.command(name="setup_role", description="Set up the presenter role for the pitching session.")
     async def setup_pitching(self, ctx, presenter_role: discord.Role):
         interaction = ctx.interaction if hasattr(ctx, 'interaction') else ctx
-        if not await self.check_permissions(interaction, "manage_roles"):
+        if not await self.check_online_permissions(interaction, "manage_roles"):
             return
         
         self.presenter_role_id = presenter_role.id
@@ -164,7 +164,7 @@ class OnlineRoundCog(commands.Cog):
     @online.command(name="register_team", description="Register a new team for the hackathon.")
     async def register_team(self, ctx, team_name: str, member1: discord.Member = None, member2: discord.Member = None, member3: discord.Member = None, member4: discord.Member = None, member5: discord.Member = None):
         interaction = ctx.interaction if hasattr(ctx, 'interaction') else ctx
-        if not await self.check_permissions(interaction, "manage_roles"):
+        if not await self.check_online_permissions(interaction, "manage_roles"):
             return
         
         if team_name in self.teams:
@@ -214,7 +214,7 @@ class OnlineRoundCog(commands.Cog):
     @online.command(name="add_member", description="Add a member to a team.")
     async def add_member(self, ctx, member: discord.Member, *, team_name: str):
         interaction = ctx.interaction if hasattr(ctx, 'interaction') else ctx
-        if not await self.check_permissions(interaction, "manage_roles"):
+        if not await self.check_online_permissions(interaction, "manage_roles"):
             return
         
         if team_name not in self.teams:
@@ -249,7 +249,7 @@ class OnlineRoundCog(commands.Cog):
     @online.command(name="remove_member", description="Remove a member from a team.")
     async def remove_member(self, ctx, member: discord.Member, *, team_name: str):
         interaction = ctx.interaction if hasattr(ctx, 'interaction') else ctx
-        if not await self.check_permissions(interaction, "manage_roles"):
+        if not await self.check_online_permissions(interaction, "manage_roles"):
             return
         
         if team_name not in self.teams:
@@ -284,7 +284,7 @@ class OnlineRoundCog(commands.Cog):
     @online.command(name="list_teams", description="List all registered teams and their members.")
     async def list_teams(self, ctx):
         interaction = ctx.interaction if hasattr(ctx, 'interaction') else ctx
-        if not await self.check_permissions(interaction, "manage_roles"):
+        if not await self.check_online_permissions(interaction, "manage_roles"):
             return
         
         if not self.teams:
@@ -319,7 +319,7 @@ class OnlineRoundCog(commands.Cog):
     @online.command(name="set_queue", description="Set the order of teams for pitching.")
     async def set_pitch_queue(self, ctx, *, team_order: str):
         interaction = ctx.interaction if hasattr(ctx, 'interaction') else ctx
-        if not await self.check_permissions(interaction, "manage_roles"):
+        if not await self.check_online_permissions(interaction, "manage_roles"):
             return
         
         teams = [team.strip() for team in team_order.split(',')]
@@ -349,7 +349,7 @@ class OnlineRoundCog(commands.Cog):
     @online.command(name="setup_channels", description="Set up the pitching stage and waiting room channels.")
     async def setup_channels(self, ctx, pitching_stage: Union[discord.VoiceChannel, discord.StageChannel], waiting_room: Union[discord.VoiceChannel, discord.StageChannel]):
         interaction = ctx.interaction if hasattr(ctx, 'interaction') else ctx
-        if not await self.check_permissions(interaction, "manage_channels"):
+        if not await self.check_online_permissions(interaction, "manage_channels"):
             return
         
         self.pitching_stage_channel_id = pitching_stage.id
@@ -367,7 +367,7 @@ class OnlineRoundCog(commands.Cog):
     @online.command(name="quick_setup", description="Quick setup with predefined channels and role for this server.")
     async def quick_setup(self, ctx):
         interaction = ctx.interaction if hasattr(ctx, 'interaction') else ctx
-        if not await self.check_permissions(interaction, "manage_channels"):
+        if not await self.check_online_permissions(interaction, "manage_channels"):
             return
         
         # Predefined IDs for this server
@@ -424,7 +424,7 @@ class OnlineRoundCog(commands.Cog):
     @online.command(name="start", description="Start the pitching session.")
     async def start_pitching(self, ctx):
         interaction = ctx.interaction if hasattr(ctx, 'interaction') else ctx
-        if not await self.check_permissions(interaction, "manage_roles"):
+        if not await self.check_online_permissions(interaction, "manage_roles"):
             return
         
         if not self.presenter_role_id:
@@ -483,7 +483,7 @@ class OnlineRoundCog(commands.Cog):
     @online.command(name="next", description="Advance to the next team in the queue.")
     async def next_team(self, ctx):
         interaction = ctx.interaction if hasattr(ctx, 'interaction') else ctx
-        if not await self.check_permissions(interaction, "manage_roles"):
+        if not await self.check_online_permissions(interaction, "manage_roles"):
             return
         
         if not self.pitching_active:
@@ -609,7 +609,7 @@ class OnlineRoundCog(commands.Cog):
     @online.command(name="stop", description="Stop the current pitching session.")
     async def stop_pitching(self, ctx):
         interaction = ctx.interaction if hasattr(ctx, 'interaction') else ctx
-        if not await self.check_permissions(interaction, "manage_roles"):
+        if not await self.check_online_permissions(interaction, "manage_roles"):
             return
         
         # Get channel objects
@@ -675,7 +675,7 @@ class OnlineRoundCog(commands.Cog):
     @online.command(name="delete_team", description="Delete a team and remove all its members.")
     async def delete_team(self, ctx, *, team_name: str):
         interaction = ctx.interaction if hasattr(ctx, 'interaction') else ctx
-        if not await self.check_permissions(interaction, "manage_roles"):
+        if not await self.check_online_permissions(interaction, "manage_roles"):
             return
         
         if team_name not in self.teams:
@@ -710,7 +710,7 @@ class OnlineRoundCog(commands.Cog):
     @online.command(name="clear_all", description="Clear all team data and reset the system.")
     async def clear_all_data(self, ctx):
         interaction = ctx.interaction if hasattr(ctx, 'interaction') else ctx
-        if not await self.check_permissions(interaction, "administrator"):
+        if not await self.check_online_permissions(interaction, "administrator"):
             return
         
         # Create confirmation view
@@ -755,7 +755,7 @@ class OnlineRoundCog(commands.Cog):
     @online.command(name="backup", description="Get a backup of all current data.")
     async def backup_data(self, ctx):
         interaction = ctx.interaction if hasattr(ctx, 'interaction') else ctx
-        if not await self.check_permissions(interaction, "manage_roles"):
+        if not await self.check_online_permissions(interaction, "manage_roles"):
             return
         
         # Create a comprehensive backup
@@ -788,10 +788,9 @@ class OnlineRoundCog(commands.Cog):
         
         await ctx.send(embed=embed, file=file)
 
-    async def check_permissions(self, ctx, permission: str):
+    async def check_online_permissions(self, ctx, permission: str):
         """Check if user has the required permission - updated for hybrid commands"""
         user = ctx.author if hasattr(ctx, 'author') else ctx.user
-        guild = ctx.guild
         
         # Check for specific role ID: 1130051976189722680
         required_role_id = 1130051976189722680
@@ -809,18 +808,6 @@ class OnlineRoundCog(commands.Cog):
                 await ctx.response.send_message(embed=embed, ephemeral=True)
             return False
         
-        # Also check the original permission if role check passes
-        if not getattr(user.guild_permissions, permission, False):
-            embed = discord.Embed(
-                title="❌ Insufficient Permissions",
-                description="That's for the moderator only twin.",
-                color=discord.Color.red()
-            )
-            if hasattr(ctx, 'send'):
-                await ctx.send(embed=embed, ephemeral=True)
-            else:
-                await ctx.response.send_message(embed=embed, ephemeral=True)
-            return False
         return True
 
 async def setup(bot):
