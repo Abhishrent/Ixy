@@ -307,9 +307,9 @@ class OnlineRoundCog(commands.Cog):
             for member_id in member_ids:
                 member = ctx.guild.get_member(member_id)
                 if member:
-                    members.append(member.mention)
+                    members.append(f"{member.display_name} ({member.mention})")
                 else:
-                    members.append(f"<@{member_id}> (Not found)")
+                    members.append(f"Unknown User (<@{member_id}>)")
             
             member_list = "\n".join(members) if members else "No members"
             embed.add_field(name=f"🏆 {team_name}", value=member_list, inline=False)
