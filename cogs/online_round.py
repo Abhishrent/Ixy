@@ -163,6 +163,7 @@ class OnlineRoundCog(commands.Cog):
 
     @online.command(name="register_team", description="Register a new team for the hackathon.")
     async def register_team(self, ctx, team_name: str, member1: discord.Member = None, member2: discord.Member = None, member3: discord.Member = None, member4: discord.Member = None, member5: discord.Member = None):
+        await ctx.defer()  # Defer the response
         interaction = ctx.interaction if hasattr(ctx, 'interaction') else ctx
         if not await self.check_online_permissions(interaction, "manage_roles"):
             return
@@ -213,6 +214,7 @@ class OnlineRoundCog(commands.Cog):
 
     @online.command(name="add_member", description="Add a member to a team.")
     async def add_member(self, ctx, member: discord.Member, *, team_name: str):
+        await ctx.defer()  # Defer the response
         interaction = ctx.interaction if hasattr(ctx, 'interaction') else ctx
         if not await self.check_online_permissions(interaction, "manage_roles"):
             return
@@ -248,6 +250,7 @@ class OnlineRoundCog(commands.Cog):
 
     @online.command(name="remove_member", description="Remove a member from a team.")
     async def remove_member(self, ctx, member: discord.Member, *, team_name: str):
+        await ctx.defer()  # Defer the response
         interaction = ctx.interaction if hasattr(ctx, 'interaction') else ctx
         if not await self.check_online_permissions(interaction, "manage_roles"):
             return
@@ -283,6 +286,7 @@ class OnlineRoundCog(commands.Cog):
 
     @online.command(name="list_teams", description="List all registered teams and their members.")
     async def list_teams(self, ctx):
+        await ctx.defer()  # Defer the response
         interaction = ctx.interaction if hasattr(ctx, 'interaction') else ctx
         if not await self.check_online_permissions(interaction, "manage_roles"):
             return
@@ -318,6 +322,7 @@ class OnlineRoundCog(commands.Cog):
 
     @online.command(name="set_queue", description="Set the order of teams for pitching.")
     async def set_pitch_queue(self, ctx, *, team_order: str):
+        await ctx.defer()  # Defer the response
         interaction = ctx.interaction if hasattr(ctx, 'interaction') else ctx
         if not await self.check_online_permissions(interaction, "manage_roles"):
             return
@@ -348,6 +353,7 @@ class OnlineRoundCog(commands.Cog):
 
     @online.command(name="setup_channels", description="Set up the pitching stage and waiting room channels.")
     async def setup_channels(self, ctx, pitching_stage: Union[discord.VoiceChannel, discord.StageChannel], waiting_room: Union[discord.VoiceChannel, discord.StageChannel]):
+        await ctx.defer()  # Defer the response
         interaction = ctx.interaction if hasattr(ctx, 'interaction') else ctx
         if not await self.check_online_permissions(interaction, "manage_channels"):
             return
@@ -366,6 +372,7 @@ class OnlineRoundCog(commands.Cog):
 
     @online.command(name="quick_setup", description="Quick setup with predefined channels and role for this server.")
     async def quick_setup(self, ctx):
+        await ctx.defer()  # Defer the response
         interaction = ctx.interaction if hasattr(ctx, 'interaction') else ctx
         if not await self.check_online_permissions(interaction, "manage_channels"):
             return
@@ -423,6 +430,7 @@ class OnlineRoundCog(commands.Cog):
 
     @online.command(name="start", description="Start the pitching session.")
     async def start_pitching(self, ctx):
+        await ctx.defer()  # Defer the response
         interaction = ctx.interaction if hasattr(ctx, 'interaction') else ctx
         if not await self.check_online_permissions(interaction, "manage_roles"):
             return
@@ -482,6 +490,7 @@ class OnlineRoundCog(commands.Cog):
 
     @online.command(name="next", description="Advance to the next team in the queue.")
     async def next_team(self, ctx):
+        await ctx.defer()  # Defer the response
         interaction = ctx.interaction if hasattr(ctx, 'interaction') else ctx
         if not await self.check_online_permissions(interaction, "manage_roles"):
             return
@@ -608,6 +617,7 @@ class OnlineRoundCog(commands.Cog):
 
     @online.command(name="stop", description="Stop the current pitching session.")
     async def stop_pitching(self, ctx):
+        await ctx.defer()  # Defer the response
         interaction = ctx.interaction if hasattr(ctx, 'interaction') else ctx
         if not await self.check_online_permissions(interaction, "manage_roles"):
             return
@@ -651,6 +661,7 @@ class OnlineRoundCog(commands.Cog):
 
     @online.command(name="status", description="Check the current pitching status.")
     async def pitching_status(self, ctx):
+        await ctx.defer()  # Defer the response
         embed = discord.Embed(
             title="📊 Pitching Status",
             color=discord.Color.blue()
@@ -674,6 +685,7 @@ class OnlineRoundCog(commands.Cog):
 
     @online.command(name="delete_team", description="Delete a team and remove all its members.")
     async def delete_team(self, ctx, *, team_name: str):
+        await ctx.defer()  # Defer the response
         interaction = ctx.interaction if hasattr(ctx, 'interaction') else ctx
         if not await self.check_online_permissions(interaction, "manage_roles"):
             return
@@ -709,6 +721,7 @@ class OnlineRoundCog(commands.Cog):
 
     @online.command(name="clear_all", description="Clear all team data and reset the system.")
     async def clear_all_data(self, ctx):
+        await ctx.defer()  # Defer the response
         interaction = ctx.interaction if hasattr(ctx, 'interaction') else ctx
         if not await self.check_online_permissions(interaction, "administrator"):
             return
@@ -754,6 +767,7 @@ class OnlineRoundCog(commands.Cog):
 
     @online.command(name="backup", description="Get a backup of all current data.")
     async def backup_data(self, ctx):
+        await ctx.defer()  # Defer the response
         interaction = ctx.interaction if hasattr(ctx, 'interaction') else ctx
         if not await self.check_online_permissions(interaction, "manage_roles"):
             return
