@@ -63,7 +63,8 @@ class Ticket(commands.Cog):
             description=(
                 f"{ctx.author.mention}, this channel is dedicated for your support.\n\n"
                 "Please provide a brief description of your issue, and the <@&1130051976189722680> will respond shortly.\n\n"
-                f"Type `{PREFIX[0]}close` or `/close` to close this ticket when your issue is resolved."
+                f"Invoke the `/ticket close` command to close this ticket when your issue is resolved.\n\n"
+                f"Use `/ticket add_to_channel` to give other members access to this private channel."
             ),
             color=discord.Color.blue()
         )
