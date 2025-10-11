@@ -439,7 +439,7 @@ class OnlineRoundCog(commands.Cog):
                                 pass
         
         self.pitching_active = True
-        await self.advance_to_next_team(ctx.guild)
+        next_team, dm_failures = await self.advance_to_next_team(ctx.guild)
         self.save_data()
         
         embed = discord.Embed(
@@ -448,6 +448,16 @@ class OnlineRoundCog(commands.Cog):
             color=discord.Color.green()
         )
         embed.set_thumbnail(url=EMBED_THUMBNAIL)
+        
+        # Add DM failure warning if any
+        if dm_failures:
+            failure_list = "\n".join([f"• {member.mention}" for member in dm_failures])
+            embed.add_field(
+                name="⚠️ DM Notifications Failed",
+                value=f"Could not send DM to:\n{failure_list}",
+                inline=False
+            )
+        
         await ctx.send(embed=embed)
 
     @online.command(name="next", description="Advance to the next team in the queue.")
@@ -465,7 +475,7 @@ class OnlineRoundCog(commands.Cog):
             await ctx.send(embed=embed)
             return
         
-        next_team = await self.advance_to_next_team(ctx.guild)
+        next_team, dm_failures = await self.advance_to_next_team(ctx.guild)
         self.save_data()
         
         if next_team:
@@ -474,6 +484,15 @@ class OnlineRoundCog(commands.Cog):
                 description=f"Now presenting: **{next_team}**",
                 color=discord.Color.blue()
             )
+            
+            # Add DM failure warning if any
+            if dm_failures:
+                failure_list = "\n".join([f"• {member.mention}" for member in dm_failures])
+                embed.add_field(
+                    name="⚠️ DM Notifications Failed",
+                    value=f"Could not send DM to:\n{failure_list}",
+                    inline=False
+                )
         else:
             embed = discord.Embed(
                 title="🏁 Pitching Complete",
@@ -490,7 +509,7 @@ class OnlineRoundCog(commands.Cog):
         """Remove presenter role from current team and give it to next team"""
         presenter_role = guild.get_role(self.presenter_role_id)
         if not presenter_role:
-            return None
+            return None, []
         
         # Get channel objects
         pitching_stage = guild.get_channel(self.pitching_stage_channel_id) if self.pitching_stage_channel_id else None
@@ -514,11 +533,14 @@ class OnlineRoundCog(commands.Cog):
         # Find next team
         if not self.pitch_queue:
             self.current_presenting_team = None
-            return None
+            return None, []
         
         # Get the first team in queue and remove it
         next_team = self.pitch_queue.pop(0)
         self.current_presenting_team = next_team
+        
+        # Track DM failures
+        dm_failures = []
         
         # Give role to next team and move to pitching stage
         if next_team in self.teams:
@@ -557,10 +579,10 @@ class OnlineRoundCog(commands.Cog):
                         
                         await member.send(embed=dm_embed)
                     except discord.HTTPException:
-                        # User has DMs disabled or other error
-                        pass
+                        # User has DMs disabled, is a bot, or other error
+                        dm_failures.append(member)
         
-        return next_team
+        return next_team, dm_failures
 
     @online.command(name="stop", description="Stop the current pitching session.")
     async def stop_pitching(self, ctx):
