@@ -10,7 +10,7 @@ class HelpView(discord.ui.View):
     
     @discord.ui.button(label="Open Support Ticket", style=discord.ButtonStyle.primary, emoji="🎫", custom_id="help_ticket_button")
     async def open_ticket(self, interaction: discord.Interaction, button: discord.ui.Button):
-        # Get the Ticket cog and call the open_ticket method directly
+        # Get the Ticket cog and call the open method directly
         ticket_cog = interaction.client.get_cog("Ticket")
         if ticket_cog:
             # Check if user already has a ticket
@@ -44,12 +44,12 @@ class HelpView(discord.ui.View):
             
             mock_ctx = MockContext(interaction)
             
-            # Call the open_ticket method
-            await ticket_cog.open_ticket(mock_ctx)
+            # Call the open method (updated from open_ticket)
+            await ticket_cog.open(mock_ctx)
         else:
             embed = discord.Embed(
                 title="Ticket System Not Found",
-                description="Unable to find the ticket system. Please use `/open` manually.",
+                description="Unable to find the ticket system. Please use `/ticket open` manually.",
                 color=discord.Color.red()
             )
             embed.set_thumbnail(url=EMBED_THUMBNAIL)
@@ -89,10 +89,10 @@ class HelpEmbedCog(commands.Cog):
         
         embed.add_field(
             name="What happens when you open a ticket?",
-            value="• You'll get a private channel with the organizing committee\n• Your issue will be handled confidentially\n• Use `/close` when your issue is resolved",
+            value="• You'll get a private channel with the organizing committee\n• Your issue will be handled confidentially\n• Use `/ticket close` when your issue is resolved",
             inline=False
         )
-        
+
         embed.set_footer(text="The organizing committee will respond as soon as possible.")
         embed.set_thumbnail(url=EMBED_THUMBNAIL)
         
