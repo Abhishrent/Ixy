@@ -568,22 +568,36 @@ class OnlineRoundCog(commands.Cog):
         if not await self.check_permissions(interaction, "manage_roles"):
             return
         
-        # Remove presenter role from current team
+        # Get channel objects
+        pitching_stage = ctx.guild.get_channel(self.pitching_stage_channel_id) if self.pitching_stage_channel_id else None
+        waiting_room = ctx.guild.get_channel(self.waiting_room_channel_id) if self.waiting_room_channel_id else None
+        
+        # Remove presenter role from current team and move to waiting room
         if self.current_presenting_team and self.presenter_role_id:
             presenter_role = ctx.guild.get_role(self.presenter_role_id)
             if presenter_role and self.current_presenting_team in self.teams:
                 for member_id in self.teams[self.current_presenting_team]:
                     member = ctx.guild.get_member(member_id)
-                    if member and presenter_role in member.roles:
-                        await member.remove_roles(presenter_role)
+                    if member:
+                        # Remove presenter role
+                        if presenter_role in member.roles:
+                            await member.remove_roles(presenter_role)
+                        # Move to waiting room if they're in pitching stage
+                        if waiting_room and member.voice and member.voice.channel == pitching_stage:
+                            try:
+                                await member.move_to(waiting_room)
+                            except discord.HTTPException:
+                                pass  # Member might have disconnected
         
+        # Clear the queue and reset state
+        self.pitch_queue.clear()
         self.pitching_active = False
         self.current_presenting_team = None
         self.save_data()
         
         embed = discord.Embed(
             title="⏹️ Pitching Session Stopped",
-            description="The pitching session has been stopped and all presenter roles have been removed.",
+            description="The pitching session has been stopped, queue cleared, and all presenter roles have been removed.",
             color=discord.Color.red()
         )
         embed.set_thumbnail(url=EMBED_THUMBNAIL)
