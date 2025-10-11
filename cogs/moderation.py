@@ -131,8 +131,13 @@ class ModerationCog(commands.Cog):
         )
         embed.set_thumbnail(url=EMBED_THUMBNAIL)
         
-        # If image_url is provided (4th part), set it in the embed
-        if len(parts) == 4:
+        # Handle image: prioritize attachment over URL
+        attachments = ctx.message.attachments
+        if attachments and attachments[0].content_type and attachments[0].content_type.startswith('image/'):
+            # Use the first image attachment as embed image
+            embed.set_image(url=attachments[0].url)
+        elif len(parts) == 4:
+            # If no attachment, use image_url from command if provided
             image_url = parts[3].strip()
             if image_url:
                 embed.set_image(url=image_url)
@@ -146,12 +151,6 @@ class ModerationCog(commands.Cog):
 
         # Send embed to the specified channel with mentions in content if provided
         embed_content = await channel.send(content=content_param, embed=embed)
-        
-        # Handle attachments
-        attachments = ctx.message.attachments
-        if attachments:
-            for attachment in attachments:
-                await channel.send(file=await attachment.to_file())
         
         # Deletes the original command message
         await ctx.message.delete()
