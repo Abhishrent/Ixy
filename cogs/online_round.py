@@ -10,13 +10,7 @@ from typing import Union
 class OnlineRoundCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.teams = {}  # {team_name: [member_ids]}
-        self.pitch_queue = []  # [team_names] in order
-        self.current_presenting_team = None
-        self.presenter_role_id = None
-        self.pitching_active = False
-        self.pitching_stage_channel_id = None  # Voice channel for presenting team
-        self.waiting_room_channel_id = None    # Voice channel for waiting teams
+        # Don't initialize with defaults here - let load_data handle it
         
         # Make path absolute based on the project directory
         project_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -24,6 +18,8 @@ class OnlineRoundCog(commands.Cog):
         
         # Ensure bot_memory directory exists
         os.makedirs(os.path.dirname(self.data_file), exist_ok=True)
+        
+        # Load data first - this will set all instance variables
         self.load_data()
 
     def save_data(self):
@@ -61,14 +57,25 @@ class OnlineRoundCog(commands.Cog):
                     # Log successful load with timestamp if available
                     last_updated = data.get("last_updated")
                     if last_updated:
-                        print(f"Online round data loaded from {discord.utils.format_dt(discord.utils.utcnow().replace(timestamp=last_updated))}")
+                        from datetime import datetime
+                        timestamp_str = datetime.fromtimestamp(last_updated).strftime('%Y-%m-%d %H:%M:%S')
+                        print(f"Online round data loaded successfully (last updated: {timestamp_str})")
+                    else:
+                        print("Online round data loaded successfully")
                     
                     # Validate loaded data
                     self._validate_loaded_data()
+                    print(f"Loaded {len(self.teams)} teams, {len(self.pitch_queue)} in queue, pitching_active: {self.pitching_active}")
             except Exception as e:
                 print(f"Error loading online round data: {e}")
+                import traceback
+                traceback.print_exc()
                 # Reset to defaults if loading fails
                 self._reset_to_defaults()
+        else:
+            # File doesn't exist, use defaults
+            print("No existing online round data found, initializing with defaults")
+            self._reset_to_defaults()
 
     def _validate_loaded_data(self):
         """Validate and clean up loaded data"""
@@ -116,7 +123,7 @@ class OnlineRoundCog(commands.Cog):
             )
             embed.add_field(
                 name="Setup Commands",
-                value="`setup_role`, `setup_channels`, `quick_setup_channels`",
+                value="`setup_role`, `setup_channels`, `quick_setup`",
                 inline=False
             )
             embed.add_field(
@@ -357,19 +364,21 @@ class OnlineRoundCog(commands.Cog):
         embed.set_thumbnail(url=EMBED_THUMBNAIL)
         await ctx.send(embed=embed)
 
-    @online.command(name="quick_setup_channels", description="Quick setup with predefined channels for this server.")
-    async def quick_setup_channels(self, ctx):
+    @online.command(name="quick_setup", description="Quick setup with predefined channels and role for this server.")
+    async def quick_setup(self, ctx):
         interaction = ctx.interaction if hasattr(ctx, 'interaction') else ctx
         if not await self.check_permissions(interaction, "manage_channels"):
             return
         
-        # Predefined channel IDs for this server
+        # Predefined IDs for this server
         pitching_stage_id = 1426397296609853481
         waiting_room_id = 1426397347989946398
+        presenter_role_id = 1426401193110016152
         
         # Verify channels exist
         pitching_stage = ctx.guild.get_channel(pitching_stage_id)
         waiting_room = ctx.guild.get_channel(waiting_room_id)
+        presenter_role = ctx.guild.get_role(presenter_role_id)
         
         if not pitching_stage:
             embed = discord.Embed(
@@ -389,14 +398,24 @@ class OnlineRoundCog(commands.Cog):
             await ctx.send(embed=embed)
             return
         
-        # Set the channels
+        if not presenter_role:
+            embed = discord.Embed(
+                title="❌ Presenter Role Not Found", 
+                description=f"Role with ID {presenter_role_id} not found in this server.",
+                color=discord.Color.red()
+            )
+            await ctx.send(embed=embed)
+            return
+        
+        # Set the channels and role
         self.pitching_stage_channel_id = pitching_stage_id
         self.waiting_room_channel_id = waiting_room_id
+        self.presenter_role_id = presenter_role_id
         self.save_data()
         
         embed = discord.Embed(
-            title="🔊 Quick Channels Setup Complete",
-            description=f"**Pitching Stage:** {pitching_stage.mention}\n**Waiting Room:** {waiting_room.mention}",
+            title="✅ Quick Setup Complete",
+            description=f"**Pitching Stage:** {pitching_stage.mention}\n**Waiting Room:** {waiting_room.mention}\n**Presenter Role:** {presenter_role.mention}",
             color=discord.Color.green()
         )
         embed.set_thumbnail(url=EMBED_THUMBNAIL)
@@ -615,7 +634,8 @@ class OnlineRoundCog(commands.Cog):
                             except discord.HTTPException:
                                 pass  # Member might have disconnected
         
-        # Clear the queue and reset state
+        # Clear only the teams, queue and session state - preserve channel and role config
+        self.teams.clear()
         self.pitch_queue.clear()
         self.pitching_active = False
         self.current_presenting_team = None
@@ -623,7 +643,7 @@ class OnlineRoundCog(commands.Cog):
         
         embed = discord.Embed(
             title="⏹️ Pitching Session Stopped",
-            description="The pitching session has been stopped, queue cleared, and all presenter roles have been removed.",
+            description="The pitching session has been stopped. All teams, queue cleared, and presenter roles removed.\n\n**Preserved:** Channel and role configuration.",
             color=discord.Color.red()
         )
         embed.set_thumbnail(url=EMBED_THUMBNAIL)
