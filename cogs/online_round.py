@@ -307,9 +307,9 @@ class OnlineRoundCog(commands.Cog):
             for member_id in member_ids:
                 member = ctx.guild.get_member(member_id)
                 if member:
-                    members.append(f"{member.display_name} ({member.mention})")
+                    members.append(member.mention)
                 else:
-                    members.append(f"Unknown User (<@{member_id}>)")
+                    members.append(f"<@{member_id}> (Not found)")
             
             member_list = "\n".join(members) if members else "No members"
             embed.add_field(name=f"🏆 {team_name}", value=member_list, inline=False)
@@ -469,14 +469,6 @@ class OnlineRoundCog(commands.Cog):
         )
         embed.set_thumbnail(url=EMBED_THUMBNAIL)
         
-        # Add "Up Next" field
-        if self.pitch_queue:
-            embed.add_field(
-                name="⏭️ Up Next",
-                value=f"{self.pitch_queue[0]}",
-                inline=False
-            )
-        
         # Add DM failure warning if any
         if dm_failures:
             failure_list = "\n".join([f"• {member.mention}" for member in dm_failures])
@@ -512,20 +504,6 @@ class OnlineRoundCog(commands.Cog):
                 description=f"Now presenting: **{next_team}**",
                 color=discord.Color.blue()
             )
-            
-            # Add "Up Next" field
-            if self.pitch_queue:
-                embed.add_field(
-                    name="⏭️ Up Next",
-                    value=f"{self.pitch_queue[0]}",
-                    inline=False
-                )
-            else:
-                embed.add_field(
-                    name="⏭️ Up Next",
-                    value="This is the last team!",
-                    inline=False
-                )
             
             # Add DM failure warning if any
             if dm_failures:
