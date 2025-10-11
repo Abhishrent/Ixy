@@ -469,6 +469,14 @@ class OnlineRoundCog(commands.Cog):
         )
         embed.set_thumbnail(url=EMBED_THUMBNAIL)
         
+        # Add "Up Next" field
+        if self.pitch_queue:
+            embed.add_field(
+                name="⏭️ Up Next",
+                value=f"{self.pitch_queue[0]}",
+                inline=False
+            )
+        
         # Add DM failure warning if any
         if dm_failures:
             failure_list = "\n".join([f"• {member.mention}" for member in dm_failures])
@@ -504,6 +512,20 @@ class OnlineRoundCog(commands.Cog):
                 description=f"Now presenting: **{next_team}**",
                 color=discord.Color.blue()
             )
+            
+            # Add "Up Next" field
+            if self.pitch_queue:
+                embed.add_field(
+                    name="⏭️ Up Next",
+                    value=f"{self.pitch_queue[0]}",
+                    inline=False
+                )
+            else:
+                embed.add_field(
+                    name="⏭️ Up Next",
+                    value="This is the last team!",
+                    inline=False
+                )
             
             # Add DM failure warning if any
             if dm_failures:
