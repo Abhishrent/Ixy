@@ -1009,13 +1009,36 @@ class OnlineRoundCog(commands.Cog):
                 color=discord.Color.blue()
             )
             
+            # Add team members info
+            if next_team in self.teams:
+                members = []
+                for member_id in self.teams[next_team]:
+                    member = ctx.guild.get_member(member_id)
+                    if member:
+                        members.append(f"• {member.mention}")
+                    else:
+                        members.append(f"• <@{member_id}> *(Left server)*")
+                
+                if members:
+                    embed.add_field(
+                        name="👥 Team Members",
+                        value="\n".join(members),
+                        inline=False
+                    )
+            
             # Add queue preview
             if self.pitch_queue:
                 next_teams = self.pitch_queue[:3]
                 preview = "\n".join([f"{i+1}. {team}" for i, team in enumerate(next_teams)])
                 if len(self.pitch_queue) > 3:
                     preview += f"\n... and {len(self.pitch_queue) - 3} more"
-                embed.add_field(name="📋 Remaining", value=preview, inline=False)
+                embed.add_field(name="📋 Next Up", value=preview, inline=False)
+            else:
+                embed.add_field(
+                    name="📋 Next Up", 
+                    value="*This is the last team!*", 
+                    inline=False
+                )
             
             # Add DM failure warning if any
             if dm_failures:
