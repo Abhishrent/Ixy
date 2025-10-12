@@ -227,6 +227,8 @@ class OnlineRoundCog(commands.Cog):
         self.pitching_active: bool = False
         self.pitching_stage_channel_id: Optional[int] = None
         self.waiting_room_channel_id: Optional[int] = None
+        # Track who added each member: {team_name: {member_id: adder_id}}
+        self.member_adders: Dict[str, Dict[int, int]] = {}
     
     def _load_data(self):
         """Load data from persistence"""
@@ -246,6 +248,17 @@ class OnlineRoundCog(commands.Cog):
             self.pitching_stage_channel_id = data.get("pitching_stage_channel_id")
             self.waiting_room_channel_id = data.get("waiting_room_channel_id")
             self.pitching_active = bool(data.get("pitching_active", False))
+            
+            # Load member adders tracking
+            raw_adders = data.get("member_adders", {})
+            self.member_adders = {}
+            for team_name, adders_dict in raw_adders.items():
+                if isinstance(adders_dict, dict):
+                    # Convert string keys back to integers
+                    self.member_adders[team_name] = {
+                        int(k): int(v) for k, v in adders_dict.items() 
+                        if str(k).isdigit() and str(v).isdigit()
+                    }
             
             # Validate queue against loaded teams
             valid_teams = set(self.teams.keys())
@@ -280,7 +293,8 @@ class OnlineRoundCog(commands.Cog):
             "presenter_role_id": self.presenter_role_id,
             "pitching_active": self.pitching_active,
             "pitching_stage_channel_id": self.pitching_stage_channel_id,
-            "waiting_room_channel_id": self.waiting_room_channel_id
+            "waiting_room_channel_id": self.waiting_room_channel_id,
+            "member_adders": self.member_adders
         }
         
         success, error = self.data_manager.save(data)
@@ -288,8 +302,20 @@ class OnlineRoundCog(commands.Cog):
             print(f"⚠ {error}")
         return success
     
-    async def _check_permissions(self, ctx) -> bool:
-        """Check if user has required permissions"""
+    async def _check_permissions(self, ctx, require_moderator: bool = True) -> bool:
+        """
+        Check if user has required permissions
+        
+        Args:
+            ctx: Command context
+            require_moderator: If True, check for moderator role. If False, allow all users.
+        
+        Returns:
+            bool: True if user has permission, False otherwise
+        """
+        if not require_moderator:
+            return True
+        
         user = ctx.author if hasattr(ctx, 'author') else ctx.user
         
         has_required_role = any(role.id == self.REQUIRED_ROLE_ID for role in user.roles)
@@ -616,7 +642,8 @@ class OnlineRoundCog(commands.Cog):
         """Register a new team"""
         await ctx.defer()
         
-        if not await self._check_permissions(ctx):
+        # Allow all users to register teams
+        if not await self._check_permissions(ctx, require_moderator=False):
             return
         
         # Validate team name
@@ -642,6 +669,11 @@ class OnlineRoundCog(commands.Cog):
         
         # Register team
         self.teams[team_name] = member_ids
+        
+        # Track who registered the team (they added all initial members)
+        user = ctx.author if hasattr(ctx, 'author') else ctx.user
+        self.member_adders[team_name] = {member_id: user.id for member_id in member_ids}
+        
         self._save_data()
         
         # Create response
@@ -671,7 +703,8 @@ class OnlineRoundCog(commands.Cog):
         """Add a member to an existing team"""
         await ctx.defer()
         
-        if not await self._check_permissions(ctx):
+        # Allow all users to add members to teams
+        if not await self._check_permissions(ctx, require_moderator=False):
             return
         
         # Validate team name
@@ -702,6 +735,13 @@ class OnlineRoundCog(commands.Cog):
         
         # Add member
         self.teams[team_name].append(member.id)
+        
+        # Track who added this member
+        user = ctx.author if hasattr(ctx, 'author') else ctx.user
+        if team_name not in self.member_adders:
+            self.member_adders[team_name] = {}
+        self.member_adders[team_name][member.id] = user.id
+        
         self._save_data()
         
         embed = EmbedFactory.create_success(
@@ -715,7 +755,8 @@ class OnlineRoundCog(commands.Cog):
         """Remove a member from a team"""
         await ctx.defer()
         
-        if not await self._check_permissions(ctx):
+        # Allow all users to remove members from teams
+        if not await self._check_permissions(ctx, require_moderator=False):
             return
         
         # Validate team name
@@ -744,8 +785,35 @@ class OnlineRoundCog(commands.Cog):
             await ctx.send(embed=embed)
             return
         
+        # Check if user has permission to remove this member
+        user = ctx.author if hasattr(ctx, 'author') else ctx.user
+        
+        # Check if user has moderator role
+        has_moderator_role = any(role.id == self.REQUIRED_ROLE_ID for role in user.roles)
+        
+        # Get who added this member
+        adder_id = None
+        if team_name in self.member_adders and member.id in self.member_adders[team_name]:
+            adder_id = self.member_adders[team_name][member.id]
+        
+        # Allow removal if: user is moderator OR user is the one who added the member
+        if not has_moderator_role and adder_id != user.id:
+            embed = EmbedFactory.create_error(
+                "Cannot Remove Member",
+                f"You can only remove members that you added yourself.\n\n"
+                f"This member was added by <@{adder_id}>." if adder_id else 
+                "You can only remove members that you added yourself."
+            )
+            await ctx.send(embed=embed, ephemeral=True)
+            return
+        
         # Remove member
         self.teams[team_name].remove(member.id)
+        
+        # Remove from adders tracking
+        if team_name in self.member_adders and member.id in self.member_adders[team_name]:
+            del self.member_adders[team_name][member.id]
+        
         self._save_data()
         
         embed = EmbedFactory.create_success(
@@ -789,6 +857,11 @@ class OnlineRoundCog(commands.Cog):
         
         # Delete the team
         del self.teams[team_name]
+        
+        # Remove from member adders tracking
+        if team_name in self.member_adders:
+            del self.member_adders[team_name]
+        
         self._save_data()
         
         embed = EmbedFactory.create_success(
@@ -802,7 +875,8 @@ class OnlineRoundCog(commands.Cog):
         """List all registered teams"""
         await ctx.defer()
         
-        if not await self._check_permissions(ctx):
+        # Allow all users to view teams
+        if not await self._check_permissions(ctx, require_moderator=False):
             return
         
         if not self.teams:
@@ -1131,6 +1205,10 @@ class OnlineRoundCog(commands.Cog):
         """Display current status"""
         await ctx.defer()
         
+        # Allow all users to view status
+        if not await self._check_permissions(ctx, require_moderator=False):
+            return
+        
         embed = EmbedFactory.create_info("📊 Pitching Status", "Current system status")
         
         # Session status
@@ -1209,7 +1287,8 @@ class OnlineRoundCog(commands.Cog):
             "presenter_role_id": self.presenter_role_id,
             "pitching_active": self.pitching_active,
             "pitching_stage_channel_id": self.pitching_stage_channel_id,
-            "waiting_room_channel_id": self.waiting_room_channel_id
+            "waiting_room_channel_id": self.waiting_room_channel_id,
+            "member_adders": self.member_adders
         }
         
         json_str = self.data_manager.create_backup(backup_data)
