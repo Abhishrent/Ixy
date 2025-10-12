@@ -1112,8 +1112,7 @@ class OnlineRoundCog(commands.Cog):
                 if pitching_stage and waiting_room:
                     await self._move_team_to_channel(ctx.guild, self.current_presenting_team, waiting_room, pitching_stage)
         
-        # Clear session data
-        self.teams.clear()
+        # Clear only session data, keep registered teams
         self.pitch_queue.clear()
         self.pitching_active = False
         self.current_presenting_team = None
@@ -1121,8 +1120,8 @@ class OnlineRoundCog(commands.Cog):
         
         embed = EmbedFactory.create_info(
             "⏹️ Session Stopped",
-            SuccessMessages.SESSION_STOPPED.value + "\n\nAll teams and queue have been cleared.\n\n"
-            "**Preserved:** Channel and presenter role configuration.",
+            SuccessMessages.SESSION_STOPPED.value + "\n\nThe pitch queue has been cleared.\n\n"
+            f"**Preserved:** {len(self.teams)} registered teams, channel and presenter role configuration.",
             color=discord.Color.red()
         )
         await ctx.send(embed=embed)
