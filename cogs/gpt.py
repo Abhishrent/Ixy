@@ -476,7 +476,8 @@ class TicketAIAssistant(commands.Cog):
                 async with message.channel.typing():
                     await asyncio.sleep(1.5)
                     assistant = self.get_assistant(message.channel.id)
-                    response = await assistant.get_response(original_message.content)
+                    combined_content = f"{original_message.content}\n\n{message.content}"  # Combine original and reply content
+                    response = await assistant.get_response(combined_content)
                     await original_message.reply(response, mention_author=True)
                 return
 
