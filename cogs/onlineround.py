@@ -418,11 +418,12 @@ class OnlineRoundCog(commands.Cog):
     async def _move_team_to_channel(self, guild: discord.Guild, team_name: str, 
                                    target_channel: Union[discord.VoiceChannel, discord.StageChannel],
                                    source_channel: Optional[Union[discord.VoiceChannel, discord.StageChannel]] = None) -> int:
-        """Move all team members to a channel. Returns count of members moved."""
+        """Move all team members to a channel in parallel. Returns count of members moved."""
         if team_name not in self.teams:
             return 0
         
-        moved_count = 0
+        # Collect members to move
+        members_to_move = []
         for member_id in self.teams[team_name]:
             member = guild.get_member(member_id)
             if not member or not member.voice:
@@ -432,32 +433,52 @@ class OnlineRoundCog(commands.Cog):
             if source_channel and member.voice.channel and member.voice.channel.id != source_channel.id:
                 continue
             
-            if await self._safe_move_member(member, target_channel):
-                moved_count += 1
+            members_to_move.append(member)
         
+        if not members_to_move:
+            return 0
+        
+        # Move all members in parallel
+        results = await asyncio.gather(
+            *[self._safe_move_member(member, target_channel) for member in members_to_move],
+            return_exceptions=True
+        )
+        
+        # Count successful moves (ignore exceptions)
+        moved_count = sum(1 for result in results if result is True)
         return moved_count
     
     async def _handle_team_role_changes(self, guild: discord.Guild, team_name: str, 
                                        add_role: bool, presenter_role: discord.Role) -> Tuple[int, int]:
-        """Add or remove presenter role from team members. Returns (success_count, total_count)"""
+        """Add or remove presenter role from team members in parallel. Returns (success_count, total_count)"""
         if team_name not in self.teams:
             return 0, 0
         
-        success_count = 0
-        total_count = 0
-        
+        # Collect members
+        members = []
         for member_id in self.teams[team_name]:
             member = guild.get_member(member_id)
-            if not member:
-                continue
-            
-            total_count += 1
-            if add_role:
-                if await self._safe_add_role(member, presenter_role):
-                    success_count += 1
-            else:
-                if await self._safe_remove_role(member, presenter_role):
-                    success_count += 1
+            if member:
+                members.append(member)
+        
+        if not members:
+            return 0, 0
+        
+        # Apply role changes in parallel
+        if add_role:
+            results = await asyncio.gather(
+                *[self._safe_add_role(member, presenter_role) for member in members],
+                return_exceptions=True
+            )
+        else:
+            results = await asyncio.gather(
+                *[self._safe_remove_role(member, presenter_role) for member in members],
+                return_exceptions=True
+            )
+        
+        # Count successes
+        success_count = sum(1 for result in results if result is True)
+        total_count = len(members)
         
         return success_count, total_count
     
@@ -505,13 +526,21 @@ class OnlineRoundCog(commands.Cog):
             if pitching_stage and waiting_room:
                 await self._move_team_to_channel(guild, next_team, pitching_stage, waiting_room)
             
-            # Send DM notifications
+            # Send DM notifications in parallel
+            dm_tasks = []
+            team_members = []
             for member_id in self.teams[next_team]:
                 member = guild.get_member(member_id)
                 if member:
-                    dm_sent = await self._send_dm_notification(member, next_team, guild, pitching_stage)
-                    if not dm_sent:
-                        dm_failures.append(member)
+                    team_members.append(member)
+                    dm_tasks.append(self._send_dm_notification(member, next_team, guild, pitching_stage))
+            
+            if dm_tasks:
+                dm_results = await asyncio.gather(*dm_tasks, return_exceptions=True)
+                # Collect members who failed to receive DM
+                for i, result in enumerate(dm_results):
+                    if result is False or isinstance(result, Exception):
+                        dm_failures.append(team_members[i])
         
         self._save_data()
         return next_team, dm_failures
@@ -1012,10 +1041,15 @@ class OnlineRoundCog(commands.Cog):
         waiting_room = ctx.guild.get_channel(self.waiting_room_channel_id) if self.waiting_room_channel_id else None
         
         if waiting_room:
-            total_moved = 0
-            for team_name in self.teams:
-                moved = await self._move_team_to_channel(ctx.guild, team_name, waiting_room)
-                total_moved += moved
+            # Move all teams in parallel
+            move_tasks = [
+                self._move_team_to_channel(ctx.guild, team_name, waiting_room)
+                for team_name in self.teams
+            ]
+            results = await asyncio.gather(*move_tasks, return_exceptions=True)
+            
+            # Count total moved (ignore exceptions)
+            total_moved = sum(result for result in results if isinstance(result, int))
             
             if total_moved > 0:
                 print(f"✓ Moved {total_moved} members to waiting room")
