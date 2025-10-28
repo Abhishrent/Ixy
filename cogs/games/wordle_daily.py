@@ -87,7 +87,7 @@ class DailyWordleGame(commands.Cog):
         previous_word = self.game_data.get("current_word")
         previous_winner = self.game_data.get("winner")
         streaks = self.game_data.get("streaks", {})
-        top_streaks = self.game_data.get("top_streaks", [])
+        top_streaks = self.game_data.get("top_streaks", [])  # Preserve top_streaks
 
         # Only process streak updates if date has changed
         if self.game_data["current_date"] != today:
@@ -100,32 +100,17 @@ class DailyWordleGame(commands.Cog):
                 "guesses_today": [],
                 "previous_word": previous_word,
                 "previous_day_winner": previous_winner is not None and previous_winner.get("date") == yesterday,
-                "streaks": streaks.copy(),
-                "top_streaks": top_streaks
+                "streaks": streaks.copy(),  # Use a copy to avoid modifying original
+                "top_streaks": top_streaks  # Preserve top_streaks data
             }
 
             # Only reset streaks to 0 for players who did not guess correctly yesterday
             if not (previous_winner and previous_winner.get("date") == yesterday):
                 for user_id in streaks:
-                    if streaks[user_id] > 0:
+                    if streaks[user_id] > 0:  # Preserve streaks for active players
                         new_game_data["streaks"][user_id] = streaks[user_id]
                     else:
                         new_game_data["streaks"][user_id] = 0
-
-            # Rebuild top_streaks to only include players with active streaks (streak > 0)
-            updated_streaks = new_game_data["streaks"]
-            rebuilt_top_streaks = [
-                entry for entry in top_streaks
-                if entry["user_id"] in updated_streaks and updated_streaks[entry["user_id"]] > 0
-            ]
-            
-            # Sort by max_streak descending, then by date, and keep only top 3
-            rebuilt_top_streaks = sorted(
-                rebuilt_top_streaks,
-                key=lambda x: (-x["max_streak"], x["date"])
-            )[:3]
-            
-            new_game_data["top_streaks"] = rebuilt_top_streaks
 
             # Update game data with new values
             self.game_data = new_game_data
