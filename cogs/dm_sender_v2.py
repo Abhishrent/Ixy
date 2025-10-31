@@ -153,10 +153,14 @@ class PaginatedRoleSelectView(discord.ui.View):
         # Create select for current page
         self.select = discord.ui.Select(
             placeholder="Select roles to DM...",
-            min_values=1,
+            min_values=0,  # Allow deselecting all
             max_values=len(page_roles),
             options=[
-                discord.SelectOption(label=role.name, value=str(role.id))
+                discord.SelectOption(
+                    label=role.name, 
+                    value=str(role.id),
+                    default=role.id in self.selected_role_ids  # Pre-select if already selected
+                )
                 for role in page_roles
             ]
         )
@@ -170,30 +174,27 @@ class PaginatedRoleSelectView(discord.ui.View):
         pass
 
     async def select_callback(self, interaction: discord.Interaction):
-        self.selected_role_ids = set(map(int, self.select.values))
-        # Create a new embed for role selection status
-        desc_lines = []
-        for role in self.roles:
-            selected = " **[SELECTED]**" if role.id in self.selected_role_ids else ""
-            desc_lines.append(f"{role.name}{selected}")
-        embed = discord.Embed(
-            title="Select Roles to DM",
-            description="",
-            color=discord.Color.green()
-        )
-        embed.set_thumbnail(url=self.base_embed.thumbnail.url if self.base_embed.thumbnail else discord.Embed.Empty)
-        if self.base_embed.image and self.base_embed.image.url:
-            embed.set_image(url=self.base_embed.image.url)
-        embed.add_field(name="Selected Roles", value="\n".join(desc_lines) or "None", inline=False)
-        embed.set_footer(text=f"Page {self.current_page + 1}/{self.total_pages}")
-        await interaction.response.edit_message(embed=embed, view=self)
+        # Get current page roles
+        start_idx = self.current_page * self.page_size
+        end_idx = start_idx + self.page_size
+        page_roles = self.roles[start_idx:end_idx]
+        
+        # Remove all selections from current page first
+        page_role_ids = {role.id for role in page_roles}
+        self.selected_role_ids = self.selected_role_ids - page_role_ids
+        
+        # Add new selections from current page
+        self.selected_role_ids.update(map(int, self.select.values))
+        
+        # Update the embed to show current page roles with selection status
+        await self.update_embed_display(interaction)
 
     @discord.ui.button(label="Previous", style=discord.ButtonStyle.gray)
     async def previous_page(self, interaction: discord.Interaction, button: discord.ui.Button):
         if self.current_page > 0:
             self.current_page -= 1
             self.setup_page()
-            await self.update_page_display(interaction)
+            await self.update_embed_display(interaction)
         else:
             await interaction.response.defer()
 
@@ -202,7 +203,7 @@ class PaginatedRoleSelectView(discord.ui.View):
         if self.current_page < self.total_pages - 1:
             self.current_page += 1
             self.setup_page()
-            await self.update_page_display(interaction)
+            await self.update_embed_display(interaction)
         else:
             await interaction.response.defer()
 
@@ -221,20 +222,23 @@ class PaginatedRoleSelectView(discord.ui.View):
         await interaction.response.defer()
         self.stop()
 
-    async def update_page_display(self, interaction: discord.Interaction):
+    async def update_embed_display(self, interaction: discord.Interaction):
         start_idx = self.current_page * self.page_size
         end_idx = start_idx + self.page_size
         page_roles = self.roles[start_idx:end_idx]
         
-        # Show only current page roles in embed, with selection status for ALL selected roles
+        # Show only current page roles in embed with selection status
         desc_lines = []
         for role in page_roles:
             selected = " **[SELECTED]**" if role.id in self.selected_role_ids else ""
             desc_lines.append(f"{role.name}{selected}")
         
+        # Count total selected across all pages
+        total_selected = len(self.selected_role_ids)
+        
         embed = discord.Embed(
             title="Select Roles to DM",
-            description="",
+            description=f"Total selected: **{total_selected}** role(s)",
             color=discord.Color.green()
         )
         embed.set_thumbnail(url=self.base_embed.thumbnail.url if self.base_embed.thumbnail else discord.Embed.Empty)
