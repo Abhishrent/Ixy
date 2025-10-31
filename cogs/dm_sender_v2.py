@@ -401,27 +401,40 @@ class DMSenderCog(commands.Cog):
                 return
 
             # Role selection embed (green, separate from preview)
-            # Show all roles before any selection
-            desc_lines = [f"{role.name}" for role in roles_with_allowed]
             role_select_embed = discord.Embed(
                 title="Select Roles to DM",
-                description="",  # No description here
+                description="",
                 color=discord.Color.green()
             )
             role_select_embed.set_thumbnail(url=EMBED_THUMBNAIL)
             if preview_embed and preview_embed.image and preview_embed.image.url:
                 role_select_embed.set_image(url=preview_embed.image.url)
-            role_select_embed.add_field(
-                name="Roles",
-                value="\n".join(desc_lines) or "None",
-                inline=False
-            )
 
             # Use paginated view if more than 25 roles, otherwise use regular view
             if len(roles_with_allowed) > 25:
                 role_view = PaginatedRoleSelectView(message.author, roles_with_allowed, allowed_users, role_select_embed)
+                # Build initial embed for paginated view
+                start_idx = 0
+                end_idx = 25
+                page_roles = roles_with_allowed[start_idx:end_idx]
+                desc_lines = [f"{role.name}" for role in page_roles]
+                
+                role_select_embed.description = f"Total selected: **0** role(s)"
+                role_select_embed.add_field(
+                    name="Roles on this page",
+                    value="\n".join(desc_lines) or "None",
+                    inline=False
+                )
+                role_select_embed.set_footer(text=f"Page 1/{role_view.total_pages}")
             else:
                 role_view = RoleSelectView(message.author, roles_with_allowed, allowed_users, role_select_embed)
+                # Build initial embed for regular view
+                desc_lines = [f"{role.name}" for role in roles_with_allowed]
+                role_select_embed.add_field(
+                    name="Roles",
+                    value="\n".join(desc_lines) or "None",
+                    inline=False
+                )
             
             await preview_msg.edit(
                 content="Select roles to DM. Confirm to send, Cancel to abort.",
