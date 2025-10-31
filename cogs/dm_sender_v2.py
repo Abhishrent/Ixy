@@ -125,6 +125,125 @@ class RoleSelectView(discord.ui.View):
         await interaction.response.defer()
         self.stop()
 
+class PaginatedRoleSelectView(discord.ui.View):
+    def __init__(self, author, roles, allowed_users, base_embed, timeout=120):
+        super().__init__(timeout=timeout)
+        self.author = author
+        self.allowed_users = allowed_users
+        self.roles = roles
+        self.selected_role_ids = set()
+        self.value = None
+        self.base_embed = base_embed
+        self.current_page = 0
+        self.page_size = 25
+        self.total_pages = (len(roles) + self.page_size - 1) // self.page_size
+        self.setup_page()
+
+    def setup_page(self):
+        # Remove existing select if any
+        for item in self.children[:]:
+            if isinstance(item, discord.ui.Select):
+                self.remove_item(item)
+        
+        # Get roles for current page
+        start_idx = self.current_page * self.page_size
+        end_idx = start_idx + self.page_size
+        page_roles = self.roles[start_idx:end_idx]
+        
+        # Create select for current page
+        self.select = discord.ui.Select(
+            placeholder="Select roles to DM...",
+            min_values=1,
+            max_values=len(page_roles),
+            options=[
+                discord.SelectOption(label=role.name, value=str(role.id))
+                for role in page_roles
+            ]
+        )
+        self.select.callback = self.select_callback
+        self.add_item(self.select)
+
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        return interaction.user.id == self.author.id
+
+    async def on_timeout(self):
+        pass
+
+    async def select_callback(self, interaction: discord.Interaction):
+        self.selected_role_ids = set(map(int, self.select.values))
+        # Create a new embed for role selection status
+        desc_lines = []
+        for role in self.roles:
+            selected = " **[SELECTED]**" if role.id in self.selected_role_ids else ""
+            desc_lines.append(f"{role.name}{selected}")
+        embed = discord.Embed(
+            title="Select Roles to DM",
+            description="",
+            color=discord.Color.green()
+        )
+        embed.set_thumbnail(url=self.base_embed.thumbnail.url if self.base_embed.thumbnail else discord.Embed.Empty)
+        if self.base_embed.image and self.base_embed.image.url:
+            embed.set_image(url=self.base_embed.image.url)
+        embed.add_field(name="Selected Roles", value="\n".join(desc_lines) or "None", inline=False)
+        embed.set_footer(text=f"Page {self.current_page + 1}/{self.total_pages}")
+        await interaction.response.edit_message(embed=embed, view=self)
+
+    @discord.ui.button(label="Previous", style=discord.ButtonStyle.gray)
+    async def previous_page(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if self.current_page > 0:
+            self.current_page -= 1
+            self.setup_page()
+            await self.update_page_display(interaction)
+        else:
+            await interaction.response.defer()
+
+    @discord.ui.button(label="Next", style=discord.ButtonStyle.gray)
+    async def next_page(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if self.current_page < self.total_pages - 1:
+            self.current_page += 1
+            self.setup_page()
+            await self.update_page_display(interaction)
+        else:
+            await interaction.response.defer()
+
+    @discord.ui.button(label="Confirm", style=discord.ButtonStyle.success)
+    async def confirm(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if not self.selected_role_ids:
+            await interaction.response.send_message("Please select at least one role.", ephemeral=True)
+            return
+        self.value = True
+        await interaction.response.defer()
+        self.stop()
+
+    @discord.ui.button(label="Cancel", style=discord.ButtonStyle.danger)
+    async def cancel(self, interaction: discord.Interaction, button: discord.ui.Button):
+        self.value = False
+        await interaction.response.defer()
+        self.stop()
+
+    async def update_page_display(self, interaction: discord.Interaction):
+        start_idx = self.current_page * self.page_size
+        end_idx = start_idx + self.page_size
+        page_roles = self.roles[start_idx:end_idx]
+        
+        # Show only current page roles in embed, with selection status for ALL selected roles
+        desc_lines = []
+        for role in page_roles:
+            selected = " **[SELECTED]**" if role.id in self.selected_role_ids else ""
+            desc_lines.append(f"{role.name}{selected}")
+        
+        embed = discord.Embed(
+            title="Select Roles to DM",
+            description="",
+            color=discord.Color.green()
+        )
+        embed.set_thumbnail(url=self.base_embed.thumbnail.url if self.base_embed.thumbnail else discord.Embed.Empty)
+        if self.base_embed.image and self.base_embed.image.url:
+            embed.set_image(url=self.base_embed.image.url)
+        embed.add_field(name="Roles on this page", value="\n".join(desc_lines) or "None", inline=False)
+        embed.set_footer(text=f"Page {self.current_page + 1}/{self.total_pages}")
+        await interaction.response.edit_message(embed=embed, view=self)
+
 class DMProgressView(discord.ui.View):
     def __init__(self, author, sent_count, total_count, timeout=60):
         super().__init__(timeout=timeout)
@@ -294,7 +413,12 @@ class DMSenderCog(commands.Cog):
                 inline=False
             )
 
-            role_view = RoleSelectView(message.author, roles_with_allowed, allowed_users, role_select_embed)
+            # Use paginated view if more than 25 roles, otherwise use regular view
+            if len(roles_with_allowed) > 25:
+                role_view = PaginatedRoleSelectView(message.author, roles_with_allowed, allowed_users, role_select_embed)
+            else:
+                role_view = RoleSelectView(message.author, roles_with_allowed, allowed_users, role_select_embed)
+            
             await preview_msg.edit(
                 content="Select roles to DM. Confirm to send, Cancel to abort.",
                 embed=role_select_embed,
