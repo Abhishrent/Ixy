@@ -311,6 +311,9 @@ class DMSenderCog(commands.Cog):
 
             # Split first line as title, rest as description, and extract footer block after '---'
             preview_embed = None
+            footer_text = None
+            footer_icon_url = None
+            
             if not attachments_only:
                 raw_lines = message.content.split('\n')
                 footer = None
@@ -326,8 +329,6 @@ class DMSenderCog(commands.Cog):
                     content_lines = raw_lines
 
                 # Determine footer text and possible footer icon URL (if first footer line is a direct image URL)
-                footer_text = None
-                footer_icon_url = None
                 if footer:
                     footer_lines = [l for l in footer.split('\n') if l.strip()]
                     if footer_lines:
@@ -411,11 +412,17 @@ class DMSenderCog(commands.Cog):
                                 footer_icon_url = uploaded_msg.attachments[0].url
 
                 # Finally set the footer if we have text or an icon
-                if preview_embed and (('footer_text' in locals() and footer_text) or ('footer_icon_url' in locals() and footer_icon_url)):
+                if preview_embed and (footer_text or footer_icon_url):
                     preview_embed.set_footer(
-                        text=footer_text if 'footer_text' in locals() and footer_text else "",
-                        icon_url=footer_icon_url if 'footer_icon_url' in locals() and footer_icon_url else None
+                        text=footer_text if footer_text else "",
+                        icon_url=footer_icon_url if footer_icon_url else None
                     )
+            elif preview_embed and (footer_text or footer_icon_url):
+                # Set footer even if no attachments (for text-only footers)
+                preview_embed.set_footer(
+                    text=footer_text if footer_text else "",
+                    icon_url=footer_icon_url if footer_icon_url else None
+                )
 
             # Prepare preview content with attachment filenames
             preview_content = None
