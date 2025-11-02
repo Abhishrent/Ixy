@@ -132,8 +132,10 @@ class AnnouncementCog(commands.Cog):
 
                 # Finally set the footer if we have text or an icon
                 if footer_text or footer_icon_url:
-                    # embed.set_footer requires a text; supply empty string if only icon is present
-                    embed.set_footer(text=footer_text if footer_text else "", icon_url=footer_icon_url)
+                    embed.set_footer(
+                        text=footer_text if footer_text else "",
+                        icon_url=footer_icon_url if footer_icon_url else None
+                    )
             
             # Show confirmation with a preview before sending announcement (using buttons)
             preview_content = None

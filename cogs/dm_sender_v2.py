@@ -411,8 +411,11 @@ class DMSenderCog(commands.Cog):
                                 footer_icon_url = uploaded_msg.attachments[0].url
 
                 # Finally set the footer if we have text or an icon
-                if preview_embed and ('footer_text' in locals() and footer_text or 'footer_icon_url' in locals() and footer_icon_url):
-                    preview_embed.set_footer(text=footer_text if 'footer_text' in locals() and footer_text else "", icon_url=footer_icon_url if 'footer_icon_url' in locals() and footer_icon_url else None)
+                if preview_embed and (('footer_text' in locals() and footer_text) or ('footer_icon_url' in locals() and footer_icon_url)):
+                    preview_embed.set_footer(
+                        text=footer_text if 'footer_text' in locals() and footer_text else "",
+                        icon_url=footer_icon_url if 'footer_icon_url' in locals() and footer_icon_url else None
+                    )
 
             # Prepare preview content with attachment filenames
             preview_content = None
