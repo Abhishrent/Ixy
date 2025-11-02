@@ -309,12 +309,38 @@ class DMSenderCog(commands.Cog):
             # Check if there's only attachments without text
             attachments_only = message.attachments and not message.content.strip()
 
-            # Split first line as title, rest as description
+            # Split first line as title, rest as description, and extract footer block after '---'
             preview_embed = None
             if not attachments_only:
-                lines = message.content.split('\n', 1)
-                title = lines[0].strip() if lines else ""
-                description = lines[1].strip() if len(lines) > 1 else ""
+                raw_lines = message.content.split('\n')
+                footer = None
+                footer_index = None
+                for i, ln in enumerate(raw_lines):
+                    if ln.strip() == '---':
+                        footer_index = i
+                        break
+                if footer_index is not None:
+                    footer = '\n'.join(raw_lines[footer_index+1:]).strip()
+                    content_lines = raw_lines[:footer_index]
+                else:
+                    content_lines = raw_lines
+
+                # Determine footer text and possible footer icon URL (if first footer line is a direct image URL)
+                footer_text = None
+                footer_icon_url = None
+                if footer:
+                    footer_lines = [l for l in footer.split('\n') if l.strip()]
+                    if footer_lines:
+                        first = footer_lines[0].strip()
+                        # simple image URL heuristic
+                        if first.lower().startswith(('http://', 'https://')) and first.lower().split('?')[0].endswith(('.png', '.jpg', '.jpeg', '.gif', '.webp')):
+                            footer_icon_url = first
+                            footer_text = '\n'.join(footer_lines[1:]).strip()
+                        else:
+                            footer_text = footer
+
+                title = content_lines[0].strip() if content_lines else ""
+                description = '\n'.join(content_lines[1:]).strip() if len(content_lines) > 1 else ""
 
                 # Preview embed (blue)
                 preview_embed = discord.Embed(
@@ -330,8 +356,29 @@ class DMSenderCog(commands.Cog):
 
             # Handle image attachments
             if message.attachments:
+                # Prefer an attachment intended as footer if its filename contains 'footer'
+                footer_attachment = next((a for a in message.attachments if 'footer' in (a.filename or '').lower()), None)
+
                 for attachment in message.attachments:
-                    if not attachments_only and attachment.content_type and attachment.content_type.startswith("image/") and embed_image_url is None:
+                    if not attachments_only and attachment.content_type and attachment.content_type.startswith("image/"):
+                        # If this attachment is the footer attachment, upload it and set footer_icon_url
+                        if footer_attachment and attachment == footer_attachment:
+                            notifier_embed = discord.Embed(
+                                title="Building Preview",
+                                description="Please wait while I generate the preview...",
+                                color=discord.Color.orange()
+                            )
+                            notifier_msg = await message.channel.send(embed=notifier_embed)
+
+                            upload_channel = self.bot.get_channel(IMAGE_UPLOAD_CHANNEL_ID)
+                            if upload_channel:
+                                uploaded_msg = await upload_channel.send(file=await attachment.to_file())
+                                if uploaded_msg.attachments:
+                                    footer_icon_url = uploaded_msg.attachments[0].url
+                            await notifier_msg.delete()
+                            continue
+
+                        # Otherwise treat as main embed image (first non-footer image)
                         # show this while the image is being uploaded to the dedicated storage channel
                         notifier_embed = discord.Embed(
                             title="Building Preview",
@@ -353,6 +400,19 @@ class DMSenderCog(commands.Cog):
                         # Only first image is used for embed
                     else:
                         attachments_to_send.append(attachment)
+
+                # If a footer_attachment was present but not processed above, try uploading it now
+                if footer_attachment and 'footer_icon_url' in locals() and not footer_icon_url:
+                    if footer_attachment.content_type and footer_attachment.content_type.startswith("image/"):
+                        upload_channel = self.bot.get_channel(IMAGE_UPLOAD_CHANNEL_ID)
+                        if upload_channel:
+                            uploaded_msg = await upload_channel.send(file=await footer_attachment.to_file())
+                            if uploaded_msg.attachments:
+                                footer_icon_url = uploaded_msg.attachments[0].url
+
+                # Finally set the footer if we have text or an icon
+                if preview_embed and ('footer_text' in locals() and footer_text or 'footer_icon_url' in locals() and footer_icon_url):
+                    preview_embed.set_footer(text=footer_text if 'footer_text' in locals() and footer_text else "", icon_url=footer_icon_url if 'footer_icon_url' in locals() and footer_icon_url else None)
 
             # Prepare preview content with attachment filenames
             preview_content = None
