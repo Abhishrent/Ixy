@@ -39,6 +39,9 @@ class AnnouncementCog(commands.Cog):
             attachments_only = message.attachments and not message.content.strip()
             
             embed = None
+            footer_text = None
+            footer_icon_url = None
+            
             if not attachments_only:
                 # Split first line as title, rest as description, and extract footer block after '---'
                 raw_lines = message.content.split('\n')
@@ -55,8 +58,6 @@ class AnnouncementCog(commands.Cog):
                     content_lines = raw_lines
 
                 # Determine footer text and possible footer icon URL (if first footer line is a direct image URL)
-                footer_text = None
-                footer_icon_url = None
                 if footer:
                     footer_lines = [l for l in footer.split('\n') if l.strip()]
                     if footer_lines:
@@ -136,6 +137,12 @@ class AnnouncementCog(commands.Cog):
                         text=footer_text if footer_text else "",
                         icon_url=footer_icon_url if footer_icon_url else None
                     )
+            elif embed and (footer_text or footer_icon_url):
+                # Set footer even if no attachments (for text-only footers)
+                embed.set_footer(
+                    text=footer_text if footer_text else "",
+                    icon_url=footer_icon_url if footer_icon_url else None
+                )
             
             # Show confirmation with a preview before sending announcement (using buttons)
             preview_content = None
