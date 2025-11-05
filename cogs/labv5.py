@@ -18,7 +18,7 @@ class LabReportGenerator(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         # Initialize OpenAI client
-        os.environ["GITHUB_TOKEN"] = "***REDACTED_GITHUB_TOKEN***"
+        os.environ["GITHUB_TOKEN"] = "***REMOVED***"
         self.client = OpenAI(
             base_url="https://models.inference.ai.azure.com",
             api_key=os.environ.get("GITHUB_TOKEN", "")
