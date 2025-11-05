@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 from discord import app_commands
-from config import PREFIX, EMBED_THUMBNAIL
+from config import PREFIX, EMBED_THUMBNAIL, IMAGE_UPLOAD_CHANNEL_ID
 import datetime
 
 #The annoucement modal for the /announce command
@@ -134,8 +134,12 @@ class ModerationCog(commands.Cog):
         # Handle image: prioritize attachment over URL
         attachments = ctx.message.attachments
         if attachments and attachments[0].content_type and attachments[0].content_type.startswith('image/'):
-            # Use the first image attachment as embed image
-            embed.set_image(url=attachments[0].url)
+            # Upload image to the dedicated channel to preserve it
+            upload_channel = self.bot.get_channel(IMAGE_UPLOAD_CHANNEL_ID)
+            if upload_channel:
+                uploaded_msg = await upload_channel.send(file=await attachments[0].to_file())
+                if uploaded_msg.attachments:
+                    embed.set_image(url=uploaded_msg.attachments[0].url)
         elif len(parts) == 4:
             # If no attachment, use image_url from command if provided
             image_url = parts[3].strip()
