@@ -103,7 +103,7 @@ class Ticket(commands.Cog):
                 color=discord.Color.orange()
             )
             closing_embed.set_thumbnail(url=EMBED_THUMBNAIL)
-            closing_message = await ctx.send(embed=closing_embed, ephemeral=True)
+            closing_message = await ctx.send(embed=closing_embed)
             for i in range(5, 0, -1):
                 await asyncio.sleep(1)
                 closing_embed.description = f"This ticket will be closed in [{i}] second(s)."
