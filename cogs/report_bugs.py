@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands
 import json
 import os
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 from config import EMBED_THUMBNAIL
 
 # Configuration - Replace with your actual bug report channel ID
@@ -120,7 +120,8 @@ class BugReportTracker(commands.Cog):
             return
         
         # Add the bug report to our data
-        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M")
+        nepal_tz = timezone(timedelta(hours=5, minutes=45))
+        timestamp = datetime.now(nepal_tz).strftime("%Y-%m-%d %H:%M")
         # Generate unique ID for the bug report
         bug_id = len(self.data.get("reports", [])) + 1
         bug_report = {
