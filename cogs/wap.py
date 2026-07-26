@@ -10,7 +10,7 @@ class WapCog(commands.Cog):
 
         # List of API keys to manage
         self.api_keys = [
-            "***REMOVED***"
+            "***REDACTED_GITHUB_TOKEN***"
         ]
         self.current_key_index = 0
 

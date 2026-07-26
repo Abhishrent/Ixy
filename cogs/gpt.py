@@ -1,6 +1,8 @@
 import discord
 from discord.ext import commands
 import os
+from dotenv import load_dotenv
+load_dotenv()
 import asyncio
 from openai import OpenAI
 import re
@@ -16,11 +18,18 @@ class TokenManager:
     """Manages API tokens with rotation for rate limit handling"""
     
     def __init__(self):
-        self.tokens = [
-            "***REMOVED***",
-            "***REMOVED***"
-            # Add more tokens as needed
-        ]
+        # Load GitHub tokens from environment variables (GITHUB_TOKEN_1, GITHUB_TOKEN_2, ...)
+        self.tokens = []
+        i = 1
+        while True:
+            token = os.environ.get(f"GITHUB_TOKEN_{i}")
+            if not token:
+                break
+            self.tokens.append(token)
+            i += 1
+        if not self.tokens:
+            raise ValueError("No GitHub tokens found. Set GITHUB_TOKEN_1, GITHUB_TOKEN_2, etc. in your .env file.")
+        # Add more tokens as needed by adding GITHUB_TOKEN_3, GITHUB_TOKEN_4, etc. to .env
         self.token_data = self.load_token_data()
         self.current_token_index = self.get_next_available_token_index()
         

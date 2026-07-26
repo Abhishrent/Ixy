@@ -13,3 +13,7 @@ notes.md
 nohup.out
 git_cheatsheet.md
 notes/
+
+# Secrets — never commit these
+.env
+google_drive.json

@@ -2,14 +2,18 @@ import discord
 from discord.ext import commands
 import praw
 import random
+import os
+from dotenv import load_dotenv
 from config import EMBED_THUMBNAIL
+
+load_dotenv()
 
 class Fun(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.reddit = praw.Reddit(
-            client_id="kdNle2Q2kXGftiT7IZjZAg",
-            client_secret="LgcF3GPOUiY-AwgfQv1nsLAgGYLgPg",
+            client_id=os.environ.get("REDDIT_CLIENT_ID"),
+            client_secret=os.environ.get("REDDIT_CLIENT_SECRET"),
             user_agent="Phul Baby"
         )
     

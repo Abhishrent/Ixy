@@ -9,8 +9,8 @@ class RedditImage(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.reddit = praw.Reddit(
-            client_id="kdNle2Q2kXGftiT7IZjZAg",
-            client_secret="LgcF3GPOUiY-AwgfQv1nsLAgGYLgPg",
+            client_id="***REMOVED***",
+            client_secret="***REMOVED***",
             user_agent="Phul Baby"
         )
         # Predefined list of subreddits
