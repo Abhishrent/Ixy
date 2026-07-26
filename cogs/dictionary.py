@@ -2,13 +2,17 @@ import discord
 from discord.ext import commands
 import requests
 import re
+import os
+from dotenv import load_dotenv
 from config import EMBED_THUMBNAIL
+
+load_dotenv()
 
 class CollegiateDictionary(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.api_url = "https://dictionaryapi.com/api/v3/references/collegiate/json/"
-        self.api_key = "***REMOVED***"  # Replace with your actual API key
+        self.api_key = os.environ.get("MERRIAM_WEBSTER_API_KEY")  # Set MERRIAM_WEBSTER_API_KEY in .env
 
     @commands.hybrid_command(name="define", help="Get the definition of a word using Merriam-Webster's Collegiate Dictionary.")
     async def define(self, ctx, word: str):

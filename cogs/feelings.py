@@ -5,10 +5,15 @@ import asyncio
 import json
 import os
 import re
+from dotenv import load_dotenv
 from config import EMBED_THUMBNAIL  # <-- Add this import
 
+load_dotenv()
+
 FEELINGS_PATH = os.path.join(os.path.dirname(__file__), "../bot_memory/feelings.json")
-GEMINI_API_KEY = "***REMOVED***"
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
+if not GEMINI_API_KEY:
+    raise ValueError("GEMINI_API_KEY environment variable not found. Please set it in your .env file.")
 GEMINI_ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent"
 
 MOODS = ["depressed", "sad", "neutral", "happy", "overjoyed"]

@@ -1,12 +1,16 @@
 import discord
 from discord.ext import commands
 import aiohttp
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 class TMDB(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.api_key = "***REMOVED***"
-        self.api_token = "Bearer ***REMOVED***"
+        self.api_key = os.environ.get("TMDB_API_KEY")
+        self.api_token = f"Bearer {os.environ.get('TMDB_API_TOKEN')}"
         self.base_url = "https://api.themoviedb.org/3"
 
     @commands.hybrid_group(name="movie", description="Movie-related commands using TMDB API.")

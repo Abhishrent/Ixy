@@ -1,6 +1,7 @@
 import discord
 from discord.ext import commands
 import os
+from dotenv import load_dotenv
 import asyncio
 import re
 import json
@@ -8,8 +9,12 @@ import aiohttp
 from typing import List, Dict, Any, Literal
 from utils.knowledge_base import get_system_prompt
 
+load_dotenv()
+
 # Constants
-OPENROUTER_API_KEY = "***REMOVED***"
+OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY")
+if not OPENROUTER_API_KEY:
+    raise ValueError("OPENROUTER_API_KEY environment variable not found. Please set it in your .env file.")
 OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions"
 OPENROUTER_SITE_URL = "https://discord.gg/hackathon"
 OPENROUTER_SITE_NAME = "IxyBot Discord Assistant"

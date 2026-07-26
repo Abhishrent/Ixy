@@ -1,4 +1,8 @@
 import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env file (if present)
+load_dotenv()
 
 # General Bot Configuration
 BOT_NAME = 'Ixy'  # Name of the bot
@@ -76,13 +80,10 @@ IdeaX 2025 is the first time {BOT_NAME} Bot is being hosted and running on this 
 Thank you.
 """
 
-# Bot Token
-# Replace this with your bot token or set it as an environment variable
-BOT_TOKEN = '***REMOVED***'
-# Uncomment the following lines to use an environment variable for the token
-# BOT_TOKEN = os.environ.get("BOT_TOKEN")
-# if not BOT_TOKEN:
-#     raise ValueError("BOT_TOKEN environment variable not found")
+# Bot Token — loaded from the BOT_TOKEN environment variable (set in .env)
+BOT_TOKEN = os.environ.get("BOT_TOKEN")
+if not BOT_TOKEN:
+    raise ValueError("BOT_TOKEN environment variable not found. Please set it in your .env file.")
 
 # Social Links
 LINKEDIN_URL = 'https://www.linkedin.com/company/mbmc-ideax/'
